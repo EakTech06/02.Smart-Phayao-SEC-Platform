@@ -1,7 +1,8 @@
 (() => {
   'use strict';
 
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', () => 
+  {
     const qr = document.getElementById('qrcode');
     if (qr && window.QRCode) {
       new QRCode(qr, { text: qr.dataset.uri, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.M });
@@ -46,6 +47,16 @@
         copyButton.innerHTML = '<i class="bi bi-check2 me-1"></i>คัดลอกแล้ว';
       });
     }
+
+    document.querySelectorAll('[data-copy]').forEach((button) => {
+      button.addEventListener('click', async () => {
+        const target = document.querySelector(button.dataset.copy);
+        if (!target) return;
+        await navigator.clipboard.writeText(target.textContent.trim());
+        button.innerHTML = '<i class="bi bi-check2 me-1"></i>คัดลอกแล้ว';
+      });
+    });
+
   });
 
   /** fetch helper ที่แนบ CSRF Token และอ่านผลแบบ JSend */

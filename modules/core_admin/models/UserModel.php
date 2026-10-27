@@ -21,7 +21,6 @@ final class UserModel extends Model
         LEFT JOIN employees e ON e.id = u.employee_id
         LEFT JOIN departments d ON d.id = e.department_id";
 
-    /** รายการที่ผู้ใช้ปัจจุบันมีสิทธิ์เห็นตาม Data Scope */
     public static function listVisible(): array
     {
         [$where, $params] = Rbac::scopeCondition('core.users', 'read', 'e.department_id', 'u.id');
@@ -45,7 +44,20 @@ final class UserModel extends Model
         return static::db()->fetch(self::SELECT . ' WHERE u.id = ? AND u.deleted_at IS NULL LIMIT 1', [$id]);
     }
 
-    /** ป้องกัน IDOR: คืน null ทั้งกรณีไม่พบและไม่มีสิทธิ์ (ไม่บอกว่ามี record อยู่จริง) */
+    /** ข้อมูลครบสำหรับฟอร์มแก้ไข (ไม่มี hash ของเลขบัตร) */
+    public static function findForEdit(int $id): ?array
+    {
+        return static::db()->fetch(
+            'SELECT u.id, u.username, u.email, u.status, u.employee_id,
+                    e.employee_code, e.title_name, e.first_name, e.last_name, e.nickname, e.position,
+                    e.academic_rank, e.employment_type, e.department_id, e.phone, e.start_date, e.national_id_last4
+             FROM users u LEFT JOIN employees e ON e.id = u.employee_id
+             WHERE u.id = ? AND u.deleted_at IS NULL LIMIT 1',
+            [$id]
+        );
+    }
+
+    /** ป้องกัน IDOR: คืน null ทั้งกรณีไม่พบและไม่มีสิทธิ์ */
     public static function findVisible(int $id): ?array
     {
         $user = self::findDetail($id);

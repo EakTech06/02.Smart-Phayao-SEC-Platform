@@ -98,8 +98,28 @@ final class Password
                  )',
                 [$userId, $userId]
             );
-            // บังคับออกจากระบบทุกอุปกรณ์อื่น
+            // บังคับออกจากระบบทุกอุปกรณ์อื่น (ยกเว้น Session ปัจจุบัน)
             $db->query('DELETE FROM sessions WHERE user_id = ? AND id <> ?', [$userId, (string) session_id()]);
         });
     }
+
+    /** สุ่มรหัสผ่านชั่วคราวที่ผ่านนโยบาย (ตัดตัวที่สับสนง่าย เช่น O/0, l/1 ออก) */
+    public static function temporary(int $length = 12): string
+    {
+        $sets = ['ABCDEFGHJKLMNPQRSTUVWXYZ', 'abcdefghijkmnpqrstuvwxyz', '23456789', '@#$%&*!?'];
+        $chars = [];
+        foreach ($sets as $set) {
+            $chars[] = $set[random_int(0, strlen($set) - 1)];
+        }
+        $all = implode('', $sets);
+        while (count($chars) < $length) {
+            $chars[] = $all[random_int(0, strlen($all) - 1)];
+        }
+        for ($i = count($chars) - 1; $i > 0; $i--) {
+            $j = random_int(0, $i);
+            [$chars[$i], $chars[$j]] = [$chars[$j], $chars[$i]];
+        }
+        return implode('', $chars);
+    }
+
 }

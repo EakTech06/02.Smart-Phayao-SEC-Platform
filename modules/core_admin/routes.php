@@ -11,6 +11,7 @@ use Modules\CoreAdmin\Controllers\UserController;
 /** @var Router $router */
 
 $userRead = 'perm:core.users.read_all,core.users.read_service_unit,core.users.read_department,core.users.read_own';
+$userUpdate = 'perm:core.users.update_all,core.users.update_department';
 
 $router->get('/', [DashboardController::class, 'home']);
 
@@ -32,15 +33,18 @@ $router->group(['middleware' => ['auth']], static function (Router $r): void {
     $r->post('/password/change', [AuthController::class, 'changePassword'], ['csrf']);
 });
 
-$router->group(['middleware' => ['auth', 'password.fresh']], static function (Router $r) use ($userRead): void {
+$router->group(['middleware' => ['auth', 'password.fresh']], static function (Router $r) use ($userRead, $userUpdate): void {
     $r->get('/dashboard', [DashboardController::class, 'index'], ['perm:core.dashboard.view']);
+
     $r->get('/users', [UserController::class, 'index'], [$userRead]);
+    $r->get('/users/create', [UserController::class, 'create'], ['perm:core.users.create_all']);
+    $r->post('/users', [UserController::class, 'store'], ['csrf', 'perm:core.users.create_all']);
     $r->get('/users/{id:\d+}', [UserController::class, 'show'], [$userRead]);
-
-   // เพิ่ม 2 บรรทัดนี้ไว้นอกเหนือ password.fresh เพื่อให้ผู้ใช้ที่ติดบังคับเปลี่ยนรหัสผ่านเข้าถึงได้
-    $r->get('/password/change', [AuthController::class, 'showChangePassword']);
-    $r->post('/password/change', [AuthController::class, 'changePassword'], ['csrf']);
-
+    $r->get('/users/{id:\d+}/edit', [UserController::class, 'edit'], [$userUpdate]);
+    $r->put('/users/{id:\d+}', [UserController::class, 'update'], ['csrf', $userUpdate]);
+    $r->post('/users/{id:\d+}/status', [UserController::class, 'toggleStatus'], ['csrf', $userUpdate]);
+    $r->post('/users/{id:\d+}/reset-password', [UserController::class, 'resetPassword'], ['csrf', $userUpdate]);
+    $r->delete('/users/{id:\d+}', [UserController::class, 'destroy'], ['csrf', 'perm:core.users.delete_all']);
 });
 
 $router->group(['prefix' => '/api/v1', 'middleware' => ['auth', 'password.fresh']], static function (Router $r) use ($userRead): void {

@@ -11,7 +11,7 @@ final class ErrorHandler
 {
     private const SENSITIVE_INPUT = [
         'password', 'password_confirmation', 'current_password',
-        'new_password', 'new_password_confirmation', '_csrf', 'code',
+        'new_password', 'new_password_confirmation', '_csrf', 'code', 'national_id',
     ];
 
     private static bool $debug = false;
