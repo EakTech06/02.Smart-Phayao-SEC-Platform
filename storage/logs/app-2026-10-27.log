@@ -1,0 +1,368 @@
+[2026-10-27 13:07:22] Error: Class "Modules\CoreAdmin\Services\RolePermissionService" not found in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\RoleController.php:23
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\RoleController->index()
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#8 {main}
+
+[2026-10-27 13:07:34] Error: Class "Modules\CoreAdmin\Services\RolePermissionService" not found in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\RoleController.php:23
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\RoleController->index()
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#8 {main}
+
+[2026-10-27 13:09:15] Error: Class "Modules\CoreAdmin\Services\RolePermissionService" not found in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\RoleController.php:23
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\RoleController->index()
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#8 {main}
+
+[2026-10-27 13:11:42] Error: Class "Modules\CoreAdmin\Services\RolePermissionService" not found in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\RoleController.php:23
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\RoleController->index()
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#8 {main}
+
+[2026-10-27 13:12:34] Error: Class "Modules\CoreAdmin\Services\RolePermissionService" not found in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\RoleController.php:23
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\RoleController->index()
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#8 {main}
+
+[2026-10-27 13:18:07] Error: Class "Core\RolePermissionService" not found in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\RoleController.php:25
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\RoleController->index()
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#8 {main}
+
+[2026-10-27 13:18:08] Error: Class "Core\RolePermissionService" not found in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\RoleController.php:25
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\RoleController->index()
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#8 {main}
+
+[2026-10-27 13:18:15] Error: Class "Core\RolePermissionService" not found in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\RoleController.php:25
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\RoleController->index()
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#8 {main}
+
+[2026-10-27 13:20:08] ErrorException: Cannot declare class Core\RolePermissionService, because the name is already in use in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\services\RolePermissionService.php:11
+#0 [internal function]: Core\ErrorHandler::handleShutdown()
+#1 {main}
+
+[2026-10-27 13:20:09] ErrorException: Cannot declare class Core\RolePermissionService, because the name is already in use in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\services\RolePermissionService.php:11
+#0 [internal function]: Core\ErrorHandler::handleShutdown()
+#1 {main}
+
+[2026-10-27 13:20:12] ErrorException: Cannot declare class Core\RolePermissionService, because the name is already in use in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\services\RolePermissionService.php:11
+#0 [internal function]: Core\ErrorHandler::handleShutdown()
+#1 {main}
+
+[2026-10-27 13:20:38] Error: Class "Core\RolePermissionService" not found in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\RoleController.php:25
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\RoleController->index()
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#8 {main}
+
+[2026-10-27 13:21:08] Error: Class "Core\RolePermissionService" not found in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\RoleController.php:25
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\RoleController->index()
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#8 {main}
+
+[2026-10-27 13:21:10] Error: Class "Core\RolePermissionService" not found in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\RoleController.php:25
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\RoleController->index()
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#8 {main}
+
+[2026-10-27 13:21:11] Error: Class "Core\RolePermissionService" not found in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\RoleController.php:25
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\RoleController->index()
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#8 {main}
+
+[2026-10-27 13:21:12] Error: Class "Core\RolePermissionService" not found in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\RoleController.php:25
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\RoleController->index()
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#8 {main}
+
+[2026-10-27 13:21:12] Error: Class "Core\RolePermissionService" not found in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\RoleController.php:25
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\RoleController->index()
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#8 {main}
+
+[2026-10-27 13:21:12] Error: Class "Core\RolePermissionService" not found in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\RoleController.php:25
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\RoleController->index()
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#8 {main}
+
+[2026-10-27 13:24:35] Error: Undefined constant Modules\CoreAdmin\Services\RolePermissionService::permissionIdsOf in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\views\roles\matrix.php:16
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(56): require()
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(12): Core\View::capture('D:\\00_Work_Syst...', Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Controller.php(17): Core\View::render('core_admin::rol...', Array, 'layout')
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\RoleController.php(20): Core\Controller->view('core_admin::rol...', Array)
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\RoleController->index()
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#8 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#9 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#10 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#11 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#12 {main}
+
+[2026-10-27 13:24:35] Error: Undefined constant Modules\CoreAdmin\Services\RolePermissionService::permissionIdsOf in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\views\roles\matrix.php:16
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(56): require()
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(12): Core\View::capture('D:\\00_Work_Syst...', Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Controller.php(17): Core\View::render('core_admin::rol...', Array, 'layout')
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\RoleController.php(20): Core\Controller->view('core_admin::rol...', Array)
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\RoleController->index()
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#8 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#9 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#10 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#11 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#12 {main}
+
+[2026-10-27 13:24:36] Error: Undefined constant Modules\CoreAdmin\Services\RolePermissionService::permissionIdsOf in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\views\roles\matrix.php:16
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(56): require()
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(12): Core\View::capture('D:\\00_Work_Syst...', Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Controller.php(17): Core\View::render('core_admin::rol...', Array, 'layout')
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\RoleController.php(20): Core\Controller->view('core_admin::rol...', Array)
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\RoleController->index()
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#8 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#9 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#10 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#11 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#12 {main}
+
+[2026-10-27 13:24:36] Error: Undefined constant Modules\CoreAdmin\Services\RolePermissionService::permissionIdsOf in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\views\roles\matrix.php:16
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(56): require()
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(12): Core\View::capture('D:\\00_Work_Syst...', Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Controller.php(17): Core\View::render('core_admin::rol...', Array, 'layout')
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\RoleController.php(20): Core\Controller->view('core_admin::rol...', Array)
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\RoleController->index()
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#8 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#9 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#10 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#11 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#12 {main}
+
+[2026-10-27 13:24:37] Error: Undefined constant Modules\CoreAdmin\Services\RolePermissionService::permissionIdsOf in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\views\roles\matrix.php:16
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(56): require()
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(12): Core\View::capture('D:\\00_Work_Syst...', Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Controller.php(17): Core\View::render('core_admin::rol...', Array, 'layout')
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\RoleController.php(20): Core\Controller->view('core_admin::rol...', Array)
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\RoleController->index()
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#8 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#9 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#10 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#11 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#12 {main}
+
+[2026-10-27 13:24:37] Error: Undefined constant Modules\CoreAdmin\Services\RolePermissionService::permissionIdsOf in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\views\roles\matrix.php:16
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(56): require()
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(12): Core\View::capture('D:\\00_Work_Syst...', Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Controller.php(17): Core\View::render('core_admin::rol...', Array, 'layout')
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\RoleController.php(20): Core\Controller->view('core_admin::rol...', Array)
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\RoleController->index()
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#8 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#9 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#10 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#11 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#12 {main}
+
+[2026-10-27 13:24:37] Error: Undefined constant Modules\CoreAdmin\Services\RolePermissionService::permissionIdsOf in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\views\roles\matrix.php:16
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(56): require()
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(12): Core\View::capture('D:\\00_Work_Syst...', Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Controller.php(17): Core\View::render('core_admin::rol...', Array, 'layout')
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\RoleController.php(20): Core\Controller->view('core_admin::rol...', Array)
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\RoleController->index()
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#8 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#9 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#10 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#11 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#12 {main}
+
+[2026-10-27 13:24:37] Error: Undefined constant Modules\CoreAdmin\Services\RolePermissionService::permissionIdsOf in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\views\roles\matrix.php:16
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(56): require()
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(12): Core\View::capture('D:\\00_Work_Syst...', Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Controller.php(17): Core\View::render('core_admin::rol...', Array, 'layout')
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\RoleController.php(20): Core\Controller->view('core_admin::rol...', Array)
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\RoleController->index()
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#8 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#9 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#10 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#11 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#12 {main}
+
+[2026-10-27 13:24:38] Error: Undefined constant Modules\CoreAdmin\Services\RolePermissionService::permissionIdsOf in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\views\roles\matrix.php:16
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(56): require()
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(12): Core\View::capture('D:\\00_Work_Syst...', Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Controller.php(17): Core\View::render('core_admin::rol...', Array, 'layout')
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\RoleController.php(20): Core\Controller->view('core_admin::rol...', Array)
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\RoleController->index()
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#8 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#9 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#10 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#11 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#12 {main}
+
+[2026-10-27 13:24:38] Error: Undefined constant Modules\CoreAdmin\Services\RolePermissionService::permissionIdsOf in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\views\roles\matrix.php:16
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(56): require()
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(12): Core\View::capture('D:\\00_Work_Syst...', Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Controller.php(17): Core\View::render('core_admin::rol...', Array, 'layout')
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\RoleController.php(20): Core\Controller->view('core_admin::rol...', Array)
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\RoleController->index()
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#8 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#9 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#10 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#11 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#12 {main}
+
+[2026-10-27 13:24:43] Error: Undefined constant Modules\CoreAdmin\Services\RolePermissionService::permissionIdsOf in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\views\roles\matrix.php:16
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(56): require()
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(12): Core\View::capture('D:\\00_Work_Syst...', Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Controller.php(17): Core\View::render('core_admin::rol...', Array, 'layout')
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\RoleController.php(20): Core\Controller->view('core_admin::rol...', Array)
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\RoleController->index()
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#8 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#9 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#10 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#11 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#12 {main}
+
+[2026-10-27 13:28:20] Error: Undefined constant Modules\CoreAdmin\Services\RolePermissionService::permissionIdsOf in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\views\roles\matrix.php:16
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(56): require()
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(12): Core\View::capture('D:\\00_Work_Syst...', Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Controller.php(17): Core\View::render('core_admin::rol...', Array, 'layout')
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\RoleController.php(20): Core\Controller->view('core_admin::rol...', Array)
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\RoleController->index()
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#8 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#9 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#10 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#11 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#12 {main}
+
+[2026-10-27 13:35:17] Error: Class "Core\UserPermissionService" not found in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\UserPermissionController.php:32
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\UserPermissionController->edit('4')
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#8 {main}
+

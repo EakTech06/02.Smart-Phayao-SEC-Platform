@@ -52,3 +52,12 @@ $router->group(['prefix' => '/api/v1', 'middleware' => ['auth', 'password.fresh'
     $r->get('/users', [UserApiController::class, 'index'], [$userRead]);
     $r->get('/users/{id:\d+}', [UserApiController::class, 'show'], [$userRead]);
 });
+
+// Roles & Matrix
+$router->get('/roles', [Modules\CoreAdmin\Controllers\RoleController::class, 'index'], ['perm:core.roles.read_all']);
+$router->post('/roles/{id:\d+}/matrix', [Modules\CoreAdmin\Controllers\RoleController::class, 'updateMatrix'], ['csrf', 'perm:core.roles.update_all']);
+
+// User Permissions Override
+$router->get('/users/{id:\d+}/permissions', [Modules\CoreAdmin\Controllers\UserPermissionController::class, 'edit'], ['perm:core.permissions.assign_all']);
+$router->post('/users/{id:\d+}/permissions', [Modules\CoreAdmin\Controllers\UserPermissionController::class, 'store'], ['csrf', 'perm:core.permissions.assign_all']);
+$router->delete('/users/{id:\d+}/permissions/{permId:\d+}', [Modules\CoreAdmin\Controllers\UserPermissionController::class, 'destroy'], ['csrf', 'perm:core.permissions.assign_all']);

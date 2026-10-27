@@ -2,6 +2,8 @@
 
 use Modules\CoreAdmin\Services\UserService;
 
+
+
 /** @var array $user */
 /** @var bool $canManage */
 /** @var string|null $tempPassword */
@@ -10,6 +12,9 @@ $isActive = $user['status'] === 'active';
 ?>
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
   <a href="<?= e(url('/users')) ?>" class="btn btn-link px-0"><i class="bi bi-arrow-left"></i> กลับ</a>
+      <?php if (can('core.permissions.assign_all')): ?>
+        <a class="btn btn-sm btn-outline-secondary" href="<?= e(url("/users/{$id}/permissions")) ?>"><i class="bi bi-shield-check me-1"></i>จัดการสิทธิ์</a>
+      <?php endif; ?>
   <?php if ($canManage): ?>
     <div class="d-flex flex-wrap gap-2">
       <a class="btn btn-sm btn-primary" href="<?= e(url("/users/{$id}/edit")) ?>"><i class="bi bi-pencil me-1"></i>แก้ไข</a>
