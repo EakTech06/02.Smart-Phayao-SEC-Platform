@@ -1,0 +1,34 @@
+[2026-10-26 15:27:47] RuntimeException: Decryption failed in C:\xampp\htdocs\smart-phayao-sec\core\Crypto.php:49
+#0 C:\xampp\htdocs\smart-phayao-sec\core\TwoFactor.php(70): Core\Crypto::decrypt('pcZxDqKIGk0fpPb...')
+#1 C:\xampp\htdocs\smart-phayao-sec\modules\core_admin\controllers\AuthController.php(62): Core\TwoFactor::verify(1, '772218')
+#2 C:\xampp\htdocs\smart-phayao-sec\core\Router.php(124): Modules\CoreAdmin\Controllers\AuthController->verifyTwoFactor()
+#3 C:\xampp\htdocs\smart-phayao-sec\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#4 C:\xampp\htdocs\smart-phayao-sec\Middleware\CsrfMiddleware.php(24): Core\Router->Core\{closure}(Object(Core\Request))
+#5 C:\xampp\htdocs\smart-phayao-sec\core\Router.php(92): Middleware\CsrfMiddleware->handle(Object(Core\Request), Object(Closure))
+#6 C:\xampp\htdocs\smart-phayao-sec\Middleware\TwoFactorPendingMiddleware.php(30): Core\Router::Core\{closure}(Object(Core\Request))
+#7 C:\xampp\htdocs\smart-phayao-sec\core\Router.php(92): Middleware\TwoFactorPendingMiddleware->handle(Object(Core\Request), Object(Closure))
+#8 C:\xampp\htdocs\smart-phayao-sec\Middleware\GuestMiddleware.php(16): Core\Router::Core\{closure}(Object(Core\Request))
+#9 C:\xampp\htdocs\smart-phayao-sec\core\Router.php(92): Middleware\GuestMiddleware->handle(Object(Core\Request), Object(Closure))
+#10 C:\xampp\htdocs\smart-phayao-sec\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#11 C:\xampp\htdocs\smart-phayao-sec\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#12 C:\xampp\htdocs\smart-phayao-sec\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#13 C:\xampp\htdocs\smart-phayao-sec\public\index.php(7): Core\App->run()
+#14 {main}
+
+[2026-10-26 15:28:06] RuntimeException: Decryption failed in C:\xampp\htdocs\smart-phayao-sec\core\Crypto.php:49
+#0 C:\xampp\htdocs\smart-phayao-sec\core\TwoFactor.php(70): Core\Crypto::decrypt('pcZxDqKIGk0fpPb...')
+#1 C:\xampp\htdocs\smart-phayao-sec\modules\core_admin\controllers\AuthController.php(62): Core\TwoFactor::verify(1, '142826')
+#2 C:\xampp\htdocs\smart-phayao-sec\core\Router.php(124): Modules\CoreAdmin\Controllers\AuthController->verifyTwoFactor()
+#3 C:\xampp\htdocs\smart-phayao-sec\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#4 C:\xampp\htdocs\smart-phayao-sec\Middleware\CsrfMiddleware.php(24): Core\Router->Core\{closure}(Object(Core\Request))
+#5 C:\xampp\htdocs\smart-phayao-sec\core\Router.php(92): Middleware\CsrfMiddleware->handle(Object(Core\Request), Object(Closure))
+#6 C:\xampp\htdocs\smart-phayao-sec\Middleware\TwoFactorPendingMiddleware.php(30): Core\Router::Core\{closure}(Object(Core\Request))
+#7 C:\xampp\htdocs\smart-phayao-sec\core\Router.php(92): Middleware\TwoFactorPendingMiddleware->handle(Object(Core\Request), Object(Closure))
+#8 C:\xampp\htdocs\smart-phayao-sec\Middleware\GuestMiddleware.php(16): Core\Router::Core\{closure}(Object(Core\Request))
+#9 C:\xampp\htdocs\smart-phayao-sec\core\Router.php(92): Middleware\GuestMiddleware->handle(Object(Core\Request), Object(Closure))
+#10 C:\xampp\htdocs\smart-phayao-sec\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#11 C:\xampp\htdocs\smart-phayao-sec\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#12 C:\xampp\htdocs\smart-phayao-sec\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#13 C:\xampp\htdocs\smart-phayao-sec\public\index.php(7): Core\App->run()
+#14 {main}
+

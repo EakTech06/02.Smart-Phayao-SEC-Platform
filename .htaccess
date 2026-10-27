@@ -1,0 +1,2 @@
+# กันการเข้าถึง config/, core/, storage/, database/ เมื่อวางโปรเจกต์ไว้ใน htdocs
+Require all denied
