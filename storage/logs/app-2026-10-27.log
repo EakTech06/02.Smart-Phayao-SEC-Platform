@@ -366,3 +366,451 @@
 #7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
 #8 {main}
 
+[2026-10-27 14:25:08] PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'group' in 'order clause' in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php:59
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php(59): PDO->prepare('SELECT * FROM s...')
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php(86): Core\Database->query('SELECT * FROM s...', Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\SettingController.php(18): Core\Database->fetchAll('SELECT * FROM s...')
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\SettingController->index()
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#8 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#9 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#10 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#11 {main}
+
+[2026-10-27 14:25:13] ErrorException: Undefined array key "event" in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\views\audit\index.php:46
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\views\audit\index.php(46): Core\ErrorHandler::handleError(2, 'Undefined array...', 'D:\\00_Work_Syst...', 46)
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(56): require('D:\\00_Work_Syst...')
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(12): Core\View::capture('D:\\00_Work_Syst...', Array)
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Controller.php(17): Core\View::render('core_admin::aud...', Array, 'layout')
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\AuditController.php(37): Core\Controller->view('core_admin::aud...', Array)
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\AuditController->index()
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#8 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#9 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#10 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#11 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#12 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#13 {main}
+
+[2026-10-27 14:25:17] PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'group' in 'order clause' in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php:59
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php(59): PDO->prepare('SELECT * FROM s...')
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php(86): Core\Database->query('SELECT * FROM s...', Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\SettingController.php(18): Core\Database->fetchAll('SELECT * FROM s...')
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\SettingController->index()
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#8 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#9 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#10 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#11 {main}
+
+[2026-10-27 14:25:24] ErrorException: Undefined array key "event" in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\views\audit\index.php:46
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\views\audit\index.php(46): Core\ErrorHandler::handleError(2, 'Undefined array...', 'D:\\00_Work_Syst...', 46)
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(56): require('D:\\00_Work_Syst...')
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(12): Core\View::capture('D:\\00_Work_Syst...', Array)
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Controller.php(17): Core\View::render('core_admin::aud...', Array, 'layout')
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\AuditController.php(37): Core\Controller->view('core_admin::aud...', Array)
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\AuditController->index()
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#8 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#9 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#10 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#11 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#12 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#13 {main}
+
+[2026-10-27 14:25:58] ErrorException: Undefined array key "event" in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\views\audit\index.php:46
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\views\audit\index.php(46): Core\ErrorHandler::handleError(2, 'Undefined array...', 'D:\\00_Work_Syst...', 46)
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(56): require('D:\\00_Work_Syst...')
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(12): Core\View::capture('D:\\00_Work_Syst...', Array)
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Controller.php(17): Core\View::render('core_admin::aud...', Array, 'layout')
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\AuditController.php(37): Core\Controller->view('core_admin::aud...', Array)
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\AuditController->index()
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#8 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#9 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#10 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#11 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#12 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#13 {main}
+
+[2026-10-27 14:30:22] PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'group' in 'order clause' in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php:59
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php(59): PDO->prepare('SELECT * FROM s...')
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php(86): Core\Database->query('SELECT * FROM s...', Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\SettingController.php(18): Core\Database->fetchAll('SELECT * FROM s...')
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\SettingController->index()
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#8 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#9 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#10 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#11 {main}
+
+[2026-10-27 14:30:48] PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'group' in 'order clause' in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php:59
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php(59): PDO->prepare('SELECT * FROM s...')
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php(86): Core\Database->query('SELECT * FROM s...', Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\SettingController.php(18): Core\Database->fetchAll('SELECT * FROM s...')
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\SettingController->index()
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#8 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#9 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#10 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#11 {main}
+
+[2026-10-27 14:31:34] PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'group' in 'order clause' in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php:59
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php(59): PDO->prepare('SELECT * FROM s...')
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php(86): Core\Database->query('SELECT * FROM s...', Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\SettingController.php(18): Core\Database->fetchAll('SELECT * FROM s...')
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\SettingController->index()
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#8 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#9 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#10 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#11 {main}
+
+[2026-10-27 14:32:46] PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'group' in 'order clause' in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php:59
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php(59): PDO->prepare('SELECT * FROM s...')
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php(86): Core\Database->query('SELECT * FROM s...', Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\SettingController.php(19): Core\Database->fetchAll('SELECT * FROM s...')
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\SettingController->index()
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#8 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#9 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#10 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#11 {main}
+
+[2026-10-27 14:32:48] PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'group' in 'order clause' in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php:59
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php(59): PDO->prepare('SELECT * FROM s...')
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php(86): Core\Database->query('SELECT * FROM s...', Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\SettingController.php(19): Core\Database->fetchAll('SELECT * FROM s...')
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\SettingController->index()
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#8 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#9 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#10 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#11 {main}
+
+[2026-10-27 14:32:49] PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'group' in 'order clause' in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php:59
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php(59): PDO->prepare('SELECT * FROM s...')
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php(86): Core\Database->query('SELECT * FROM s...', Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\SettingController.php(19): Core\Database->fetchAll('SELECT * FROM s...')
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\SettingController->index()
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#8 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#9 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#10 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#11 {main}
+
+[2026-10-27 14:32:49] PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'group' in 'order clause' in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php:59
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php(59): PDO->prepare('SELECT * FROM s...')
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php(86): Core\Database->query('SELECT * FROM s...', Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\SettingController.php(19): Core\Database->fetchAll('SELECT * FROM s...')
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\SettingController->index()
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#8 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#9 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#10 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#11 {main}
+
+[2026-10-27 14:32:49] PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'group' in 'order clause' in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php:59
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php(59): PDO->prepare('SELECT * FROM s...')
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php(86): Core\Database->query('SELECT * FROM s...', Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\SettingController.php(19): Core\Database->fetchAll('SELECT * FROM s...')
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\SettingController->index()
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#8 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#9 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#10 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#11 {main}
+
+[2026-10-27 14:32:49] PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'group' in 'order clause' in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php:59
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php(59): PDO->prepare('SELECT * FROM s...')
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php(86): Core\Database->query('SELECT * FROM s...', Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\SettingController.php(19): Core\Database->fetchAll('SELECT * FROM s...')
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\SettingController->index()
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#8 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#9 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#10 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#11 {main}
+
+[2026-10-27 14:33:20] PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'group' in 'order clause' in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php:59
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php(59): PDO->prepare('SELECT * FROM s...')
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php(86): Core\Database->query('SELECT * FROM s...', Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\SettingController.php(19): Core\Database->fetchAll('SELECT * FROM s...')
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\SettingController->index()
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#8 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#9 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#10 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#11 {main}
+
+[2026-10-27 14:34:13] PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'group' in 'order clause' in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php:59
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php(59): PDO->prepare('SELECT * FROM s...')
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php(86): Core\Database->query('SELECT * FROM s...', Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\SettingController.php(19): Core\Database->fetchAll('SELECT * FROM s...')
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\SettingController->index()
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#8 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#9 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#10 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#11 {main}
+
+[2026-10-27 14:34:14] PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'group' in 'order clause' in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php:59
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php(59): PDO->prepare('SELECT * FROM s...')
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php(86): Core\Database->query('SELECT * FROM s...', Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\SettingController.php(19): Core\Database->fetchAll('SELECT * FROM s...')
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\SettingController->index()
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#8 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#9 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#10 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#11 {main}
+
+[2026-10-27 14:34:14] PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'group' in 'order clause' in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php:59
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php(59): PDO->prepare('SELECT * FROM s...')
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php(86): Core\Database->query('SELECT * FROM s...', Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\SettingController.php(19): Core\Database->fetchAll('SELECT * FROM s...')
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\SettingController->index()
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#8 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#9 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#10 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#11 {main}
+
+[2026-10-27 14:34:14] PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'group' in 'order clause' in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php:59
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php(59): PDO->prepare('SELECT * FROM s...')
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php(86): Core\Database->query('SELECT * FROM s...', Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\SettingController.php(19): Core\Database->fetchAll('SELECT * FROM s...')
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\SettingController->index()
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#8 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#9 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#10 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#11 {main}
+
+[2026-10-27 14:34:20] PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'group' in 'order clause' in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php:59
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php(59): PDO->prepare('SELECT * FROM s...')
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php(86): Core\Database->query('SELECT * FROM s...', Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\SettingController.php(19): Core\Database->fetchAll('SELECT * FROM s...')
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\SettingController->index()
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#8 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#9 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#10 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#11 {main}
+
+[2026-10-27 14:36:01] ErrorException: Undefined array key "key" in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\views\settings\index.php:25
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\views\settings\index.php(25): Core\ErrorHandler::handleError(2, 'Undefined array...', 'D:\\00_Work_Syst...', 25)
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(56): require('D:\\00_Work_Syst...')
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(12): Core\View::capture('D:\\00_Work_Syst...', Array)
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Controller.php(17): Core\View::render('core_admin::set...', Array, 'layout')
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\SettingController.php(22): Core\Controller->view('core_admin::set...', Array)
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\SettingController->index()
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#8 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#9 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#10 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#11 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#12 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#13 {main}
+
+[2026-10-27 14:36:05] ErrorException: Undefined array key "key" in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\views\settings\index.php:25
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\views\settings\index.php(25): Core\ErrorHandler::handleError(2, 'Undefined array...', 'D:\\00_Work_Syst...', 25)
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(56): require('D:\\00_Work_Syst...')
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(12): Core\View::capture('D:\\00_Work_Syst...', Array)
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Controller.php(17): Core\View::render('core_admin::set...', Array, 'layout')
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\SettingController.php(22): Core\Controller->view('core_admin::set...', Array)
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\SettingController->index()
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#8 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#9 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#10 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#11 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#12 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#13 {main}
+
+[2026-10-27 14:36:37] ErrorException: Undefined array key "key" in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\views\settings\index.php:25
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\views\settings\index.php(25): Core\ErrorHandler::handleError(2, 'Undefined array...', 'D:\\00_Work_Syst...', 25)
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(56): require('D:\\00_Work_Syst...')
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(12): Core\View::capture('D:\\00_Work_Syst...', Array)
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Controller.php(17): Core\View::render('core_admin::set...', Array, 'layout')
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\SettingController.php(22): Core\Controller->view('core_admin::set...', Array)
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\SettingController->index()
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#8 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#9 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#10 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#11 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#12 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#13 {main}
+
+[2026-10-27 14:36:37] ErrorException: Undefined array key "key" in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\views\settings\index.php:25
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\views\settings\index.php(25): Core\ErrorHandler::handleError(2, 'Undefined array...', 'D:\\00_Work_Syst...', 25)
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(56): require('D:\\00_Work_Syst...')
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(12): Core\View::capture('D:\\00_Work_Syst...', Array)
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Controller.php(17): Core\View::render('core_admin::set...', Array, 'layout')
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\SettingController.php(22): Core\Controller->view('core_admin::set...', Array)
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\SettingController->index()
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#8 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#9 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#10 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#11 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#12 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#13 {main}
+
+[2026-10-27 14:36:37] ErrorException: Undefined array key "key" in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\views\settings\index.php:25
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\views\settings\index.php(25): Core\ErrorHandler::handleError(2, 'Undefined array...', 'D:\\00_Work_Syst...', 25)
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(56): require('D:\\00_Work_Syst...')
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(12): Core\View::capture('D:\\00_Work_Syst...', Array)
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Controller.php(17): Core\View::render('core_admin::set...', Array, 'layout')
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\SettingController.php(22): Core\Controller->view('core_admin::set...', Array)
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\SettingController->index()
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#8 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#9 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#10 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#11 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#12 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#13 {main}
+
+[2026-10-27 14:36:37] ErrorException: Undefined array key "key" in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\views\settings\index.php:25
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\views\settings\index.php(25): Core\ErrorHandler::handleError(2, 'Undefined array...', 'D:\\00_Work_Syst...', 25)
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(56): require('D:\\00_Work_Syst...')
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(12): Core\View::capture('D:\\00_Work_Syst...', Array)
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Controller.php(17): Core\View::render('core_admin::set...', Array, 'layout')
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\SettingController.php(22): Core\Controller->view('core_admin::set...', Array)
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\SettingController->index()
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#8 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#9 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#10 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#11 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#12 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#13 {main}
+
+[2026-10-27 14:36:37] ErrorException: Undefined array key "key" in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\views\settings\index.php:25
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\views\settings\index.php(25): Core\ErrorHandler::handleError(2, 'Undefined array...', 'D:\\00_Work_Syst...', 25)
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(56): require('D:\\00_Work_Syst...')
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(12): Core\View::capture('D:\\00_Work_Syst...', Array)
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Controller.php(17): Core\View::render('core_admin::set...', Array, 'layout')
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\SettingController.php(22): Core\Controller->view('core_admin::set...', Array)
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\SettingController->index()
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#8 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#9 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#10 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#11 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#12 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#13 {main}
+
+[2026-10-27 14:36:38] ErrorException: Undefined array key "key" in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\views\settings\index.php:25
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\views\settings\index.php(25): Core\ErrorHandler::handleError(2, 'Undefined array...', 'D:\\00_Work_Syst...', 25)
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(56): require('D:\\00_Work_Syst...')
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(12): Core\View::capture('D:\\00_Work_Syst...', Array)
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Controller.php(17): Core\View::render('core_admin::set...', Array, 'layout')
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\SettingController.php(22): Core\Controller->view('core_admin::set...', Array)
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\SettingController->index()
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#8 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#9 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#10 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#11 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#12 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#13 {main}
+
+[2026-10-27 14:36:38] ErrorException: Undefined array key "key" in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\views\settings\index.php:25
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\views\settings\index.php(25): Core\ErrorHandler::handleError(2, 'Undefined array...', 'D:\\00_Work_Syst...', 25)
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(56): require('D:\\00_Work_Syst...')
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\View.php(12): Core\View::capture('D:\\00_Work_Syst...', Array)
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Controller.php(17): Core\View::render('core_admin::set...', Array, 'layout')
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\SettingController.php(22): Core\Controller->view('core_admin::set...', Array)
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\SettingController->index()
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#8 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#9 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#10 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#11 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#12 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#13 {main}
+
+[2026-10-27 14:37:52] PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'value' in 'field list' in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php:59
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php(59): PDO->prepare('UPDATE `setting...')
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php(119): Core\Database->query('UPDATE `setting...', Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\SettingController.php(38): Core\Database->update('settings', Array, Array)
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php(136): Modules\CoreAdmin\Controllers\SettingController::Modules\CoreAdmin\Controllers\{closure}(Object(Core\Database))
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\SettingController.php(36): Core\Database->transaction(Object(Closure))
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\SettingController->update()
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\PermissionMiddleware.php(30): Core\Router->Core\{closure}(Object(Core\Request))
+#8 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\PermissionMiddleware->handle(Object(Core\Request), Object(Closure))
+#9 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\CsrfMiddleware.php(24): Core\Router::Core\{closure}(Object(Core\Request))
+#10 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\CsrfMiddleware->handle(Object(Core\Request), Object(Closure))
+#11 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#12 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#13 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#14 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#15 {main}
+

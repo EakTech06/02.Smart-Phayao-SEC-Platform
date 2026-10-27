@@ -50,7 +50,7 @@ final class UserPermissionController extends Controller
         Session::flash('success', 'บันทึกสิทธิ์รายบุคคลเรียบร้อยแล้ว');
         return $this->redirect('/users/' . (int) $user['id'] . '/permissions');
     }
-
+/*
     public function destroy(string $id, string $permId): Response
     {
         $this->authorize('core.permissions.assign_all');
@@ -58,6 +58,20 @@ final class UserPermissionController extends Controller
 
         UserPermissionService::removeOverride((int) $user['id'], (int) $permId);
         Session::flash('success', 'ลบสิทธิ์เฉพาะตัวเรียบร้อยแล้ว');
+        return $this->redirect('/users/' . (int) $user['id'] . '/permissions');
+    }
+        */
+        public function destroy(string $id): Response
+    {
+        $this->authorize('core.permissions.assign_all');
+        $user = UserModel::findVisible((int) $id) ?? throw new HttpException(404);
+
+        $permId = (int) $this->request->input('permission_id', 0);
+        if ($permId > 0) {
+            UserPermissionService::removeOverride((int) $user['id'], $permId);
+            Session::flash('success', 'ลบสิทธิ์เฉพาะตัวเรียบร้อยแล้ว');
+        }
+
         return $this->redirect('/users/' . (int) $user['id'] . '/permissions');
     }
 }

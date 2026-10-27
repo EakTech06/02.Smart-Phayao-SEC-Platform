@@ -6,7 +6,12 @@ $currentPath = current_path();
 $menu = [
     ['url' => '/dashboard', 'icon' => 'speedometer2', 'label' => 'แดชบอร์ด', 'show' => can('core.dashboard.view')],
     ['url' => '/users', 'icon' => 'people', 'label' => 'ผู้ใช้งาน', 'show' => Rbac::scope('core.users', 'read') !== null],
-    ['url' => '/roles', 'icon' => 'shield-shaded', 'label' => 'จัดการสิทธิ์บทบาท', 'show' => can('core.roles.read_all')],
+     ['url' => '/roles', 'icon' => 'shield-shaded', 'label' => 'จัดการสิทธิ์บทบาท', 'show' => can('core.roles.read_all')],
+
+    ['url' => '/audit-logs', 'icon' => 'clock-history', 'label' => 'ประวัติการใช้งาน', 'show' => can('core.audit.read_all')],
+    ['url' => '/sessions', 'icon' => 'display', 'label' => 'จัดการเซสชัน', 'show' => can('core.sessions.read_all')],
+    ['url' => '/settings', 'icon' => 'gear', 'label' => 'ตั้งค่าระบบ', 'show' => can('core.settings.manage')],
+
     ['url' => '/password/change', 'icon' => 'shield-lock', 'label' => 'ความปลอดภัยบัญชี', 'show' => true],
 ];
 ?>

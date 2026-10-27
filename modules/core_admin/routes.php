@@ -60,4 +60,19 @@ $router->post('/roles/{id:\d+}/matrix', [Modules\CoreAdmin\Controllers\RoleContr
 // User Permissions Override
 $router->get('/users/{id:\d+}/permissions', [Modules\CoreAdmin\Controllers\UserPermissionController::class, 'edit'], ['perm:core.permissions.assign_all']);
 $router->post('/users/{id:\d+}/permissions', [Modules\CoreAdmin\Controllers\UserPermissionController::class, 'store'], ['csrf', 'perm:core.permissions.assign_all']);
-$router->delete('/users/{id:\d+}/permissions/{permId:\d+}', [Modules\CoreAdmin\Controllers\UserPermissionController::class, 'destroy'], ['csrf', 'perm:core.permissions.assign_all']);
+//$router->delete('/users/{id:\d+}/permissions/{permId:\d+}', [Modules\CoreAdmin\Controllers\UserPermissionController::class, 'destroy'], ['csrf', 'perm:core.permissions.assign_all']);    // Audit Logs
+$router->post('/users/{id:\d+}/permissions/delete', [Modules\CoreAdmin\Controllers\UserPermissionController::class, 'destroy'], ['csrf', 'perm:core.permissions.assign_all']);
+
+$router->get('/audit-logs', [Modules\CoreAdmin\Controllers\AuditController::class, 'index'], ['perm:core.audit.read_all']);
+
+    // Settings
+$router->get('/settings', [Modules\CoreAdmin\Controllers\SettingController::class, 'index'], ['perm:core.settings.manage']);
+$router->post('/settings', [Modules\CoreAdmin\Controllers\SettingController::class, 'update'], ['csrf', 'perm:core.settings.manage']);
+
+// Sessions Management
+$router->get('/sessions', [Modules\CoreAdmin\Controllers\SessionController::class, 'index'], ['perm:core.sessions.read_all']);
+$router->delete('/sessions/{id}', [Modules\CoreAdmin\Controllers\SessionController::class, 'destroy'], ['csrf', 'perm:core.sessions.manage_all']);
+
+// Profile
+$router->get('/profile', [Modules\CoreAdmin\Controllers\ProfileController::class, 'index']);
+$router->post('/profile/password', [Modules\CoreAdmin\Controllers\ProfileController::class, 'updatePassword'], ['csrf']);

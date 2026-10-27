@@ -76,11 +76,14 @@ $id = (int) $user['id'];
                     </td>
                     <td class="small"><?= e($o['expires_at'] ?? 'ถาวร') ?></td>
                     <td class="text-end">
-                      <form method="post" action="<?= e(url('/users/' . $id . '/permissions/' . (int) $o['permission_id'])) ?>" class="d-inline" data-confirm="ลบการกำหนดสิทธิ์นี้?">
+
+                    <form method="post" action="<?= e(url('/users/' . $id . '/permissions/delete')) ?>" class="d-inline" data-confirm="ลบการกำหนดสิทธิ์นี้?">
                         <?= csrf_field() ?>
-                        <input type="hidden" name="_method" value="DELETE">
+                        <input type="hidden" name="permission_id" value="<?= (int) $o['permission_id'] ?>">
                         <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                       </form>
+
+
                     </td>
                   </tr>
                 <?php endforeach; ?>
