@@ -65,7 +65,7 @@ $router->post('/users/{id:\d+}/permissions/delete', [Modules\CoreAdmin\Controlle
 
 $router->get('/audit-logs', [Modules\CoreAdmin\Controllers\AuditController::class, 'index'], ['perm:core.audit.read_all']);
 
-    // Settings
+// Settings
 $router->get('/settings', [Modules\CoreAdmin\Controllers\SettingController::class, 'index'], ['perm:core.settings.manage']);
 $router->post('/settings', [Modules\CoreAdmin\Controllers\SettingController::class, 'update'], ['csrf', 'perm:core.settings.manage']);
 
@@ -73,6 +73,8 @@ $router->post('/settings', [Modules\CoreAdmin\Controllers\SettingController::cla
 $router->get('/sessions', [Modules\CoreAdmin\Controllers\SessionController::class, 'index'], ['perm:core.sessions.read_all']);
 $router->delete('/sessions/{id}', [Modules\CoreAdmin\Controllers\SessionController::class, 'destroy'], ['csrf', 'perm:core.sessions.manage_all']);
 
+
 // Profile
 $router->get('/profile', [Modules\CoreAdmin\Controllers\ProfileController::class, 'index']);
+$router->post('/profile', [Modules\CoreAdmin\Controllers\ProfileController::class, 'update'], ['csrf']);
 $router->post('/profile/password', [Modules\CoreAdmin\Controllers\ProfileController::class, 'updatePassword'], ['csrf']);

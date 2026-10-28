@@ -47,10 +47,34 @@ final class DashboardController extends Controller
     /** HMVC widget: เรียกจาก View อื่นผ่าน Hmvc::call() */
     public function profileWidget(): string
     {
+        $userId = \Core\Session::get('_uid') ?? (\Core\Auth::id() ?? null);
+        $user = null;
+
+        if ($userId) {
+            // ดึงข้อมูลผู้ใช้พร้อม JOIN ตาราง employees เพื่อให้ได้ avatar, ชื่อ, ตำแหน่ง, วิทยฐานะ ครบถ้วน
+            $user = \Core\Database::instance()->fetch('
+                SELECT u.*, e.*, u.id AS id, e.id AS employee_id 
+                FROM users u 
+                LEFT JOIN employees e ON e.id = u.employee_id
+                WHERE u.id = ?
+            ', [(int) $userId]);
+        }
+
+        // หากไม่พบข้อมูลใน employees ให้ fallback ใช้ข้อมูลจาก Auth เดิม
+        if (!$user) {
+            $user = \Core\Auth::user() ?? [];
+        }
+
+        $fullName = trim(($user['title_name'] ?? '') . ' ' . ($user['first_name'] ?? '') . ' ' . ($user['last_name'] ?? ''));
+        if ($fullName === '') {
+            $fullName = \Core\Auth::displayName() ?? 'ผู้ใช้งานระบบ';
+        }
+
         return View::render('core_admin::dashboard/profile_widget', [
-            'user' => Auth::user(),
-            'name' => Auth::displayName(),
-            'roles' => Rbac::roles(),
+            'avatar' => $user['avatar'] ?? null,
+            'user'   => $user,
+            'name'   => $fullName,
+            'roles'  => \Core\Rbac::roles(),
         ], null);
     }
 }

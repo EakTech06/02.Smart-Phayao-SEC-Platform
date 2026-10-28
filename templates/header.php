@@ -13,6 +13,7 @@
       <i class="bi bi-person-circle me-1"></i><span class="d-none d-md-inline"><?= e(Auth::displayName()) ?></span>
     </button>
     <ul class="dropdown-menu dropdown-menu-end shadow">
+      <li><a class="dropdown-item" href="<?= e(url('/profile')) ?>"><i class="bi bi-person-circle me-2"></i>โปรไฟล์ของฉัน</a></li>
       <li><a class="dropdown-item" href="<?= e(url('/password/change')) ?>"><i class="bi bi-key me-2"></i>เปลี่ยนรหัสผ่าน</a></li>
       <li><hr class="dropdown-divider"></li>
       <li>

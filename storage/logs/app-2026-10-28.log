@@ -1,0 +1,134 @@
+[2026-10-28 08:22:49] ErrorException: Access level to Modules\CoreAdmin\Controllers\ProfileController::fail() must be protected (as in class Core\Controller) or weaker in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\ProfileController.php:155
+#0 [internal function]: Core\ErrorHandler::handleShutdown()
+#1 {main}
+
+[2026-10-28 08:23:20] ErrorException: Access level to Modules\CoreAdmin\Controllers\ProfileController::fail() must be protected (as in class Core\Controller) or weaker in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\ProfileController.php:155
+#0 [internal function]: Core\ErrorHandler::handleShutdown()
+#1 {main}
+
+[2026-10-28 08:56:21] RuntimeException: Handler not found: Modules\CoreAdmin\Controllers\ProfileController::index in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php:122
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router->Core\{closure}(Object(Core\Request))
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#5 {main}
+
+[2026-10-28 09:02:53] RuntimeException: Handler not found: Modules\CoreAdmin\Controllers\ProfileController::index in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php:122
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router->Core\{closure}(Object(Core\Request))
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#5 {main}
+
+[2026-10-28 09:02:56] RuntimeException: Handler not found: Modules\CoreAdmin\Controllers\ProfileController::index in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php:122
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router->Core\{closure}(Object(Core\Request))
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#5 {main}
+
+[2026-10-28 09:22:19] RuntimeException: Handler not found: Modules\CoreAdmin\Controllers\ProfileController::index in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php:122
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router->Core\{closure}(Object(Core\Request))
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#5 {main}
+
+[2026-10-28 09:42:33] PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'title_name' in 'field list' in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php:59
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php(59): PDO->prepare('UPDATE `users` ...')
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php(119): Core\Database->query('UPDATE `users` ...', Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\ProfileController.php(129): Core\Database->update('users', Array, Array)
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\ProfileController->update()
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\CsrfMiddleware.php(24): Core\Router->Core\{closure}(Object(Core\Request))
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\CsrfMiddleware->handle(Object(Core\Request), Object(Closure))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#8 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#9 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#10 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#11 {main}
+
+[2026-10-28 10:00:40] PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'e.user_id' in 'on clause' in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php:59
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php(59): PDO->prepare('\r\n            S...')
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php(79): Core\Database->query('\r\n            S...', Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\ProfileController.php(231): Core\Database->fetch('\r\n            S...', Array)
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\ProfileController.php(32): Modules\CoreAdmin\Controllers\ProfileController->currentUser()
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\ProfileController->index()
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router->Core\{closure}(Object(Core\Request))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#8 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#9 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#10 {main}
+
+[2026-10-28 10:00:43] PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'e.user_id' in 'on clause' in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php:59
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php(59): PDO->prepare('\r\n            S...')
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php(79): Core\Database->query('\r\n            S...', Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\ProfileController.php(231): Core\Database->fetch('\r\n            S...', Array)
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\ProfileController.php(32): Modules\CoreAdmin\Controllers\ProfileController->currentUser()
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\ProfileController->index()
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router->Core\{closure}(Object(Core\Request))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#8 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#9 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#10 {main}
+
+[2026-10-28 10:09:42] PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'avatar' in 'field list' in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php:59
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php(59): PDO->prepare('UPDATE `employe...')
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Database.php(119): Core\Database->query('UPDATE `employe...', Array)
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\modules\core_admin\controllers\ProfileController.php(121): Core\Database->update('employees', Array, Array)
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(124): Modules\CoreAdmin\Controllers\ProfileController->update()
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\CsrfMiddleware.php(24): Core\Router->Core\{closure}(Object(Core\Request))
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\CsrfMiddleware->handle(Object(Core\Request), Object(Closure))
+#7 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#8 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#9 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#10 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#11 {main}
+
+[2026-10-28 10:29:08] RuntimeException: Handler not found: Modules\CoreAdmin\Controllers\ProfileController::password in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php:122
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\CsrfMiddleware.php(24): Core\Router->Core\{closure}(Object(Core\Request))
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\CsrfMiddleware->handle(Object(Core\Request), Object(Closure))
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#7 {main}
+
+[2026-10-28 10:32:14] RuntimeException: Handler not found: Modules\CoreAdmin\Controllers\ProfileController::password in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php:122
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\CsrfMiddleware.php(24): Core\Router->Core\{closure}(Object(Core\Request))
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\CsrfMiddleware->handle(Object(Core\Request), Object(Closure))
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#7 {main}
+
+[2026-10-28 10:33:15] RuntimeException: Handler not found: Modules\CoreAdmin\Controllers\ProfileController::password in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php:122
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\CsrfMiddleware.php(24): Core\Router->Core\{closure}(Object(Core\Request))
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\CsrfMiddleware->handle(Object(Core\Request), Object(Closure))
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#7 {main}
+
+[2026-10-28 10:37:55] RuntimeException: Handler not found: Modules\CoreAdmin\Controllers\ProfileController::password in D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php:122
+#0 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(88): Core\Router->callHandler(Array, Object(Core\Request), Array)
+#1 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\Middleware\CsrfMiddleware.php(24): Core\Router->Core\{closure}(Object(Core\Request))
+#2 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(92): Middleware\CsrfMiddleware->handle(Object(Core\Request), Object(Closure))
+#3 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(95): Core\Router::Core\{closure}(Object(Core\Request))
+#4 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\Router.php(80): Core\Router->runPipeline(Object(Core\Request), Array, Array)
+#5 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\core\App.php(14): Core\Router->dispatch(Object(Core\Request))
+#6 D:\00_Work_System\02.Smart-Phayao-SEC-Platform\public\index.php(7): Core\App->run()
+#7 {main}
+

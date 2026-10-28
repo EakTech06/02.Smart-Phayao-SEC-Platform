@@ -54,6 +54,27 @@ $isActive = $user['status'] === 'active';
   </div>
 <?php endif; ?>
 
+<div class="card shadow-sm mb-4">
+  <div class="card-body d-flex align-items-center gap-3">
+    <!-- แสดงรูปโปรไฟล์ ถ้าไม่มีให้แสดงไอคอนหรือตัวย่อแทน -->
+    <div>
+      <?php if (!empty($user['avatar'])): ?>
+        <img src="<?= e(url('uploads/avatars/' . $user['avatar'])) ?>" alt="Avatar" class="rounded-circle shadow-sm" width="80" height="80" style="object-fit: cover;">
+      <?php else: ?>
+        <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center shadow-sm" style="width: 80px; height: 80px; font-size: 2rem;">
+          <?= e(mb_substr($user['name'] ?? 'U', 0, 1)) ?>
+        </div>
+      <?php endif; ?>
+    </div>
+    <div>
+      <h3 class="h5 mb-1"><?= e($user['name'] ?? '') ?> 
+        <span class="badge bg-success font-monospace" style="font-size: 0.75rem;">ใช้งาน</span>
+      </h3>
+      <p class="text-muted mb-0 small">อีเมล: <?= e($user['email'] ?? '-') ?></p>
+    </div>
+  </div>
+</div>
+
 <div class="card shadow-sm">
   <div class="card-body">
     <h1 class="h5 mb-3">
