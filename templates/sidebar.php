@@ -5,6 +5,7 @@ use Core\Rbac;
 $currentPath = current_path();
 $menu = [
     ['url' => '/dashboard', 'icon' => 'speedometer2', 'label' => 'แดชบอร์ด', 'show' => can('core.dashboard.view')],
+    ['url' => '/personnel', 'icon' => 'person-vcard', 'label' => 'ข้อมูลบุคลากร', 'show' => Rbac::scope('core.employees', 'read') !== null],
     ['url' => '/users', 'icon' => 'people', 'label' => 'ผู้ใช้งาน', 'show' => Rbac::scope('core.users', 'read') !== null],
      ['url' => '/roles', 'icon' => 'shield-shaded', 'label' => 'จัดการสิทธิ์บทบาท', 'show' => can('core.roles.read_all')],
 

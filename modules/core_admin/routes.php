@@ -7,6 +7,7 @@ use Modules\CoreAdmin\Controllers\Api\UserApiController;
 use Modules\CoreAdmin\Controllers\AuditController;
 use Modules\CoreAdmin\Controllers\AuthController;
 use Modules\CoreAdmin\Controllers\DashboardController;
+use Modules\CoreAdmin\Controllers\PersonnelController;
 use Modules\CoreAdmin\Controllers\ProfileController;
 use Modules\CoreAdmin\Controllers\RoleController;
 use Modules\CoreAdmin\Controllers\SessionController;
@@ -80,6 +81,25 @@ $router->group(['middleware' => ['auth', 'password.fresh']], static function (Ro
     // Sessions Management
     $r->get('/sessions', [SessionController::class, 'index'], ['perm:core.sessions.read_all']);
     $r->delete('/sessions/{id}', [SessionController::class, 'destroy'], ['csrf', 'perm:core.sessions.manage_all']);
+
+    // Phase 2: Personnel Base & Account Sync
+    $empRead = 'perm:core.employees.read_all,core.employees.read_service_unit,core.employees.read_department,core.employees.read_own';
+    $empUpdate = 'perm:core.employees.update_all,core.employees.update_department';
+    $r->get('/personnel', [PersonnelController::class, 'index'], [$empRead]);
+    $r->get('/personnel/create', [PersonnelController::class, 'create'], ['perm:core.employees.create_all']);
+    $r->post('/personnel', [PersonnelController::class, 'store'], ['csrf', 'perm:core.employees.create_all']);
+    $r->get('/personnel/import', [PersonnelController::class, 'importForm'], ['perm:core.employees.import_all']);
+    $r->get('/personnel/import/template', [PersonnelController::class, 'importTemplate'], ['perm:core.employees.import_all']);
+    $r->post('/personnel/import', [PersonnelController::class, 'importPreview'], ['csrf', 'perm:core.employees.import_all']);
+    $r->post('/personnel/import/confirm', [PersonnelController::class, 'importCommit'], ['csrf', 'perm:core.employees.import_all']);
+    $r->post('/personnel/accounts/bulk', [PersonnelController::class, 'bulkAccounts'], ['csrf', 'perm:core.users.create_all']);
+    $r->get('/personnel/{id:\d+}', [PersonnelController::class, 'show'], [$empRead]);
+    $r->get('/personnel/{id:\d+}/edit', [PersonnelController::class, 'edit'], [$empUpdate]);
+    $r->put('/personnel/{id:\d+}', [PersonnelController::class, 'update'], ['csrf', $empUpdate]);
+    $r->delete('/personnel/{id:\d+}', [PersonnelController::class, 'destroy'], ['csrf', 'perm:core.employees.delete_all']);
+    $r->post('/personnel/{id:\d+}/national-id', [PersonnelController::class, 'revealNationalId'], ['csrf', 'perm:core.employees.read_sensitive_all']);
+    $r->post('/personnel/{id:\d+}/account', [PersonnelController::class, 'createAccount'], ['csrf', 'perm:core.users.create_all']);
+    $r->post('/personnel/{id:\d+}/account/link', [PersonnelController::class, 'linkAccount'], ['csrf', 'perm:core.users.update_all']);
 
     // Profile
     $r->get('/profile', [ProfileController::class, 'index']);

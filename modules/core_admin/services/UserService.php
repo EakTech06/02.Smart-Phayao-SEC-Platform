@@ -6,7 +6,6 @@ namespace Modules\CoreAdmin\Services;
 
 use Core\Audit;
 use Core\Auth;
-use Core\Crypto;
 use Core\Database;
 use Core\Exceptions\HttpException;
 use Core\Exceptions\ValidationException;
@@ -132,7 +131,9 @@ final class UserService
             static function (Database $db) use ($data, $roleIds, $nid, $temp): int {
                 $employeeId = $db->insert('employees', self::employeeRow($data) + [
                     'national_id_hash' => $nid['hash'],
+                    'national_id_encrypted' => $nid['encrypted'],
                     'national_id_last4' => $nid['last4'],
+                    'created_by' => Auth::id(),
                 ]);
                 $userId = $db->insert('users', [
                     'employee_id' => $employeeId,
@@ -169,6 +170,7 @@ final class UserService
                 $row = self::employeeRow($data);
                 if ($nid['hash'] !== null) {
                     $row['national_id_hash'] = $nid['hash'];
+                    $row['national_id_encrypted'] = $nid['encrypted'];
                     $row['national_id_last4'] = $nid['last4'];
                 }
                 if ($employeeId === null) {
@@ -232,6 +234,104 @@ final class UserService
         Database::instance()->query('DELETE FROM sessions WHERE user_id = ?', [$userId]);
     }
 
+    // ------------------------------------------------------------------ Account Sync (Phase 2)
+
+    /** ชื่อผู้ใช้เริ่มต้น = รหัสบุคลากร (ตัวพิมพ์เล็ก) ตามข้อกำหนด 3.1 */
+    public static function defaultUsername(array $employee): string
+    {
+        return mb_strtolower((string) $employee['employee_code']);
+    }
+
+    /**
+     * สร้างบัญชีผู้ใช้จากข้อมูลบุคลากร (1 บุคลากร = 1 บัญชี)
+     * @return array{0: int, 1: string} [userId, รหัสผ่านชั่วคราว]
+     */
+    public static function createForEmployee(array $employee, ?string $username, array $roleIds): array
+    {
+        $employeeId = (int) $employee['id'];
+        if ($employee['status'] !== 'active') {
+            throw new ValidationException(['account' => ['สร้างบัญชีได้เฉพาะบุคลากรที่สถานะ "ปฏิบัติงาน"']]);
+        }
+        $username = mb_strtolower(trim((string) ($username ?: self::defaultUsername($employee))));
+        if (!preg_match('/^[a-z0-9_.\-]{3,100}$/', $username)) {
+            throw new ValidationException(['username' => ['ชื่อผู้ใช้ต้องยาว 3-100 ตัว ใช้ได้เฉพาะ a-z 0-9 _ . -']]);
+        }
+        $roleIds = self::filterRoleIds($roleIds);
+        $email = !empty($employee['email']) ? mb_strtolower((string) $employee['email']) : null;
+
+        $db = Database::instance();
+        $errors = [];
+        if ($db->fetchColumn('SELECT 1 FROM users WHERE employee_id = ?', [$employeeId]) !== null) {
+            $errors['account'][] = 'บุคลากรรายนี้มีบัญชีผู้ใช้แล้ว';
+        }
+        if ($db->fetchColumn('SELECT 1 FROM users WHERE username = ?', [$username]) !== null) {
+            $errors['username'][] = 'ชื่อผู้ใช้ "' . $username . '" ถูกใช้แล้ว';
+        }
+        if ($email !== null && $db->fetchColumn('SELECT 1 FROM users WHERE email = ?', [$email]) !== null) {
+            $errors['account'][] = 'อีเมลของบุคลากรรายนี้ถูกใช้กับบัญชีอื่นแล้ว';
+        }
+        if ($errors !== []) {
+            throw new ValidationException($errors);
+        }
+
+        $temp = Password::temporary();
+        $userId = $db->transaction(
+            static function (Database $db) use ($employeeId, $employee, $username, $email, $roleIds, $temp): int {
+                $userId = $db->insert('users', [
+                    'employee_id' => $employeeId,
+                    'username' => $username,
+                    'email' => $email,
+                    'password_hash' => Password::hash($temp),
+                    'status' => 'active',
+                    'must_change_password' => 1,
+                    'created_by' => Auth::id(),
+                ]);
+                self::syncRoles($db, $userId, $roleIds);
+                if ($employee['department_id'] !== null) {
+                    self::syncPrimaryDepartment($db, $userId, (int) $employee['department_id']);
+                }
+
+                return $userId;
+            }
+        );
+
+        Audit::log('account.created_from_employee', 'core', 'users', $userId, null, [
+            'employee_id' => $employeeId,
+            'username' => $username,
+            'role_ids' => $roleIds,
+        ]);
+
+        return [$userId, $temp];
+    }
+
+    /** ผูกบัญชีเดิมที่ยังไม่มีบุคลากร (เช่น บัญชีที่สร้างก่อน Phase 2) เข้ากับบุคลากร */
+    public static function linkEmployee(int $userId, array $employee): void
+    {
+        $employeeId = (int) $employee['id'];
+        $db = Database::instance();
+        $user = $db->fetch('SELECT id, employee_id, username FROM users WHERE id = ? AND deleted_at IS NULL', [$userId]);
+        if ($user === null) {
+            throw new ValidationException(['user_id' => ['ไม่พบบัญชีผู้ใช้ที่เลือก']]);
+        }
+        if ($user['employee_id'] !== null) {
+            throw new ValidationException(['user_id' => ['บัญชีนี้ผูกกับบุคลากรอื่นแล้ว']]);
+        }
+        if ($db->fetchColumn('SELECT 1 FROM users WHERE employee_id = ?', [$employeeId]) !== null) {
+            throw new ValidationException(['user_id' => ['บุคลากรรายนี้มีบัญชีผู้ใช้แล้ว']]);
+        }
+        if ($userId === Auth::id() || (!self::isSuperAdmin() && self::levelOf($userId) <= self::levelOf((int) Auth::id()))) {
+            throw new HttpException(403, 'ไม่สามารถผูกบัญชีที่มีระดับสิทธิ์เท่ากันหรือสูงกว่าได้');
+        }
+
+        $db->transaction(static function (Database $db) use ($userId, $employeeId, $employee): void {
+            $db->update('users', ['employee_id' => $employeeId], ['id' => $userId]);
+            if ($employee['department_id'] !== null) {
+                self::syncPrimaryDepartment($db, $userId, (int) $employee['department_id']);
+            }
+        });
+        Audit::log('account.linked_to_employee', 'core', 'users', $userId, ['employee_id' => null], ['employee_id' => $employeeId]);
+    }
+
     /** @return list<int> */
     private static function filterRoleIds(array $roleIds): array
     {
@@ -283,15 +383,16 @@ final class UserService
         return $row;
     }
 
-    /** @return array{hash: ?string, last4: ?string} */
+    /** @return array{hash: ?string, encrypted: ?string, last4: ?string} */
     private static function nationalId(?string $value): array
     {
-        $digits = (string) preg_replace('/\D/', '', (string) $value);
-        if ($digits === '') {
-            return ['hash' => null, 'last4' => null];
-        }
+        $fields = PersonnelService::nationalIdFields($value);
 
-        return ['hash' => hash_hmac('sha256', $digits, Crypto::key()), 'last4' => substr($digits, -4)];
+        return [
+            'hash' => $fields['national_id_hash'],
+            'encrypted' => $fields['national_id_encrypted'],
+            'last4' => $fields['national_id_last4'],
+        ];
     }
 
     private static function assertUnique(array $data, ?int $userId, ?int $employeeId, ?string $nidHash): void
