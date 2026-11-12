@@ -78,7 +78,17 @@ $action = url($isEdit ? '/personnel/' . (int) $employee['id'] : '/personnel');
     <div class="card-header bg-white fw-semibold"><i class="bi bi-person-vcard me-1"></i>ข้อมูลส่วนบุคคล</div>
     <div class="card-body">
       <div class="row g-3">
-        <?= $field('employee_code', ['required' => true, 'max' => 30, 'placeholder' => 'เช่น T-0101', 'help' => 'ใช้เป็นชื่อผู้ใช้เริ่มต้นเมื่อสร้างบัญชี (a-z 0-9 _ . -)']) ?>
+        <!-- รหัสบุคลากรสร้างอัตโนมัติ ไม่ส่งค่าไปกับฟอร์ม (ฝั่ง server ไม่รับค่านี้อยู่แล้ว) -->
+        <div class="col-12 col-md-6 col-lg-4">
+          <label class="form-label" for="f-employee_code"><?= e(PersonnelService::LABELS['employee_code']) ?></label>
+          <input id="f-employee_code" type="text" class="form-control font-monospace bg-body-tertiary" readonly tabindex="-1"
+                 value="<?= e($isEdit ? (string) $employee['employee_code'] : PersonnelService::nextEmployeeCode()) ?>">
+          <div class="form-text">
+            <?= $isEdit
+                ? 'กำหนดโดยระบบ แก้ไขไม่ได้ ใช้เป็นชื่อผู้ใช้เริ่มต้น'
+                : 'ระบบกำหนดให้อัตโนมัติเมื่อบันทึก (อาจเลื่อนหากมีผู้บันทึกพร้อมกัน)' ?>
+          </div>
+        </div>
         <?= $field('title_name', ['max' => 50, 'list' => 'title-options']) ?>
         <?= $field('first_name', ['required' => true, 'max' => 100, 'autocomplete' => 'off']) ?>
         <?= $field('last_name', ['required' => true, 'max' => 100, 'autocomplete' => 'off']) ?>

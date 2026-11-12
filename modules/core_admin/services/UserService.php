@@ -26,7 +26,7 @@ final class UserService
     public const STATUSES = ['active' => 'ใช้งาน', 'inactive' => 'ระงับ', 'locked' => 'ล็อก'];
 
     private const EMPLOYEE_FIELDS = [
-        'employee_code', 'title_name', 'first_name', 'last_name', 'nickname', 'position',
+        'title_name', 'first_name', 'last_name', 'nickname', 'position', // employee_code: ระบบสร้างอัตโนมัติ
         'academic_rank', 'employment_type', 'department_id', 'phone', 'email', 'start_date',
     ];
 
@@ -129,7 +129,7 @@ final class UserService
 
         $userId = Database::instance()->transaction(
             static function (Database $db) use ($data, $roleIds, $nid, $temp): int {
-                $employeeId = $db->insert('employees', self::employeeRow($data) + [
+                $employeeId = PersonnelService::insertWithCode($db, self::employeeRow($data) + [
                     'national_id_hash' => $nid['hash'],
                     'national_id_encrypted' => $nid['encrypted'],
                     'national_id_last4' => $nid['last4'],
@@ -174,7 +174,7 @@ final class UserService
                     $row['national_id_last4'] = $nid['last4'];
                 }
                 if ($employeeId === null) {
-                    $employeeId = $db->insert('employees', $row);
+                    $employeeId = PersonnelService::insertWithCode($db, $row);
                 } else {
                     $db->update('employees', $row, ['id' => $employeeId]);
                 }
@@ -407,9 +407,6 @@ final class UserService
         if ($data['email'] !== null
             && $db->fetchColumn('SELECT 1 FROM users WHERE email = ? AND id <> ?', [$data['email'], $userId ?? 0]) !== null) {
             $errors['email'][] = 'อีเมลนี้ถูกใช้แล้ว';
-        }
-        if ($db->fetchColumn('SELECT 1 FROM employees WHERE employee_code = ? AND id <> ?', [$data['employee_code'], $employeeId ?? 0]) !== null) {
-            $errors['employee_code'][] = 'รหัสบุคลากรนี้ถูกใช้แล้ว';
         }
         if ($nidHash !== null
             && $db->fetchColumn('SELECT 1 FROM employees WHERE national_id_hash = ? AND id <> ?', [$nidHash, $employeeId ?? 0]) !== null) {

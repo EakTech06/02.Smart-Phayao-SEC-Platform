@@ -104,7 +104,12 @@ $currentStatus = $hasOld ? old('status', 'active') : (($user['status'] ?? 'activ
     <div class="card-header bg-white fw-semibold"><i class="bi bi-person-vcard me-1"></i>ข้อมูลบุคลากร</div>
     <div class="card-body">
       <div class="row g-3">
-        <?= $input('employee_code', 'รหัสบุคลากร', ['required' => true]) ?>
+        <div class="col-12 col-md-6">
+          <label class="form-label" for="f-employee_code">รหัสบุคลากร</label>
+          <input id="f-employee_code" type="text" class="form-control font-monospace bg-body-tertiary" readonly tabindex="-1"
+                 value="<?= e(!empty($user['employee_code']) ? (string) $user['employee_code'] : Modules\CoreAdmin\Services\PersonnelService::nextEmployeeCode()) ?>">
+          <div class="form-text"><?= !empty($user['employee_code']) ? 'กำหนดโดยระบบ แก้ไขไม่ได้' : 'ระบบกำหนดให้อัตโนมัติเมื่อบันทึก' ?></div>
+        </div>
         <?= $input('title_name', 'คำนำหน้า', ['list' => 'title-options']) ?>
         <?= $input('first_name', 'ชื่อ', ['required' => true]) ?>
         <?= $input('last_name', 'นามสกุล', ['required' => true]) ?>

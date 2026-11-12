@@ -42,7 +42,8 @@ use Modules\CoreAdmin\Services\UserService;
         <div class="card-body small">
           <a href="<?= e(url('/personnel/import/template')) ?>" class="btn btn-sm btn-outline-success mb-2"><i class="bi bi-download me-1"></i>ดาวน์โหลดไฟล์ต้นแบบ</a>
           <ul class="mb-2 ps-3">
-            <li>จำเป็น: <code>employee_code</code>, <code>first_name</code>, <code>last_name</code>, <code>department_code</code></li>
+            <li>จำเป็น: <code>first_name</code>, <code>last_name</code>, <code>department_code</code></li>
+            <li><code>employee_code</code>: <strong>เว้นว่าง</strong> = บุคลากรใหม่ (ระบบสร้างรหัสให้อัตโนมัติ) / ใส่รหัสเดิม = แก้ไขบุคลากรรายนั้น</li>
             <li>วันที่: <code>2568-05-16</code> หรือ <code>16/05/2568</code> (พ.ศ. หรือ ค.ศ.)</li>
             <li>ประเภท: <?= e(implode(', ', UserService::EMPLOYMENT_TYPES)) ?></li>
             <li>สถานะ: <?= e(implode(', ', PersonnelService::STATUSES)) ?> (ว่าง = ปฏิบัติงาน)</li>
@@ -90,7 +91,7 @@ use Modules\CoreAdmin\Services\UserService;
                 <tr>
                   <td><?= (int) $row['line'] ?></td>
                   <td><span class="badge text-bg-<?= $row['action'] === 'create' ? 'success' : 'primary' ?>"><?= $row['action'] === 'create' ? 'เพิ่ม' : 'แก้ไข' ?></span></td>
-                  <td class="font-monospace small"><?= e($d['employee_code']) ?></td>
+                  <td class="font-monospace small"><?= !empty($d['employee_code']) ? e($d['employee_code']) : '<span class="text-muted fst-italic">อัตโนมัติ</span>' ?></td>
                   <td><?= e(PersonnelService::displayName($d)) ?></td>
                   <td class="small"><?= e($d['position'] ?? '-') ?></td>
                   <td class="small"><?= e(PersonnelService::STATUSES[$d['status']] ?? $d['status']) ?></td>

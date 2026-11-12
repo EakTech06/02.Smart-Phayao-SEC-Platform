@@ -34,7 +34,7 @@ final class PersonnelImportService
     public static function templateCsv(): string
     {
         $example = [
-            'T-0101', 'นาง', 'สมใจ', 'ใจดี', 'ใจ', 'หญิง', '2528-04-12', 'ครู', '12345', 'ครูชำนาญการ',
+            '', 'นาง', 'สมใจ', 'ใจดี', 'ใจ', 'หญิง', '2528-04-12', 'ครู', '12345', 'ครูชำนาญการ',
             'ข้าราชการ', 'ปริญญาโท', 'การศึกษาพิเศษ', 'ACADEMIC', '0812345678', 'somjai@py-sec.ac.th', '',
             '2555-05-16', '', 'ปฏิบัติงาน', '', '',
         ];
@@ -59,7 +59,9 @@ final class PersonnelImportService
             $line = $index + 2; // บรรทัดที่ 1 คือหัวคอลัมน์
             try {
                 $data = self::normalize($record, $departments);
+                $code = (string) $data['employee_code'];
                 $data = Validator::validate($data, PersonnelService::rules(), PersonnelService::LABELS);
+                $data['employee_code'] = $code !== '' ? $code : null; // ว่าง = บุคลากรใหม่ ระบบสร้างรหัสให้
                 PersonnelService::assertDepartmentAllowed((int) $data['department_id']);
 
                 foreach (['employee_code', 'email', 'national_id'] as $key) {
@@ -76,9 +78,12 @@ final class PersonnelImportService
                     $seen[$key][$value] = $line;
                 }
 
-                $existing = EmployeeModel::findByCode((string) $data['employee_code']);
+                $existing = null;
                 $action = 'create';
-                if ($existing !== null) {
+                if ($code !== '') {
+                    $existing = EmployeeModel::findByCode($code) ?? throw new ValidationException(['employee_code' => [
+                        "ไม่พบรหัสบุคลากร {$code} (บุคลากรใหม่ให้เว้นว่าง ระบบจะสร้างรหัสให้อัตโนมัติ)",
+                    ]]);
                     $action = self::assertUpdatable($existing, $data, $updateExisting);
                 } elseif (!PersonnelService::canCreate()) {
                     throw new ValidationException(['employee_code' => ['คุณไม่มีสิทธิ์เพิ่มบุคลากรใหม่']]);
@@ -128,7 +133,8 @@ final class PersonnelImportService
         foreach ($rows as $row) {
             // ตรวจซ้ำตอนบันทึกจริง (ข้อมูลอาจเปลี่ยนระหว่างรอยืนยัน) — ล้มที่แถวใดจะแจ้งบรรทัดนั้น
             try {
-                $existing = EmployeeModel::findByCode((string) $row['data']['employee_code']);
+                $code = (string) ($row['data']['employee_code'] ?? '');
+                $existing = $code !== '' ? EmployeeModel::findByCode($code) : null;
                 if ($row['action'] === 'update' && $existing !== null) {
                     $current = EmployeeModel::findDetail((int) $existing['id']);
                     if ($current === null || !PersonnelService::canUpdate($current)) {
@@ -136,7 +142,7 @@ final class PersonnelImportService
                     }
                     PersonnelService::update($current, $row['data']);
                     $updated++;
-                } elseif ($row['action'] === 'create' && $existing === null) {
+                } elseif ($row['action'] === 'create' && $code === '') {
                     PersonnelService::create($row['data']);
                     $created++;
                 } else {
@@ -179,7 +185,7 @@ final class PersonnelImportService
             throw new ValidationException(['employee_code' => ['รหัสนี้เป็นของบุคลากรที่ถูกลบแล้ว']]);
         }
         if (!$updateExisting) {
-            throw new ValidationException(['employee_code' => ['มีรหัสบุคลากรนี้แล้ว (เลือก "อัปเดตข้อมูลเดิม" หากต้องการแก้ไข)']]);
+            throw new ValidationException(['employee_code' => ['มีรหัสบุคลากรนี้แล้ว (เลือก "อัปเดตข้อมูลเดิม" หากต้องการแก้ไข หรือเว้นว่างหากเป็นบุคลากรใหม่)']]);
         }
         $current = EmployeeModel::findDetail((int) $existing['id']);
         if ($current === null || !PersonnelService::canUpdate($current)) {
@@ -225,7 +231,7 @@ final class PersonnelImportService
             throw new ValidationException(['file' => ['ไม่พบหัวคอลัมน์ในไฟล์']]);
         }
         $header = array_map(static fn ($h): string => strtolower(trim((string) $h)), $header);
-        $missing = array_diff(['employee_code', 'first_name', 'last_name', 'department_code'], $header);
+        $missing = array_diff(['first_name', 'last_name', 'department_code'], $header);
         if ($missing !== []) {
             throw new ValidationException(['file' => ['ขาดคอลัมน์ที่จำเป็น: ' . implode(', ', $missing)]]);
         }
@@ -258,6 +264,7 @@ final class PersonnelImportService
         foreach (PersonnelService::FIELDS as $field) {
             $data[$field] = $record[$field] ?? '';
         }
+        $data['employee_code'] = trim((string) ($record['employee_code'] ?? ''));
         $data['national_id'] = $record['national_id'] ?? '';
         $data['employment_type'] = self::mapLabel($data['employment_type'], UserService::EMPLOYMENT_TYPES, 'other');
         $data['gender'] = self::mapLabel($data['gender'], PersonnelService::GENDERS, '');

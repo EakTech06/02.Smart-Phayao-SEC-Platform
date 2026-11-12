@@ -173,7 +173,6 @@ final class UserController extends Controller
     {
         $rules = [
             'email' => 'nullable|email|max:191',
-            'employee_code' => 'required|alpha_dash|max:30',
             'title_name' => 'nullable|max:50',
             'first_name' => 'required|max:100',
             'last_name' => 'required|max:100',

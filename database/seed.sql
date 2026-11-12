@@ -135,7 +135,9 @@ INSERT INTO settings (setting_group, setting_key, setting_value, value_type, des
 ('general',  'org.name',         'ศูนย์การศึกษาพิเศษ ประจำจังหวัดพะเยา', 'string', 'ชื่อหน่วยงาน', 1),
 ('general',  'org.short_name',   'Smart Phayao SEC',                     'string', 'ชื่อย่อ', 1),
 ('general',  'maintenance_mode', '0',                                    'bool',   'โหมดปิดปรับปรุง', 0),
-('security', 'force_2fa_roles',  '["super_admin"]',                      'json',   'Role ที่บังคับ 2FA', 0)
+('security', 'force_2fa_roles',  '["super_admin"]',                      'json',   'Role ที่บังคับ 2FA', 0),
+('personnel', 'personnel.code_prefix', 'T-', 'string', 'คำนำหน้ารหัสบุคลากรอัตโนมัติ (A-Z 0-9 _ . -)', 0),
+('personnel', 'personnel.code_digits', '4', 'int', 'จำนวนหลักของเลขลำดับรหัสบุคลากร (3-8)', 0)
 ON DUPLICATE KEY UPDATE description = VALUES(description);
 
 -- ---------- ปีการศึกษา / ปีงบประมาณ / รอบประเมิน ----------

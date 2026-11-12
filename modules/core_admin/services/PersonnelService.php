@@ -11,6 +11,7 @@ use Core\Database;
 use Core\Exceptions\HttpException;
 use Core\Exceptions\ValidationException;
 use Core\Rbac;
+use Core\Setting;
 use Modules\CoreAdmin\Models\EmployeeModel;
 use Modules\CoreAdmin\Models\UserModel;
 
@@ -26,9 +27,12 @@ final class PersonnelService
 
     public const GENDERS = ['male' => 'ชาย', 'female' => 'หญิง', 'unspecified' => 'ไม่ระบุ'];
 
-    /** ฟิลด์ที่บันทึกลง employees จากฟอร์ม/CSV (ไม่รวมเลขบัตรซึ่งจัดการแยก) */
+    /**
+     * ฟิลด์ที่บันทึกลง employees จากฟอร์ม/CSV (ไม่รวมเลขบัตรซึ่งจัดการแยก)
+     * employee_code ไม่อยู่ในรายการนี้: ระบบสร้างให้อัตโนมัติตอนเพิ่ม และแก้ไขไม่ได้
+     */
     public const FIELDS = [
-        'employee_code', 'title_name', 'first_name', 'last_name', 'nickname', 'gender', 'birth_date',
+        'title_name', 'first_name', 'last_name', 'nickname', 'gender', 'birth_date',
         'position', 'position_number', 'academic_rank', 'employment_type', 'education_level', 'education_major',
         'department_id', 'phone', 'email', 'address', 'start_date', 'end_date', 'status', 'note',
     ];
@@ -47,7 +51,6 @@ final class PersonnelService
     public static function rules(): array
     {
         return [
-            'employee_code' => 'required|alpha_dash|max:30',
             'title_name' => 'nullable|max:50',
             'first_name' => 'required|max:100',
             'last_name' => 'required|max:100',
@@ -179,6 +182,60 @@ final class PersonnelService
         return is_string($cipher) && $cipher !== '' ? Crypto::decrypt($cipher) : null;
     }
 
+    // ------------------------------------------------------------------ รหัสบุคลากรอัตโนมัติ
+
+    /** คำนำหน้ารหัส (settings: personnel.code_prefix) อนุญาตเฉพาะ A-Z a-z 0-9 _ . - */
+    public static function codePrefix(): string
+    {
+        $prefix = (string) preg_replace('/[^A-Za-z0-9_.\-]/', '', (string) Setting::get('personnel.code_prefix', 'T-'));
+
+        return substr($prefix !== '' ? $prefix : 'T-', 0, 20);
+    }
+
+    /** จำนวนหลักของเลขลำดับ (settings: personnel.code_digits, 3–8) */
+    public static function codeDigits(): int
+    {
+        return max(3, min(8, (int) Setting::get('personnel.code_digits', 4)));
+    }
+
+    /**
+     * รหัสถัดไป = คำนำหน้า + (เลขลำดับสูงสุดที่เคยใช้ + 1) นับรวมบุคลากรที่ถูกลบ เพื่อไม่ให้รหัสถูกนำกลับมาใช้ซ้ำ
+     * ใช้แสดงตัวอย่างในฟอร์มได้ แต่รหัสจริงกำหนดตอนบันทึก (insertWithCode)
+     */
+    public static function nextEmployeeCode(?Database $db = null): string
+    {
+        $db ??= Database::instance();
+        $prefix = self::codePrefix();
+        $start = strlen($prefix) + 1;
+        $like = str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $prefix) . '%';
+        $max = (int) $db->fetchColumn(
+            "SELECT MAX(CAST(SUBSTRING(employee_code, ?) AS UNSIGNED)) FROM employees
+             WHERE employee_code LIKE ? ESCAPE '!' AND SUBSTRING(employee_code, ?) REGEXP '^[0-9]+$'",
+            [$start, $like, $start]
+        );
+
+        return $prefix . str_pad((string) ($max + 1), self::codeDigits(), '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * INSERT บุคลากรพร้อมรหัสอัตโนมัติ: ถ้ามีผู้บันทึกพร้อมกันจนรหัสชน (unique key) จะคำนวณรหัสใหม่แล้วลองอีกครั้ง
+     * ใช้ได้ทั้งในและนอก transaction (MariaDB ยกเลิกเฉพาะคำสั่งที่ชน ไม่ยกเลิกทั้ง transaction)
+     */
+    public static function insertWithCode(Database $db, array $row): int
+    {
+        unset($row['employee_code']);
+        for ($attempt = 1; ; $attempt++) {
+            try {
+                return $db->insert('employees', ['employee_code' => self::nextEmployeeCode($db)] + $row);
+            } catch (\PDOException $e) {
+                $duplicateCode = ($e->errorInfo[1] ?? null) === 1062 && str_contains($e->getMessage(), 'uq_employees_code');
+                if (!$duplicateCode || $attempt >= 5) {
+                    throw $e;
+                }
+            }
+        }
+    }
+
     // ------------------------------------------------------------------ CRUD
 
     /** @return int employee id */
@@ -187,7 +244,7 @@ final class PersonnelService
         $nid = self::nationalIdFields($data['national_id'] ?? null);
         self::assertUnique($data, null, $nid['national_id_hash']);
 
-        $id = Database::instance()->insert('employees', self::row($data) + $nid + [
+        $id = self::insertWithCode(Database::instance(), self::row($data) + $nid + [
             'created_by' => Auth::id(),
         ]);
         Audit::log('employee.created', 'core', 'employees', $id, null, self::snapshot($id));
@@ -303,9 +360,6 @@ final class PersonnelService
         $errors = [];
         $id = $employeeId ?? 0;
 
-        if ($db->fetchColumn('SELECT 1 FROM employees WHERE employee_code = ? AND id <> ?', [$data['employee_code'], $id]) !== null) {
-            $errors['employee_code'][] = 'รหัสบุคลากรนี้ถูกใช้แล้ว (รวมถึงบุคลากรที่ถูกลบ)';
-        }
         if ($nidHash !== null
             && $db->fetchColumn('SELECT 1 FROM employees WHERE national_id_hash = ? AND id <> ?', [$nidHash, $id]) !== null) {
             $errors['national_id'][] = 'เลขประจำตัวประชาชนนี้มีในระบบแล้ว';
