@@ -10,6 +10,7 @@ use Modules\CoreAdmin\Controllers\DashboardController;
 use Modules\CoreAdmin\Controllers\PersonnelController;
 use Modules\CoreAdmin\Controllers\ProfileController;
 use Modules\CoreAdmin\Controllers\RoleController;
+use Modules\CoreAdmin\Controllers\ServiceRoomController;
 use Modules\CoreAdmin\Controllers\SessionController;
 use Modules\CoreAdmin\Controllers\SettingController;
 use Modules\CoreAdmin\Controllers\UserController;
@@ -100,6 +101,14 @@ $router->group(['middleware' => ['auth', 'password.fresh']], static function (Ro
     $r->post('/personnel/{id:\d+}/national-id', [PersonnelController::class, 'revealNationalId'], ['csrf', 'perm:core.employees.read_sensitive_all']);
     $r->post('/personnel/{id:\d+}/account', [PersonnelController::class, 'createAccount'], ['csrf', 'perm:core.users.create_all']);
     $r->post('/personnel/{id:\d+}/account/link', [PersonnelController::class, 'linkAccount'], ['csrf', 'perm:core.users.update_all']);
+
+    // ข้อมูลห้องบริการ
+    $r->get('/service-rooms', [ServiceRoomController::class, 'index'], ['perm:core.service_rooms.read_all']);
+    $r->get('/service-rooms/create', [ServiceRoomController::class, 'create'], ['perm:core.service_rooms.manage_all']);
+    $r->post('/service-rooms', [ServiceRoomController::class, 'store'], ['csrf', 'perm:core.service_rooms.manage_all']);
+    $r->get('/service-rooms/{id:\d+}/edit', [ServiceRoomController::class, 'edit'], ['perm:core.service_rooms.manage_all']);
+    $r->put('/service-rooms/{id:\d+}', [ServiceRoomController::class, 'update'], ['csrf', 'perm:core.service_rooms.manage_all']);
+    $r->delete('/service-rooms/{id:\d+}', [ServiceRoomController::class, 'destroy'], ['csrf', 'perm:core.service_rooms.manage_all']);
 
     // Profile
     $r->get('/profile', [ProfileController::class, 'index']);

@@ -350,4 +350,21 @@ CREATE TABLE IF NOT EXISTS evaluation_periods (
   CONSTRAINT fk_eval_fiscal FOREIGN KEY (fiscal_year_id) REFERENCES fiscal_years (id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- ข้อมูลห้องบริการ (รหัสห้องไม่ซ้ำภายในปีการศึกษาเดียวกัน)
+CREATE TABLE IF NOT EXISTS service_rooms (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  room_code VARCHAR(10) NOT NULL COMMENT 'รูปแบบ R + ตัวเลข 3 หลัก เช่น R001',
+  academic_year_id INT UNSIGNED NOT NULL,
+  name_th VARCHAR(255) NOT NULL,
+  homeroom_employee_id INT UNSIGNED NULL COMMENT 'ครูประจำชั้น (employees.id)',
+  created_by INT UNSIGNED NULL,
+  updated_by INT UNSIGNED NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NULL ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_service_rooms_year_code (academic_year_id, room_code),
+  KEY idx_service_rooms_homeroom (homeroom_employee_id),
+  CONSTRAINT fk_service_rooms_year FOREIGN KEY (academic_year_id) REFERENCES academic_years(id) ON DELETE RESTRICT,
+  CONSTRAINT fk_service_rooms_homeroom FOREIGN KEY (homeroom_employee_id) REFERENCES employees(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 SET FOREIGN_KEY_CHECKS = 1;
