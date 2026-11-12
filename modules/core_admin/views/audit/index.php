@@ -42,10 +42,10 @@
               <tr>
                 <td><?= e($log['created_at']) ?></td>
                 <td><?= e($log['username'] ?? 'System/Guest') ?></td>
-                <td><span class="badge text-bg-secondary"><?= e(strtoupper($log['module'])) ?></span></td>
-                <td class="fw-semibold"><code><?= e($log['event'] ?? ($log['action'] ?? '-')) ?></code></td>
+                <td><span class="badge text-bg-secondary"><?= e(strtoupper((string) ($log['module'] ?? ''))) ?></span></td>
+                <td class="fw-semibold"><code><?= e($log['action'] ?? '-') ?></code></td>
 
-                <td><?= e($log['target_id'] ?? '-') ?></td>
+                <td><?= e(trim(($log['entity_type'] ?? '') . ' #' . ($log['entity_id'] ?? ''), ' #') ?: '-') ?></td>
                 <td class="text-muted"><?= e($log['ip_address'] ?? '-') ?></td>
               </tr>
             <?php endforeach; ?>

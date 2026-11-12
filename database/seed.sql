@@ -46,10 +46,10 @@ INSERT INTO permissions (code, module, resource, action, scope, description) VAL
 ('core.permissions.assign_all',    'core', 'permissions',   'assign', 'all',          'กำหนดสิทธิ์รายบุคคล'),
 ('core.departments.read_all',      'core', 'departments',   'read',   'all',          'ดูโครงสร้างองค์กร'),
 ('core.departments.update_all',    'core', 'departments',   'update', 'all',          'จัดการโครงสร้างองค์กร'),
-('core.audit_logs.read_all',       'core', 'audit_logs',    'read',   'all',          'ดู Audit Log'),
-('core.settings.read_all',         'core', 'settings',      'read',   'all',          'ดูการตั้งค่าระบบ'),
-('core.settings.update_all',       'core', 'settings',      'update', 'all',          'แก้ไขการตั้งค่าระบบ'),
-('core.sessions.revoke_all',       'core', 'sessions',      'revoke', 'all',          'บังคับออกจากระบบ'),
+('core.audit.read_all',            'core', 'audit',         'read',   'all',          'ดูประวัติการใช้งานระบบทั้งหมด'),
+('core.settings.manage',           'core', 'settings',      'manage', 'none',         'จัดการตั้งค่าระบบ'),
+('core.sessions.read_all',         'core', 'sessions',      'read',   'all',          'ดูเซสชันการใช้งานทั้งหมด'),
+('core.sessions.manage_all',       'core', 'sessions',      'manage', 'all',          'จัดการและยุติเซสชันผู้อื่น'),
 ('core.files.read_own',            'core', 'files',         'read',   'own',          'ดูไฟล์ของตนเอง'),
 ('core.files.read_department',     'core', 'files',         'read',   'department',   'ดูไฟล์ในฝ่าย'),
 ('core.files.read_all',            'core', 'files',         'read',   'all',          'ดูไฟล์ทั้งหมด'),
@@ -82,7 +82,7 @@ SELECT r.id, p.id FROM roles r JOIN permissions p ON p.code IN (
 WHERE r.code IN ('director','deputy_director');
 
 INSERT IGNORE INTO role_permissions (role_id, permission_id)
-SELECT r.id, p.id FROM roles r JOIN permissions p ON p.code = 'core.audit_logs.read_all'
+SELECT r.id, p.id FROM roles r JOIN permissions p ON p.code = 'core.audit.read_all'
 WHERE r.code = 'director';
 
 INSERT IGNORE INTO role_permissions (role_id, permission_id)

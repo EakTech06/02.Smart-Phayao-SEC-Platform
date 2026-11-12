@@ -4,9 +4,15 @@ declare(strict_types=1);
 
 use Core\Router;
 use Modules\CoreAdmin\Controllers\Api\UserApiController;
+use Modules\CoreAdmin\Controllers\AuditController;
 use Modules\CoreAdmin\Controllers\AuthController;
 use Modules\CoreAdmin\Controllers\DashboardController;
+use Modules\CoreAdmin\Controllers\ProfileController;
+use Modules\CoreAdmin\Controllers\RoleController;
+use Modules\CoreAdmin\Controllers\SessionController;
+use Modules\CoreAdmin\Controllers\SettingController;
 use Modules\CoreAdmin\Controllers\UserController;
+use Modules\CoreAdmin\Controllers\UserPermissionController;
 
 /** @var Router $router */
 
@@ -53,28 +59,30 @@ $router->group(['prefix' => '/api/v1', 'middleware' => ['auth', 'password.fresh'
     $r->get('/users/{id:\d+}', [UserApiController::class, 'show'], [$userRead]);
 });
 
-// Roles & Matrix
-$router->get('/roles', [Modules\CoreAdmin\Controllers\RoleController::class, 'index'], ['perm:core.roles.read_all']);
-$router->post('/roles/{id:\d+}/matrix', [Modules\CoreAdmin\Controllers\RoleController::class, 'updateMatrix'], ['csrf', 'perm:core.roles.update_all']);
+// เมนูผู้ดูแลระบบ + โปรไฟล์: ต้องเข้าสู่ระบบ และเปลี่ยนรหัสผ่านชั่วคราวแล้ว
+$router->group(['middleware' => ['auth', 'password.fresh']], static function (Router $r): void {
+    // Roles & Matrix
+    $r->get('/roles', [RoleController::class, 'index'], ['perm:core.roles.read_all']);
+    $r->post('/roles/{id:\d+}/matrix', [RoleController::class, 'updateMatrix'], ['csrf', 'perm:core.roles.update_all']);
 
-// User Permissions Override
-$router->get('/users/{id:\d+}/permissions', [Modules\CoreAdmin\Controllers\UserPermissionController::class, 'edit'], ['perm:core.permissions.assign_all']);
-$router->post('/users/{id:\d+}/permissions', [Modules\CoreAdmin\Controllers\UserPermissionController::class, 'store'], ['csrf', 'perm:core.permissions.assign_all']);
-//$router->delete('/users/{id:\d+}/permissions/{permId:\d+}', [Modules\CoreAdmin\Controllers\UserPermissionController::class, 'destroy'], ['csrf', 'perm:core.permissions.assign_all']);    // Audit Logs
-$router->post('/users/{id:\d+}/permissions/delete', [Modules\CoreAdmin\Controllers\UserPermissionController::class, 'destroy'], ['csrf', 'perm:core.permissions.assign_all']);
+    // User Permissions Override
+    $r->get('/users/{id:\d+}/permissions', [UserPermissionController::class, 'edit'], ['perm:core.permissions.assign_all']);
+    $r->post('/users/{id:\d+}/permissions', [UserPermissionController::class, 'store'], ['csrf', 'perm:core.permissions.assign_all']);
+    $r->post('/users/{id:\d+}/permissions/delete', [UserPermissionController::class, 'destroy'], ['csrf', 'perm:core.permissions.assign_all']);
 
-$router->get('/audit-logs', [Modules\CoreAdmin\Controllers\AuditController::class, 'index'], ['perm:core.audit.read_all']);
+    // Audit Logs
+    $r->get('/audit-logs', [AuditController::class, 'index'], ['perm:core.audit.read_all']);
 
-// Settings
-$router->get('/settings', [Modules\CoreAdmin\Controllers\SettingController::class, 'index'], ['perm:core.settings.manage']);
-$router->post('/settings', [Modules\CoreAdmin\Controllers\SettingController::class, 'update'], ['csrf', 'perm:core.settings.manage']);
+    // Settings
+    $r->get('/settings', [SettingController::class, 'index'], ['perm:core.settings.manage']);
+    $r->post('/settings', [SettingController::class, 'update'], ['csrf', 'perm:core.settings.manage']);
 
-// Sessions Management
-$router->get('/sessions', [Modules\CoreAdmin\Controllers\SessionController::class, 'index'], ['perm:core.sessions.read_all']);
-$router->delete('/sessions/{id}', [Modules\CoreAdmin\Controllers\SessionController::class, 'destroy'], ['csrf', 'perm:core.sessions.manage_all']);
+    // Sessions Management
+    $r->get('/sessions', [SessionController::class, 'index'], ['perm:core.sessions.read_all']);
+    $r->delete('/sessions/{id}', [SessionController::class, 'destroy'], ['csrf', 'perm:core.sessions.manage_all']);
 
-
-// Profile
-$router->get('/profile', [Modules\CoreAdmin\Controllers\ProfileController::class, 'index']);
-$router->post('/profile', [Modules\CoreAdmin\Controllers\ProfileController::class, 'update'], ['csrf']);
-$router->post('/profile/password', [Modules\CoreAdmin\Controllers\ProfileController::class, 'updatePassword'], ['csrf']);
+    // Profile
+    $r->get('/profile', [ProfileController::class, 'index']);
+    $r->post('/profile', [ProfileController::class, 'update'], ['csrf']);
+    $r->post('/profile/password', [ProfileController::class, 'updatePassword'], ['csrf']);
+});

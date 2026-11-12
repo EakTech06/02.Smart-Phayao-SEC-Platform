@@ -29,7 +29,7 @@ final class DashboardController extends Controller
             'fiscal_year' => $db->fetchColumn('SELECT name FROM fiscal_years WHERE is_current = 1 LIMIT 1'),
             'evaluation' => $db->fetchColumn('SELECT name FROM evaluation_periods WHERE is_current = 1 LIMIT 1'),
         ];
-        $recent = Rbac::can('core.audit_logs.read_all')
+        $recent = Rbac::can('core.audit.read_all')
             ? $db->fetchAll(
                 'SELECT a.action, a.ip_address, a.created_at, u.username
                  FROM audit_logs a LEFT JOIN users u ON u.id = a.user_id

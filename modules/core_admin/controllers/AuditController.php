@@ -17,8 +17,12 @@ final class AuditController extends Controller
 
         $module = $this->request->query('module', '');
         $event = $this->request->query('event', '');
+        $module = is_string($module) ? mb_substr(trim($module), 0, 50) : '';
+        $event = is_string($event) ? mb_substr(trim($event), 0, 100) : '';
 
-        $sql = 'SELECT al.*, u.username FROM audit_logs al LEFT JOIN users u ON u.id = al.user_id WHERE 1=1';
+        $sql = 'SELECT al.id, al.user_id, al.action, al.module, al.entity_type, al.entity_id,
+                       al.ip_address, al.created_at, u.username
+                FROM audit_logs al LEFT JOIN users u ON u.id = al.user_id WHERE 1=1';
         $params = [];
 
         if ($module !== '') {
@@ -26,10 +30,9 @@ final class AuditController extends Controller
             $params[] = $module;
         }
         if ($event !== '') {
-            // รองรับทั้งคอลัมน์ event และ action (ถ้ามี)
-            $sql .= ' AND (al.event LIKE ? OR al.action LIKE ?)';
-            $params[] = '%' . $event . '%';
-            $params[] = '%' . $event . '%';
+            // ชื่อเหตุการณ์เก็บในคอลัมน์ action (เช่น user.created) — escape wildcard ของ LIKE
+            $sql .= " AND al.action LIKE ? ESCAPE '!'";
+            $params[] = '%' . strtr($event, ['!' => '!!', '%' => '!%', '_' => '!_']) . '%';
         }
 
         $sql .= ' ORDER BY al.id DESC LIMIT 100';

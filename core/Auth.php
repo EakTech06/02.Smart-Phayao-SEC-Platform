@@ -124,8 +124,7 @@ final class Auth
         if (Password::needsRehash((string) $user['password_hash'])) {
             Database::instance()->update('users', ['password_hash' => Password::hash($password)], ['id' => $userId]);
         }
-        /* --- ปิดการใช้งาน 2FA ชั่วคราว (ข้ามไปเข้าสู่ระบบปกติทันที) ---
-        if (self::requiresTwoFactor($userId)) {
+        if (self::twoFactorActive() && self::requiresTwoFactor($userId)) {
             Session::regenerate();
             Session::set('_2fa_uid', $userId);
             Session::set('_2fa_started', time());
@@ -133,17 +132,19 @@ final class Auth
 
             return TwoFactor::isEnabled($userId) ? self::NEED_2FA : self::NEED_2FA_SETUP;
         }
-        ------------------------------------------------------------- */
-        if (Config::get('security.two_factor_enabled', true) && self::requiresTwoFactor($userId)) {
-            Session::regenerate();
-            Session::set('_2fa_uid', $userId);
-            Session::set('_2fa_started', time());
-            Session::set('_2fa_tries', 0);
-
-            return TwoFactor::isEnabled($userId) ? self::NEED_2FA : self::NEED_2FA_SETUP;
-}
         self::completeLogin($userId, $request);
+
         return self::OK;
+    }
+
+    /** ปิด 2FA ได้เฉพาะเครื่องพัฒนา (app.env = local) เท่านั้น — นอกนั้นบังคับใช้เสมอ */
+    private static function twoFactorActive(): bool
+    {
+        if (Config::get('app.env') !== 'local') {
+            return true;
+        }
+
+        return (bool) Config::get('security.two_factor_enabled', true);
     }
 
     public static function completeLogin(int $userId, Request $request): void
@@ -179,7 +180,12 @@ final class Auth
         if (TwoFactor::isEnabled($userId)) {
             return true;
         }
-        $roles = array_values(array_filter((array) Config::get('security.require_2fa_roles', []), 'is_string'));
+        // รวม Role ที่บังคับ 2FA จาก config/security.php และหน้า "ตั้งค่าระบบ" (settings: force_2fa_roles)
+        $fromSetting = Setting::get('force_2fa_roles', []);
+        $roles = array_values(array_unique(array_filter([
+            ...(array) Config::get('security.require_2fa_roles', []),
+            ...(is_array($fromSetting) ? $fromSetting : []),
+        ], 'is_string')));
         if ($roles === []) {
             return false;
         }

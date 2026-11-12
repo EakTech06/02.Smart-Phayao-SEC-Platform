@@ -11,6 +11,6 @@ return [
     'ip_lock' => 1800,
     'password_min_length' => 8,
     'password_history' => 5,
-    'require_2fa_roles' => [],
-    'two_factor_enabled' => true,
+    'require_2fa_roles' => ['super_admin'], // Role ที่บังคับตั้งค่า 2FA ก่อนเข้าใช้งาน
+    'two_factor_enabled' => true, // ปิดได้เฉพาะ app.env = local (ดู Core\Auth::twoFactorActive)
 ];

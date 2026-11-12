@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\CoreAdmin\Controllers;
 
+use Core\Audit;
+use Core\Auth;
 use Core\Controller;
 use Core\Database;
+use Core\Password;
 use Core\Response;
 use Core\Session;
-use Core\Audit;
 
 final class ProfileController extends Controller
 {
@@ -43,15 +45,22 @@ final class ProfileController extends Controller
         if (!$user) {
             return $this->redirect('/dashboard');
         }
-        $userId     = (int) $user['id'];
-        $employeeId = (int) ($user['employee_id'] ?? $userId);
+        $userId = (int) $user['id'];
+        if ($user['employee_id'] === null) {
+            return $this->backWithError('บัญชีนี้ยังไม่ได้ผูกกับข้อมูลบุคลากร กรุณาติดต่อผู้ดูแลระบบ');
+        }
+        $employeeId = (int) $user['employee_id'];
         $db = Database::instance();
 
         $title     = trim((string) $this->request->input('title_name', ''));
         $firstName = trim((string) $this->request->input('first_name', ''));
         $lastName  = trim((string) $this->request->input('last_name', ''));
-        $email     = trim((string) $this->request->input('email', ''));
+        $email     = mb_strtolower(trim((string) $this->request->input('email', '')));
         $phone     = trim((string) $this->request->input('phone', ''));
+
+        if (mb_strlen($title) > 50) {
+            return $this->backWithError('คำนำหน้าต้องไม่เกิน 50 ตัวอักษร');
+        }
 
         if ($firstName === '' || mb_strlen($firstName) > 100) {
             return $this->backWithError('กรุณากรอกชื่อ (ไม่เกิน 100 ตัวอักษร)');
@@ -59,7 +68,7 @@ final class ProfileController extends Controller
         if ($lastName === '' || mb_strlen($lastName) > 100) {
             return $this->backWithError('กรุณากรอกนามสกุล (ไม่เกิน 100 ตัวอักษร)');
         }
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        if (mb_strlen($email) > 191 || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
             return $this->backWithError('รูปแบบอีเมลไม่ถูกต้อง');
         }
         if ($phone !== '' && !preg_match('/^[0-9+\-\s]{6,30}$/', $phone)) {
@@ -153,43 +162,52 @@ final class ProfileController extends Controller
         $new     = (string) $this->request->input('new_password', '');
         $confirm = (string) $this->request->input('new_password_confirmation', '');
 
-        if (!password_verify($current, (string) $user['password_hash'])) {
+        $userId = (int) $user['id'];
+
+        if (!Password::verify($current, (string) $user['password_hash'])) {
             return $this->backWithError('รหัสผ่านปัจจุบันไม่ถูกต้อง');
-        }
-        if (mb_strlen($new) < 8) {
-            return $this->backWithError('รหัสผ่านใหม่ต้องมีอย่างน้อย 8 ตัวอักษร');
         }
         if ($new !== $confirm) {
             return $this->backWithError('ยืนยันรหัสผ่านใหม่ไม่ตรงกัน');
         }
+        $policy = Password::policyErrors($new, (string) $user['username']);
+        if ($policy !== []) {
+            return $this->backWithError('รหัสผ่านใหม่ไม่ผ่านนโยบาย: ' . implode(', ', $policy));
+        }
+        if (Password::isReused($userId, $new)) {
+            return $this->backWithError('ห้ามใช้รหัสผ่านซ้ำกับรหัสผ่านเดิมที่เคยใช้');
+        }
 
-        Database::instance()->update('users', [
-            'password_hash'        => password_hash($new, PASSWORD_DEFAULT),
-            'must_change_password' => 0,
-            'updated_at'           => date('Y-m-d H:i:s'),
-        ], ['id' => (int) $user['id']]);
+        // ใช้ Password::change เหมือนหน้า /password/change: Argon2 + ประวัติรหัสผ่าน + ตัด Session อุปกรณ์อื่น
+        Password::change($userId, $new);
+        Session::regenerate();
+        Auth::refresh();
 
-        Audit::log('profile.password_changed', 'core', 'users', (string) $user['id'], null, null);
+        Audit::log('profile.password_changed', 'core', 'users', (string) $userId, null, null);
         Session::flash('success', 'เปลี่ยนรหัสผ่านเรียบร้อยแล้ว');
 
         return $this->redirect('/profile');
     }
 
+    /** ผู้ใช้ที่ล็อกอินอยู่ + ข้อมูลบุคลากรที่ผูกผ่าน users.employee_id (ระบุคอลัมน์ชัดเจน ไม่ให้ค่าทับกัน) */
     private function currentUser(): ?array
     {
-        $id = Session::get('_uid');
-        if (!$id) {
+        $id = Auth::id();
+        if ($id === null) {
             return null;
         }
-        
-        // ดึงข้อมูลเชื่อมระหว่าง users กับ employees
-        // ถ้าตาราง users ใช้ id ตรงกับ employees.id หรือเชื่อมด้วย employee_id ให้ปรับเงื่อนไข JOIN ตรงนี้ครับ
-        return Database::instance()->fetch('
-            SELECT u.*, e.*, u.id AS id, e.id AS employee_id 
-            FROM users u 
-            LEFT JOIN employees e ON e.id = u.id 
-            WHERE u.id = ?
-        ', [(int) $id]) ?: null;
+
+        return Database::instance()->fetch(
+            "SELECT u.id, u.username, u.email, u.password_hash, u.status, u.employee_id,
+                    e.title_name, e.first_name, e.last_name, e.phone, e.avatar, e.position,
+                    d.name_th AS department_name
+             FROM users u
+             LEFT JOIN employees e ON e.id = u.employee_id AND e.deleted_at IS NULL
+             LEFT JOIN departments d ON d.id = e.department_id
+             WHERE u.id = ? AND u.deleted_at IS NULL AND u.status = 'active'
+             LIMIT 1",
+            [$id]
+        );
     }
 
     private function backWithError(string $message): Response

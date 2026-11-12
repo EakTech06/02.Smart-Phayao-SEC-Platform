@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS employees (
   department_id INT UNSIGNED NULL,
   phone VARCHAR(30) NULL,
   email VARCHAR(191) NULL,
+  avatar VARCHAR(255) NULL COMMENT 'ชื่อไฟล์ใน public/uploads/avatars',
   national_id_hash CHAR(64) NULL COMMENT 'HMAC-SHA256 เท่านั้น ห้ามเก็บเลขเต็ม',
   national_id_last4 CHAR(4) NULL,
   start_date DATE NULL,

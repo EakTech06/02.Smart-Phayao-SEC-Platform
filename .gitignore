@@ -1,0 +1,23 @@
+# ค่าเฉพาะเครื่อง / ความลับ (ใช้ config/local.example.php เป็นต้นแบบ)
+config/local.php
+
+# Composer
+/vendor/
+
+# Log และไฟล์ที่ผู้ใช้อัปโหลด
+storage/logs/*
+!storage/logs/.gitkeep
+public/uploads/*
+!public/uploads/avatars/
+public/uploads/avatars/*
+!public/uploads/avatars/.gitkeep
+
+# เอกสารต้นทาง/ข้อมูลบุคลากร (มีข้อมูลส่วนบุคคล — PDPA) ไม่เก็บใน Git
+/ข้อมูล/
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
