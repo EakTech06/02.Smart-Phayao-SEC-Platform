@@ -14,7 +14,7 @@ final class UserModel extends Model
 
     private const SELECT = "SELECT u.id, u.username, u.email, u.status, u.must_change_password, u.last_login_at, u.created_at,
             e.employee_code, e.title_name, e.first_name, e.last_name, e.position, e.employment_type,
-            e.department_id, d.name_th AS department_name,
+            e.department_id, d.name_th AS department_name, e.avatar, e.id AS employee_id,
             (SELECT GROUP_CONCAT(r.name_th ORDER BY r.level SEPARATOR ', ')
                FROM user_roles ur JOIN roles r ON r.id = ur.role_id WHERE ur.user_id = u.id) AS role_names
         FROM users u

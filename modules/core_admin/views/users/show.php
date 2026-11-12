@@ -56,20 +56,28 @@ $isActive = $user['status'] === 'active';
 
 <div class="card shadow-sm mb-4">
   <div class="card-body d-flex align-items-center gap-3">
-    <!-- แสดงรูปโปรไฟล์ ถ้าไม่มีให้แสดงไอคอนหรือตัวย่อแทน -->
-    <div>
-      <?php if (!empty($user['avatar'])): ?>
-        <img src="<?= e(url('uploads/avatars/' . $user['avatar'])) ?>" alt="Avatar" class="rounded-circle shadow-sm" width="80" height="80" style="object-fit: cover;">
+    <!-- รูปโปรไฟล์จาก employees.avatar ถ้าไม่มีแสดงอักษรแรกของชื่อแทน -->
+    <?php
+    $fullName = trim(($user['title_name'] ?? '') . ($user['first_name'] ?? '') . ' ' . ($user['last_name'] ?? ''));
+    $avatarFile = !empty($user['avatar']) ? basename((string) $user['avatar']) : '';
+    $hasAvatar = $avatarFile !== '' && is_file(BASE_PATH . '/public/uploads/avatars/' . $avatarFile);
+    $initialSource = (string) ($user['first_name'] ?? '') !== '' ? (string) $user['first_name'] : (string) $user['username'];
+    $initial = mb_substr((string) preg_replace('/^[เแโใไ]/u', '', $initialSource), 0, 1); // ข้ามสระหน้า
+    ?>
+    <div class="flex-shrink-0">
+      <?php if ($hasAvatar): ?>
+        <img src="<?= e(url('uploads/avatars/' . $avatarFile)) ?>" alt="รูปโปรไฟล์ <?= e($fullName) ?>" class="rounded-circle shadow-sm" width="80" height="80" style="object-fit: cover;">
       <?php else: ?>
-        <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center shadow-sm" style="width: 80px; height: 80px; font-size: 2rem;">
-          <?= e(mb_substr($user['name'] ?? 'U', 0, 1)) ?>
+        <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center shadow-sm" style="width: 80px; height: 80px; font-size: 2rem;">
+          <?= e(mb_strtoupper($initial)) ?>
         </div>
       <?php endif; ?>
     </div>
-    <div>
-      <h3 class="h5 mb-1"><?= e($user['name'] ?? '') ?> 
-        <span class="badge bg-success font-monospace" style="font-size: 0.75rem;">ใช้งาน</span>
+    <div class="min-w-0">
+      <h3 class="h5 mb-1"><?= e($fullName !== '' ? $fullName : $user['username']) ?>
+        <span class="badge text-bg-<?= $isActive ? 'success' : 'secondary' ?> align-middle" style="font-size: 0.75rem;"><?= e(UserService::STATUSES[$user['status']] ?? $user['status']) ?></span>
       </h3>
+      <p class="text-muted mb-0 small"><?= e($user['position'] ?? '') ?><?= !empty($user['department_name']) ? ' · ' . e($user['department_name']) : '' ?></p>
       <p class="text-muted mb-0 small">อีเมล: <?= e($user['email'] ?? '-') ?></p>
     </div>
   </div>
