@@ -10,6 +10,7 @@ use Core\Exceptions\ValidationException;
 use Core\Rbac;
 use Core\Response;
 use Core\Session;
+use Modules\CoreAdmin\Models\EmployeeModel;
 use Modules\CoreAdmin\Models\UserModel;
 use Modules\CoreAdmin\Services\UserService;
 
@@ -45,19 +46,56 @@ final class UserController extends Controller
         ]);
     }
 
+    /**
+     * เพิ่มผู้ใช้งาน: ต้องเลือกจาก "ข้อมูลบุคลากร" ที่ยังไม่มีบัญชีเท่านั้น (1 บุคลากร = 1 บัญชี)
+     * ยกเว้น Super Admin ที่กรอกข้อมูลเองได้ (?mode=manual) เช่น บัญชีระบบ/กรณีพิเศษ
+     */
     public function create(): Response
     {
-        return $this->view('core_admin::users/form', [
+        if ($this->request->query('mode') === 'manual' && UserService::isSuperAdmin()) {
+            return $this->view('core_admin::users/form', [
+                'title' => 'เพิ่มผู้ใช้งาน (กรอกข้อมูลเอง)',
+                'user' => null,
+                'roles' => UserService::assignableRoles(),
+                'departments' => UserService::departmentOptions(),
+                'selectedRoles' => [],
+            ]);
+        }
+
+        $employees = Rbac::scope('core.employees', 'read') !== null
+            ? EmployeeModel::listVisible(['status' => 'active', 'account' => 'without'])
+            : [];
+        $selected = (int) $this->request->query('employee_id', 0);
+
+        return $this->view('core_admin::users/create', [
             'title' => 'เพิ่มผู้ใช้งาน',
-            'user' => null,
+            'employees' => $employees,
+            'selectedEmployeeId' => $selected,
             'roles' => UserService::assignableRoles(),
-            'departments' => UserService::departmentOptions(),
-            'selectedRoles' => [],
+            'isSuperAdmin' => UserService::isSuperAdmin(),
         ]);
     }
 
     public function store(): Response
     {
+        $employeeId = (int) $this->request->input('employee_id', 0);
+        if ($employeeId > 0) {
+            $employee = EmployeeModel::findVisible($employeeId);
+            if ($employee === null) {
+                throw new ValidationException(['employee_id' => ['ไม่พบบุคลากรที่เลือก หรือคุณไม่มีสิทธิ์เข้าถึง']]);
+            }
+            $username = $this->request->input('username');
+            [$id, $temp] = UserService::createForEmployee($employee, is_string($username) ? $username : null, $this->roleInput());
+            Session::flash('success', 'สร้างบัญชีผู้ใช้จากข้อมูลบุคลากรเรียบร้อยแล้ว');
+            Session::flash('temp_password', $temp);
+
+            return $this->redirect('/users/' . $id);
+        }
+
+        // กรอกข้อมูลเอง (สร้างบุคลากร + บัญชีพร้อมกัน) — เฉพาะ Super Admin
+        if (!UserService::isSuperAdmin()) {
+            throw new ValidationException(['employee_id' => ['กรุณาเลือกบุคลากรจากข้อมูลบุคลากร']]);
+        }
         $data = $this->validateForm(true);
         $data['username'] = mb_strtolower((string) $data['username']);
         $this->assertDepartmentAllowed((int) $data['department_id']);
