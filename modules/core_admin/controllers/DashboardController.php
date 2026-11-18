@@ -11,6 +11,11 @@ use Core\Rbac;
 use Core\Response;
 use Core\View;
 use Modules\CoreAdmin\Models\UserModel;
+use Modules\CoreAdmin\Services\CalendarService;
+use Modules\CoreAdmin\Services\NotificationService;
+use Modules\CoreAdmin\Services\PdpaService;
+use Modules\CoreAdmin\Services\ReportService;
+use Modules\CoreAdmin\Services\UserService;
 
 final class DashboardController extends Controller
 {
@@ -24,22 +29,60 @@ final class DashboardController extends Controller
         $db = Database::instance();
         $stats = [
             'users' => Rbac::scope('core.users', 'read') !== null ? UserModel::countVisible() : null,
+            'personnel' => (int) $db->fetchColumn("SELECT COUNT(*) FROM employees WHERE deleted_at IS NULL AND status = 'active'"),
             'departments' => (int) $db->fetchColumn('SELECT COUNT(*) FROM departments WHERE is_active = 1'),
+            'rooms' => (int) $db->fetchColumn(
+                'SELECT COUNT(*) FROM service_rooms sr JOIN academic_years ay ON ay.id = sr.academic_year_id AND ay.is_current = 1'
+            ),
+            'events_month' => (int) $db->fetchColumn(
+                "SELECT COUNT(*) FROM calendar_events WHERE deleted_at IS NULL AND visibility = 'public'
+                   AND start_at <= ? AND COALESCE(end_at, start_at) >= ?",
+                [date('Y-m-t 23:59:59'), date('Y-m-01 00:00:00')]
+            ),
+            'unread' => NotificationService::unreadCount(),
             'academic_year' => $db->fetchColumn('SELECT name FROM academic_years WHERE is_current = 1 LIMIT 1'),
             'fiscal_year' => $db->fetchColumn('SELECT name FROM fiscal_years WHERE is_current = 1 LIMIT 1'),
             'evaluation' => $db->fetchColumn('SELECT name FROM evaluation_periods WHERE is_current = 1 LIMIT 1'),
         ];
-        $recent = Rbac::can('core.audit.read_all')
+        $canAudit = Rbac::can('core.audit.read_all');
+
+        // สถิติรายฝ่ายเป็นตัวเลขสรุปเท่านั้น (ไม่มีข้อมูลรายบุคคล) จึงแสดงให้ทุกคนที่ดูแดชบอร์ดได้
+        $departments = ReportService::departmentSummary();
+        $types = UserService::EMPLOYMENT_TYPES;
+        $typeTotals = [];
+        foreach (array_keys($types) as $t) {
+            $typeTotals[$t] = array_sum(array_map(static fn (array $d): int => $d['by_type'][$t] ?? 0, $departments));
+        }
+
+        // ข้อมูลกราฟส่งให้ dashboard.js ผ่าน <script type="application/json"> (CSP ไม่อนุญาต inline script)
+        $chart = [
+            'departments' => array_column($departments, 'name'),
+            'types' => array_map(static fn (string $t): array => [
+                'label' => $types[$t],
+                'color' => ReportService::EMPLOYMENT_COLORS[$t],
+                'data' => array_map(static fn (array $d): int => $d['by_type'][$t] ?? 0, $departments),
+                'total' => $typeTotals[$t],
+            ], array_keys($types)),
+            'trend' => ReportService::monthlyTrend(6, $canAudit),
+        ];
+
+        $recent = $canAudit
             ? $db->fetchAll(
                 'SELECT a.action, a.ip_address, a.created_at, u.username
                  FROM audit_logs a LEFT JOIN users u ON u.id = a.user_id
-                 ORDER BY a.id DESC LIMIT 10'
+                 ORDER BY a.id DESC LIMIT 8'
             )
             : [];
 
         return $this->view('core_admin::dashboard/index', [
             'title' => 'แดชบอร์ด',
             'stats' => $stats,
+            'departments' => $departments,
+            'typeTotals' => $typeTotals,
+            'chart' => $chart,
+            'upcoming' => Rbac::can('core.calendar.read_all') ? CalendarService::upcoming(5) : [],
+            'pdpa' => PdpaService::canManage() ? PdpaService::counts() : null,
+            'canReport' => Rbac::canAny(['core.reports.view_all', 'core.reports.view_department']),
             'recent' => $recent,
         ]);
     }

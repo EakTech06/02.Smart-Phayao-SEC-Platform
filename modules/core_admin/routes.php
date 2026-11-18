@@ -13,6 +13,7 @@ use Modules\CoreAdmin\Controllers\NotificationController;
 use Modules\CoreAdmin\Controllers\PdpaController;
 use Modules\CoreAdmin\Controllers\PersonnelController;
 use Modules\CoreAdmin\Controllers\ProfileController;
+use Modules\CoreAdmin\Controllers\ReportController;
 use Modules\CoreAdmin\Controllers\RoleController;
 use Modules\CoreAdmin\Controllers\ServiceRoomController;
 use Modules\CoreAdmin\Controllers\SessionController;
@@ -144,6 +145,10 @@ $router->group(['middleware' => ['auth', 'password.fresh']], static function (Ro
     $r->get('/pdpa/{id:\d+}', [PdpaController::class, 'show'], ['perm:core.pdpa.request_own,core.pdpa.manage_all']);
     $r->post('/pdpa/{id:\d+}/cancel', [PdpaController::class, 'cancel'], ['csrf', 'perm:core.pdpa.request_own']);
     $r->post('/pdpa/{id:\d+}/handle', [PdpaController::class, 'handle'], ['csrf', 'perm:core.pdpa.manage_all']);
+
+    // Phase 4: รายงานภาพรวมของหน่วยงาน (ทั้งหน่วยงาน หรือเฉพาะฝ่ายที่สังกัด)
+    $r->get('/reports/overview', [ReportController::class, 'overview'], ['perm:core.reports.view_all,core.reports.view_department']);
+    $r->get('/reports/overview/export', [ReportController::class, 'export'], ['perm:core.reports.view_all,core.reports.view_department']);
 
     // ทดสอบการเชื่อมต่อ Google Workspace
     $r->post('/settings/google-test', [SettingController::class, 'testGoogle'], ['csrf', 'perm:core.settings.manage']);

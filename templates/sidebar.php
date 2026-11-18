@@ -5,6 +5,7 @@ use Core\Rbac;
 $currentPath = current_path();
 $menu = [
     ['url' => '/dashboard', 'icon' => 'speedometer2', 'label' => 'แดชบอร์ด', 'show' => can('core.dashboard.view')],
+    ['url' => '/reports/overview', 'icon' => 'file-earmark-bar-graph', 'label' => 'รายงานภาพรวม', 'show' => Rbac::canAny(['core.reports.view_all', 'core.reports.view_department'])],
     ['url' => '/calendar', 'icon' => 'calendar3', 'label' => 'ปฏิทินกลาง', 'show' => can('core.calendar.read_all')],
     ['url' => '/files', 'icon' => 'folder2-open', 'label' => 'ไฟล์/เอกสาร', 'show' => can('core.files.read_own')],
     ['url' => '/notifications', 'icon' => 'bell', 'label' => 'การแจ้งเตือน', 'show' => true],

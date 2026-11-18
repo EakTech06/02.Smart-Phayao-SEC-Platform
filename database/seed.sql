@@ -67,7 +67,9 @@ INSERT INTO permissions (code, module, resource, action, scope, description) VAL
 ('core.service_rooms.manage_all',  'core', 'service_rooms', 'manage', 'all',          'เพิ่ม/แก้ไข/ลบข้อมูลห้องบริการ'),
 ('core.files.delete_all',          'core', 'files',         'delete', 'all',          'ลบไฟล์ของผู้อื่น'),
 ('core.pdpa.request_own',          'core', 'pdpa',          'request','own',          'ยื่นคำขอใช้สิทธิ์ PDPA ของตนเอง'),
-('core.pdpa.manage_all',           'core', 'pdpa',          'manage', 'all',          'จัดการคำขอใช้สิทธิ์ PDPA (DPO)')
+('core.pdpa.manage_all',           'core', 'pdpa',          'manage', 'all',          'จัดการคำขอใช้สิทธิ์ PDPA (DPO)'),
+('core.reports.view_all',          'core', 'reports',       'view',   'all',          'ดู/ส่งออกรายงานภาพรวมทั้งหน่วยงาน'),
+('core.reports.view_department',   'core', 'reports',       'view',   'department',   'ดู/ส่งออกรายงานภาพรวมเฉพาะฝ่ายที่สังกัด')
 ON DUPLICATE KEY UPDATE description = VALUES(description);
 
 -- ---------- Role → Permission ----------
@@ -89,7 +91,7 @@ WHERE r.code IN ('director','deputy_director','department_head','service_unit_he
 INSERT IGNORE INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id FROM roles r JOIN permissions p ON p.code IN (
   'core.users.read_all','core.employees.read_all','core.departments.read_all',
-  'core.files.read_all','core.calendar.create_all')
+  'core.files.read_all','core.calendar.create_all','core.reports.view_all')
 WHERE r.code IN ('director','deputy_director');
 
 INSERT IGNORE INTO role_permissions (role_id, permission_id)
@@ -99,12 +101,12 @@ WHERE r.code = 'director';
 INSERT IGNORE INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id FROM roles r JOIN permissions p ON p.code IN (
   'core.users.read_department','core.employees.read_department','core.departments.read_all',
-  'core.files.read_department','core.calendar.create_department')
+  'core.files.read_department','core.calendar.create_department','core.reports.view_department')
 WHERE r.code = 'department_head';
 
 INSERT IGNORE INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id FROM roles r JOIN permissions p ON p.code IN (
-  'core.users.read_service_unit','core.employees.read_service_unit','core.calendar.create_department')
+  'core.users.read_service_unit','core.employees.read_service_unit','core.calendar.create_department','core.reports.view_department')
 WHERE r.code = 'service_unit_head';
 
 -- ---------- Super Admin ----------

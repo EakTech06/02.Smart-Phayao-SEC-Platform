@@ -32,3 +32,11 @@ body { font-family: 'Sarabun', system-ui, -apple-system, 'Segoe UI', sans-serif;
 .calendar-event { display: block; font-size: .75rem; line-height: 1.2; padding: .1rem .3rem; margin-top: .15rem;
   border-radius: .25rem; color: #fff; text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .calendar-event:hover { color: #fff; filter: brightness(.9); }
+
+/* Phase 4: แดชบอร์ดและรายงาน */
+.chart-box { position: relative; width: 100%; }
+.legend-swatch { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: .4rem; vertical-align: baseline; }
+.progress.meter { height: 8px; background: #eef0f3; }
+.progress.meter .progress-bar { border-radius: 4px; }
+.report-section { break-inside: avoid; }
+.report-table th, .report-table td { white-space: nowrap; }

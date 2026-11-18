@@ -1,0 +1,21 @@
+/* พิมพ์รายงานออกกระดาษ A4 (ใช้ร่วมทุกหน้า: โหลดด้วย media="print") */
+@page { size: A4; margin: 15mm 12mm; }
+
+html, body { background: #fff !important; font-size: 12pt; }
+body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+/* ซ่อนส่วนนำทางและปุ่มต่าง ๆ */
+.navbar, .sidebar, .bottom-nav, .main-footer, .d-print-none, .alert-dismissible .btn-close, .btn { display: none !important; }
+
+.main-content { width: 100% !important; margin: 0 !important; padding: 0 !important; max-width: none !important; flex: none !important; }
+.container-fluid, .container-fluid > .row { margin: 0 !important; padding: 0 !important; }
+
+.card { border: 0 !important; box-shadow: none !important; }
+.card-body { padding: 0 !important; }
+.table-responsive { overflow: visible !important; }
+.table { font-size: 10.5pt; }
+.table th, .table td { padding: .2rem .35rem !important; }
+.report-table th, .report-table td { white-space: normal; }
+.report-section, tr { break-inside: avoid; page-break-inside: avoid; }
+h2, h3 { break-after: avoid; page-break-after: avoid; }
+a { color: inherit !important; text-decoration: none !important; }
