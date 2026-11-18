@@ -78,3 +78,40 @@ function can(string $permission): bool
 {
     return Rbac::can($permission);
 }
+/** วันที่แบบไทย เช่น 12 พ.ย. 2569 09:00 (ปี พ.ศ.) */
+function thai_date(?string $datetime, bool $withTime = true, bool $fullMonth = false): string
+{
+    if ($datetime === null || $datetime === '') {
+        return '-';
+    }
+    $ts = strtotime($datetime);
+    if ($ts === false) {
+        return '-';
+    }
+    $months = $fullMonth ? THAI_MONTHS : THAI_MONTHS_SHORT;
+    $text = (int) date('j', $ts) . ' ' . $months[(int) date('n', $ts)] . ' ' . ((int) date('Y', $ts) + 543);
+
+    return $withTime ? $text . ' ' . date('H:i', $ts) : $text;
+}
+
+/** เวลาที่ผ่านมาแบบสั้น เช่น "5 นาทีที่แล้ว" (เกิน 7 วันแสดงวันที่) */
+function time_ago(?string $datetime): string
+{
+    $ts = $datetime !== null ? strtotime($datetime) : false;
+    if ($ts === false) {
+        return '-';
+    }
+    $diff = time() - $ts;
+
+    return match (true) {
+        $diff < 60 => 'เมื่อสักครู่',
+        $diff < 3600 => intdiv($diff, 60) . ' นาทีที่แล้ว',
+        $diff < 86400 => intdiv($diff, 3600) . ' ชั่วโมงที่แล้ว',
+        $diff < 604800 => intdiv($diff, 86400) . ' วันที่แล้ว',
+        default => thai_date($datetime, false),
+    };
+}
+
+const THAI_MONTHS = [1 => 'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+    'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+const THAI_MONTHS_SHORT = [1 => 'ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];

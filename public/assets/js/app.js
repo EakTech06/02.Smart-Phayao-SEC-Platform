@@ -59,6 +59,23 @@
 
   });
 
+  /** กระดิ่งแจ้งเตือน: อัปเดตจำนวนที่ยังไม่อ่านทุก 60 วินาที (หยุดเมื่อแท็บไม่ได้เปิดดู) */
+  document.addEventListener('DOMContentLoaded', () => {
+    const bell = document.getElementById('notification-bell');
+    const badge = document.getElementById('notification-count');
+    if (!bell || !badge) return;
+    const refresh = async () => {
+      if (document.hidden) return;
+      try {
+        const res = await window.api(bell.dataset.countUrl);
+        const n = res && res.data ? Number(res.data.unread) : 0;
+        badge.textContent = n > 99 ? '99+' : String(n);
+        badge.classList.toggle('d-none', n === 0);
+      } catch (e) { /* เครือข่ายขัดข้องชั่วคราว: ข้ามรอบนี้ */ }
+    };
+    setInterval(refresh, 60000);
+  });
+
   /** fetch helper ที่แนบ CSRF Token และอ่านผลแบบ JSend */
   window.api = async (url, options = {}) => {
     const token = document.querySelector('meta[name="csrf-token"]')?.content ?? '';

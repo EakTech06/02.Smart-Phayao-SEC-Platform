@@ -162,6 +162,7 @@ CREATE TABLE IF NOT EXISTS files (
   ref_type VARCHAR(50) NULL,
   ref_id BIGINT UNSIGNED NULL,
   original_name VARCHAR(255) NOT NULL,
+  title VARCHAR(255) NULL,
   mime_type VARCHAR(150) NOT NULL,
   size_bytes BIGINT UNSIGNED NOT NULL DEFAULT 0,
   storage ENUM('google_drive','local') NOT NULL DEFAULT 'google_drive',
@@ -174,6 +175,7 @@ CREATE TABLE IF NOT EXISTS files (
   UNIQUE KEY uq_files_uuid (uuid),
   KEY idx_files_ref (ref_type, ref_id),
   KEY idx_files_owner (owner_user_id),
+  KEY idx_files_module (module, deleted_at),
   CONSTRAINT fk_files_owner FOREIGN KEY (owner_user_id) REFERENCES users (id) ON DELETE SET NULL,
   CONSTRAINT fk_files_department FOREIGN KEY (department_id) REFERENCES departments (id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -189,6 +191,7 @@ CREATE TABLE IF NOT EXISTS notifications (
   read_at DATETIME NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   KEY idx_notifications_user (user_id, read_at),
+  KEY idx_notifications_created (user_id, created_at),
   CONSTRAINT fk_notifications_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -236,11 +239,15 @@ CREATE TABLE IF NOT EXISTS calendar_events (
   visibility ENUM('public','department','private') NOT NULL DEFAULT 'public',
   department_id INT UNSIGNED NULL,
   color VARCHAR(20) NULL,
+  google_event_id VARCHAR(255) NULL,
+  google_synced_at DATETIME NULL,
   created_by INT UNSIGNED NULL,
+  updated_by INT UNSIGNED NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   deleted_at DATETIME NULL,
   KEY idx_calendar_start (start_at),
+  KEY idx_calendar_range (start_at, end_at),
   CONSTRAINT fk_calendar_department FOREIGN KEY (department_id) REFERENCES departments (id) ON DELETE SET NULL,
   CONSTRAINT fk_calendar_creator FOREIGN KEY (created_by) REFERENCES users (id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -365,6 +372,27 @@ CREATE TABLE IF NOT EXISTS service_rooms (
   KEY idx_service_rooms_homeroom (homeroom_employee_id),
   CONSTRAINT fk_service_rooms_year FOREIGN KEY (academic_year_id) REFERENCES academic_years(id) ON DELETE RESTRICT,
   CONSTRAINT fk_service_rooms_homeroom FOREIGN KEY (homeroom_employee_id) REFERENCES employees(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- คำขอใช้สิทธิ์ของเจ้าของข้อมูล (PDPA มาตรา 30-36) ต้องดำเนินการภายใน 30 วัน
+CREATE TABLE IF NOT EXISTS pdpa_requests (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  request_no VARCHAR(30) NOT NULL,
+  user_id INT UNSIGNED NOT NULL COMMENT 'เจ้าของข้อมูลที่ยื่นคำขอ',
+  request_type ENUM('access','portability','rectification','erasure','restriction','objection','withdraw_consent') NOT NULL,
+  details TEXT NOT NULL,
+  status ENUM('pending','in_progress','completed','rejected','cancelled') NOT NULL DEFAULT 'pending',
+  due_date DATE NOT NULL COMMENT 'ภายใน 30 วันนับแต่วันที่ได้รับคำขอ',
+  response TEXT NULL,
+  handled_by INT UNSIGNED NULL,
+  handled_at DATETIME NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NULL ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_pdpa_requests_no (request_no),
+  KEY idx_pdpa_requests_user (user_id),
+  KEY idx_pdpa_requests_status (status, due_date),
+  CONSTRAINT fk_pdpa_requests_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE RESTRICT,
+  CONSTRAINT fk_pdpa_requests_handler FOREIGN KEY (handled_by) REFERENCES users (id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 SET FOREIGN_KEY_CHECKS = 1;

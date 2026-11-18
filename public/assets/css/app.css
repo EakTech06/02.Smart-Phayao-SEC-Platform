@@ -22,3 +22,13 @@ body { font-family: 'Sarabun', system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
 .bottom-nav i { font-size: 1.3rem; }
 .bottom-nav .active { color: var(--bs-primary); font-weight: 600; }
+/* Phase 3: กระดิ่งแจ้งเตือน + ปฏิทินกลาง */
+.notification-menu { width: min(22rem, calc(100vw - 1rem)); max-height: 70vh; overflow-y: auto; }
+.calendar-grid { table-layout: fixed; }
+.calendar-grid td { height: 7.5rem; vertical-align: top; padding: .25rem; }
+.calendar-grid .day-number { font-size: .85rem; font-weight: 600; }
+.calendar-grid .other-month { background: var(--bs-tertiary-bg); color: var(--bs-secondary-color); }
+.calendar-grid .today { box-shadow: inset 0 0 0 2px var(--bs-primary); }
+.calendar-event { display: block; font-size: .75rem; line-height: 1.2; padding: .1rem .3rem; margin-top: .15rem;
+  border-radius: .25rem; color: #fff; text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.calendar-event:hover { color: #fff; filter: brightness(.9); }

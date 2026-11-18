@@ -5,6 +5,10 @@ use Core\Rbac;
 $currentPath = current_path();
 $menu = [
     ['url' => '/dashboard', 'icon' => 'speedometer2', 'label' => 'แดชบอร์ด', 'show' => can('core.dashboard.view')],
+    ['url' => '/calendar', 'icon' => 'calendar3', 'label' => 'ปฏิทินกลาง', 'show' => can('core.calendar.read_all')],
+    ['url' => '/files', 'icon' => 'folder2-open', 'label' => 'ไฟล์/เอกสาร', 'show' => can('core.files.read_own')],
+    ['url' => '/notifications', 'icon' => 'bell', 'label' => 'การแจ้งเตือน', 'show' => true],
+    ['url' => '/pdpa', 'icon' => 'shield-lock', 'label' => 'คำขอใช้สิทธิ์ PDPA', 'show' => can('core.pdpa.request_own')],
     ['url' => '/personnel', 'icon' => 'person-vcard', 'label' => 'ข้อมูลบุคลากร', 'show' => Rbac::scope('core.employees', 'read') !== null],
     ['url' => '/service-rooms', 'icon' => 'door-open', 'label' => 'ข้อมูลห้องบริการ', 'show' => can('core.service_rooms.read_all')],
     ['url' => '/users', 'icon' => 'people', 'label' => 'ผู้ใช้งาน', 'show' => Rbac::scope('core.users', 'read') !== null],

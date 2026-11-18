@@ -6,7 +6,11 @@ use Core\Router;
 use Modules\CoreAdmin\Controllers\Api\UserApiController;
 use Modules\CoreAdmin\Controllers\AuditController;
 use Modules\CoreAdmin\Controllers\AuthController;
+use Modules\CoreAdmin\Controllers\CalendarController;
 use Modules\CoreAdmin\Controllers\DashboardController;
+use Modules\CoreAdmin\Controllers\FileController;
+use Modules\CoreAdmin\Controllers\NotificationController;
+use Modules\CoreAdmin\Controllers\PdpaController;
 use Modules\CoreAdmin\Controllers\PersonnelController;
 use Modules\CoreAdmin\Controllers\ProfileController;
 use Modules\CoreAdmin\Controllers\RoleController;
@@ -109,6 +113,40 @@ $router->group(['middleware' => ['auth', 'password.fresh']], static function (Ro
     $r->get('/service-rooms/{id:\d+}/edit', [ServiceRoomController::class, 'edit'], ['perm:core.service_rooms.manage_all']);
     $r->put('/service-rooms/{id:\d+}', [ServiceRoomController::class, 'update'], ['csrf', 'perm:core.service_rooms.manage_all']);
     $r->delete('/service-rooms/{id:\d+}', [ServiceRoomController::class, 'destroy'], ['csrf', 'perm:core.service_rooms.manage_all']);
+
+    // Phase 3: Shared Services & Google Integration
+    // ไฟล์/เอกสาร (Google Shared Drive)
+    $r->get('/files', [FileController::class, 'index'], ['perm:core.files.read_own']);
+    $r->post('/files', [FileController::class, 'store'], ['csrf', 'perm:core.files.upload_own']);
+    $r->get('/files/{uuid:[0-9a-f-]+}/download', [FileController::class, 'download']);
+    $r->delete('/files/{uuid:[0-9a-f-]+}', [FileController::class, 'destroy'], ['csrf']);
+
+    // ปฏิทินกลาง
+    $r->get('/calendar', [CalendarController::class, 'index'], ['perm:core.calendar.read_all']);
+    $r->get('/calendar/create', [CalendarController::class, 'create'], ['perm:core.calendar.read_all']);
+    $r->post('/calendar', [CalendarController::class, 'store'], ['csrf', 'perm:core.calendar.read_all']);
+    $r->get('/calendar/{id:\d+}', [CalendarController::class, 'show'], ['perm:core.calendar.read_all']);
+    $r->get('/calendar/{id:\d+}/edit', [CalendarController::class, 'edit'], ['perm:core.calendar.read_all']);
+    $r->put('/calendar/{id:\d+}', [CalendarController::class, 'update'], ['csrf', 'perm:core.calendar.read_all']);
+    $r->delete('/calendar/{id:\d+}', [CalendarController::class, 'destroy'], ['csrf', 'perm:core.calendar.read_all']);
+
+    // การแจ้งเตือน (ของตนเองเท่านั้น)
+    $r->get('/notifications', [NotificationController::class, 'index']);
+    $r->get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);
+    $r->post('/notifications/read-all', [NotificationController::class, 'readAll'], ['csrf']);
+    $r->post('/notifications/{id:\d+}/open', [NotificationController::class, 'open'], ['csrf']);
+
+    // คำขอใช้สิทธิ์ PDPA
+    $r->get('/pdpa', [PdpaController::class, 'index'], ['perm:core.pdpa.request_own']);
+    $r->post('/pdpa', [PdpaController::class, 'store'], ['csrf', 'perm:core.pdpa.request_own']);
+    $r->get('/pdpa/export', [PdpaController::class, 'export'], ['perm:core.pdpa.request_own']);
+    $r->get('/pdpa/manage', [PdpaController::class, 'manage'], ['perm:core.pdpa.manage_all']);
+    $r->get('/pdpa/{id:\d+}', [PdpaController::class, 'show'], ['perm:core.pdpa.request_own,core.pdpa.manage_all']);
+    $r->post('/pdpa/{id:\d+}/cancel', [PdpaController::class, 'cancel'], ['csrf', 'perm:core.pdpa.request_own']);
+    $r->post('/pdpa/{id:\d+}/handle', [PdpaController::class, 'handle'], ['csrf', 'perm:core.pdpa.manage_all']);
+
+    // ทดสอบการเชื่อมต่อ Google Workspace
+    $r->post('/settings/google-test', [SettingController::class, 'testGoogle'], ['csrf', 'perm:core.settings.manage']);
 
     // Profile
     $r->get('/profile', [ProfileController::class, 'index']);

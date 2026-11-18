@@ -23,4 +23,13 @@ return [
         // ปิด 2FA ได้เฉพาะ env = local
         'two_factor_enabled' => false,
     ],
+    // Phase 3: Google Workspace ผ่าน Apps Script (ดู tools/google-apps-script/README.md)
+    'google' => [
+        'apps_script_url' => '', // https://script.google.com/macros/s/XXXX/exec
+        'shared_secret' => '',   // ค่าเดียวกับ Script Property SHARED_SECRET (อย่างน้อย 32 ตัวอักษร)
+    ],
+    'mail' => [
+        'driver' => 'log', // production: 'apps_script' (ส่งผ่าน Gmail ของ Google Workspace)
+    ],
+    // 'app' => ['url' => 'https://smart.example.go.th'], // URL เต็ม ใช้สร้างลิงก์ในอีเมล
 ];

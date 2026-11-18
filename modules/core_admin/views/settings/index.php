@@ -8,6 +8,26 @@ foreach ($settings as $s) {
 ?>
 <h1 class="h4 mb-3">ตั้งค่าระบบ</h1>
 
+<!-- Google Workspace (ค่าเชื่อมต่ออยู่ใน config/local.php ไม่เก็บในฐานข้อมูล) -->
+<div class="card shadow-sm mb-3">
+  <div class="card-body d-flex flex-wrap align-items-center gap-2">
+    <div class="me-auto">
+      <div class="fw-semibold"><i class="bi bi-google me-1"></i>Google Workspace (Shared Drive · Calendar · Gmail)</div>
+      <div class="small text-muted">
+        <?php if (Core\GoogleWorkspace::isConfigured()): ?>
+          ตั้งค่าแล้ว: <span class="font-monospace"><?= e(preg_replace('#(/macros/s/.{6}).+(/exec)$#', '$1…$2', (string) config('google.apps_script_url'))) ?></span>
+        <?php else: ?>
+          ยังไม่ได้ตั้งค่า — ใส่ google.apps_script_url และ google.shared_secret ใน config/local.php (ดู tools/google-apps-script/README.md)
+        <?php endif; ?>
+      </div>
+    </div>
+    <form method="post" action="<?= e(url('/settings/google-test')) ?>">
+      <?= csrf_field() ?>
+      <button type="submit" class="btn btn-outline-primary" <?= Core\GoogleWorkspace::isConfigured() ? '' : 'disabled' ?>><i class="bi bi-plug me-1"></i>ทดสอบการเชื่อมต่อ</button>
+    </form>
+  </div>
+</div>
+
 <form method="post" action="<?= e(url('/settings')) ?>">
   <?= csrf_field() ?>
   <?php foreach ($grouped as $group => $items): ?>

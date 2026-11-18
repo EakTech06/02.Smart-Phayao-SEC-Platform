@@ -64,7 +64,10 @@ INSERT INTO permissions (code, module, resource, action, scope, description) VAL
 ('core.calendar.create_department','core', 'calendar',      'create', 'department',   'สร้างกิจกรรมระดับฝ่าย'),
 ('core.calendar.create_all',       'core', 'calendar',      'create', 'all',          'สร้างกิจกรรมระดับองค์กร'),
 ('core.service_rooms.read_all',    'core', 'service_rooms', 'read',   'all',          'ดูข้อมูลห้องบริการ'),
-('core.service_rooms.manage_all',  'core', 'service_rooms', 'manage', 'all',          'เพิ่ม/แก้ไข/ลบข้อมูลห้องบริการ')
+('core.service_rooms.manage_all',  'core', 'service_rooms', 'manage', 'all',          'เพิ่ม/แก้ไข/ลบข้อมูลห้องบริการ'),
+('core.files.delete_all',          'core', 'files',         'delete', 'all',          'ลบไฟล์ของผู้อื่น'),
+('core.pdpa.request_own',          'core', 'pdpa',          'request','own',          'ยื่นคำขอใช้สิทธิ์ PDPA ของตนเอง'),
+('core.pdpa.manage_all',           'core', 'pdpa',          'manage', 'all',          'จัดการคำขอใช้สิทธิ์ PDPA (DPO)')
 ON DUPLICATE KEY UPDATE description = VALUES(description);
 
 -- ---------- Role → Permission ----------
@@ -80,7 +83,7 @@ INSERT IGNORE INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id FROM roles r JOIN permissions p ON p.code IN (
   'core.dashboard.view','core.users.read_own','core.users.update_own','core.employees.read_own',
   'core.files.read_own','core.files.upload_own','core.notifications.read_own','core.calendar.read_all',
-  'core.service_rooms.read_all')
+  'core.service_rooms.read_all','core.pdpa.request_own')
 WHERE r.code IN ('director','deputy_director','department_head','service_unit_head','teacher','staff');
 
 INSERT IGNORE INTO role_permissions (role_id, permission_id)
