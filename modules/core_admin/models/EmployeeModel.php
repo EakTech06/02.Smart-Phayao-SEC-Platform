@@ -15,7 +15,7 @@ final class EmployeeModel extends Model
 
     private const SELECT = "SELECT e.id, e.employee_code, e.title_name, e.first_name, e.last_name, e.nickname,
             e.gender, e.birth_date, e.position, e.position_number, e.academic_rank, e.employment_type,
-            e.education_level, e.education_major, e.department_id, d.name_th AS department_name,
+            e.education_level, e.education_major, e.screener_reg_no, e.department_id, d.name_th AS department_name,
             e.phone, e.email, e.address, e.avatar, e.national_id_last4,
             (e.national_id_encrypted IS NOT NULL) AS has_national_id_encrypted,
             e.start_date, e.end_date, e.status, e.note, e.created_at, e.updated_at,

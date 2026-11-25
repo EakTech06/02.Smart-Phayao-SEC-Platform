@@ -412,13 +412,15 @@ final class StudentController extends Controller
         return is_array($raw) ? array_values(array_filter($raw, 'is_string')) : [];
     }
 
+    /** ชื่อครูผู้คัดกรอง + เลขทะเบียนผู้คัดกรองคนพิการ (ถ้ามี) */
     private static function employeeName(mixed $id): ?string
     {
         if ($id === null) {
             return null;
         }
-        $row = Database::instance()->fetch('SELECT title_name, first_name, last_name FROM employees WHERE id = ?', [(int) $id]);
+        $row = Database::instance()->fetch('SELECT title_name, first_name, last_name, screener_reg_no FROM employees WHERE id = ?', [(int) $id]);
 
-        return $row !== null ? trim(($row['title_name'] ?? '') . $row['first_name'] . ' ' . $row['last_name']) : null;
+        return $row !== null ? trim(($row['title_name'] ?? '') . $row['first_name'] . ' ' . $row['last_name'])
+            . (!empty($row['screener_reg_no']) ? ' (เลขทะเบียนผู้คัดกรอง ' . $row['screener_reg_no'] . ')' : '') : null;
     }
 }

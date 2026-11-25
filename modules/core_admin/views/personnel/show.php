@@ -111,6 +111,7 @@ $accountErrors = array_filter([error_for('account'), error_for('username'), erro
           <?= $row('ประเภทบุคลากร', UserService::EMPLOYMENT_TYPES[$employee['employment_type']] ?? null) ?>
           <?= $row('ฝ่าย/งาน', $employee['department_name']) ?>
           <?= $row('วุฒิการศึกษา', trim(($employee['education_level'] ?? '') . ' ' . ($employee['education_major'] ?? ''))) ?>
+          <?= $row('เลขทะเบียนผู้คัดกรองคนพิการ', $employee['screener_reg_no']) ?>
           <?= $row('วันที่เริ่มปฏิบัติงาน', $thaiDate($employee['start_date'])) ?>
           <?= $row('วันที่สิ้นสุด', $thaiDate($employee['end_date'])) ?>
           <?= $row('หมายเหตุ', $employee['note']) ?>

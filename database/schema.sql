@@ -34,6 +34,7 @@ CREATE TABLE IF NOT EXISTS employees (
   employment_type ENUM('civil_servant','government_employee','permanent_employee','temporary_employee','other') NOT NULL DEFAULT 'other',
   education_level VARCHAR(100) NULL,
   education_major VARCHAR(150) NULL,
+  screener_reg_no VARCHAR(50) NULL COMMENT 'เลขทะเบียนผู้คัดกรองคนพิการ',
   department_id INT UNSIGNED NULL,
   phone VARCHAR(30) NULL,
   email VARCHAR(191) NULL,

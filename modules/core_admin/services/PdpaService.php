@@ -240,7 +240,7 @@ final class PdpaService
         ) ?? throw new HttpException(404);
         $employee = $user['employee_id'] !== null ? $db->fetch(
             'SELECT e.employee_code, e.title_name, e.first_name, e.last_name, e.nickname, e.gender, e.birth_date, e.position,
-                    e.position_number, e.academic_rank, e.employment_type, e.education_level, e.education_major,
+                    e.position_number, e.academic_rank, e.employment_type, e.education_level, e.education_major, e.screener_reg_no,
                     d.name_th AS department, e.phone, e.email, e.address, e.start_date, e.end_date, e.status, e.national_id_last4
              FROM employees e LEFT JOIN departments d ON d.id = e.department_id WHERE e.id = ?',
             [(int) $user['employee_id']]

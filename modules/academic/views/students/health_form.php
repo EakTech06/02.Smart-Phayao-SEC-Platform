@@ -32,7 +32,8 @@ foreach (StudentLookup::DISABILITY_LEVELS as $k => [$label, $type]) {
 }
 $teacherOptions = [];
 foreach ($teachers as $t) {
-    $teacherOptions[(string) $t['id']] = trim(($t['title_name'] ?? '') . $t['first_name'] . ' ' . $t['last_name']);
+    $teacherOptions[(string) $t['id']] = trim(($t['title_name'] ?? '') . $t['first_name'] . ' ' . $t['last_name'])
+        . (!empty($t['screener_reg_no']) ? ' (เลขทะเบียน ' . $t['screener_reg_no'] . ')' : '');
 }
 $screener = $val('screener_employee_id');
 if ($screener !== '' && !isset($teacherOptions[$screener])) {

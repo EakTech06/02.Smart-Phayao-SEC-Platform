@@ -134,6 +134,7 @@ $action = url($isEdit ? '/personnel/' . (int) $employee['id'] : '/personnel');
         <?= $field('department_id', ['type' => 'select', 'required' => true, 'options' => ['' => '-- เลือก --'] + $departmentOptions]) ?>
         <?= $field('education_level', ['max' => 100, 'list' => 'education-options']) ?>
         <?= $field('education_major', ['max' => 150]) ?>
+        <?= $field('screener_reg_no', ['max' => 50, 'help' => 'สำหรับครูที่ขึ้นทะเบียนเป็นผู้คัดกรองคนพิการ']) ?>
         <?= $field('start_date', ['type' => 'date']) ?>
         <?= $field('end_date', ['type' => 'date']) ?>
 

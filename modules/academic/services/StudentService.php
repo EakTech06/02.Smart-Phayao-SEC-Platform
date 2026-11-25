@@ -789,7 +789,7 @@ final class StudentService
                  FROM service_rooms r ORDER BY r.room_code"
             ),
             'teachers' => $db->fetchAll(
-                "SELECT e.id, e.title_name, e.first_name, e.last_name, e.status FROM employees e
+                "SELECT e.id, e.title_name, e.first_name, e.last_name, e.status, e.screener_reg_no FROM employees e
                  WHERE (e.deleted_at IS NULL AND e.status = 'active') OR e.id = ? ORDER BY e.first_name, e.last_name",
                 [(int) ($current['responsible_employee_id'] ?? 0)]
             ),

@@ -33,7 +33,7 @@ final class PersonnelService
      */
     public const FIELDS = [
         'title_name', 'first_name', 'last_name', 'nickname', 'gender', 'birth_date',
-        'position', 'position_number', 'academic_rank', 'employment_type', 'education_level', 'education_major',
+        'position', 'position_number', 'academic_rank', 'employment_type', 'education_level', 'education_major', 'screener_reg_no',
         'department_id', 'phone', 'email', 'address', 'start_date', 'end_date', 'status', 'note',
     ];
 
@@ -41,7 +41,8 @@ final class PersonnelService
         'employee_code' => 'รหัสบุคลากร', 'title_name' => 'คำนำหน้า', 'first_name' => 'ชื่อ', 'last_name' => 'นามสกุล',
         'nickname' => 'ชื่อเล่น', 'gender' => 'เพศ', 'birth_date' => 'วันเกิด', 'position' => 'ตำแหน่ง',
         'position_number' => 'เลขที่ตำแหน่ง', 'academic_rank' => 'วิทยฐานะ', 'employment_type' => 'ประเภทบุคลากร',
-        'education_level' => 'วุฒิการศึกษา', 'education_major' => 'สาขาวิชา', 'department_id' => 'ฝ่าย/งาน',
+        'education_level' => 'วุฒิการศึกษา', 'education_major' => 'สาขาวิชา', 'screener_reg_no' => 'เลขทะเบียนผู้คัดกรองคนพิการ',
+        'department_id' => 'ฝ่าย/งาน',
         'phone' => 'เบอร์โทรศัพท์', 'email' => 'อีเมล', 'address' => 'ที่อยู่', 'start_date' => 'วันที่เริ่มปฏิบัติงาน',
         'end_date' => 'วันที่สิ้นสุดการปฏิบัติงาน', 'status' => 'สถานะ', 'note' => 'หมายเหตุ',
         'national_id' => 'เลขประจำตัวประชาชน',
@@ -63,6 +64,7 @@ final class PersonnelService
             'employment_type' => 'required|in:' . implode(',', array_keys(UserService::EMPLOYMENT_TYPES)),
             'education_level' => 'nullable|max:100',
             'education_major' => 'nullable|max:150',
+            'screener_reg_no' => 'nullable|max:50',
             'department_id' => 'required|integer',
             'phone' => 'nullable|max:30',
             'email' => 'nullable|email|max:191',
@@ -95,7 +97,7 @@ final class PersonnelService
     /** ฟิลด์ที่ผู้ใช้แก้ไขข้อมูลของตนเองได้ (ข้อมูลการปฏิบัติงาน/ตำแหน่ง/ฝ่าย/สถานะ แก้ได้เฉพาะงานบุคคล) */
     public const SELF_EDIT_FIELDS = [
         'title_name', 'first_name', 'last_name', 'nickname', 'gender', 'birth_date', 'national_id',
-        'phone', 'email', 'address', 'education_level', 'education_major',
+        'phone', 'email', 'address', 'education_level', 'education_major', 'screener_reg_no',
     ];
 
     /** แก้ไขรายการนี้ได้เพียงเพราะเป็นข้อมูลของตนเอง (core.employees.update_own) จึงแก้ได้เฉพาะ SELF_EDIT_FIELDS */

@@ -27,7 +27,7 @@ final class PersonnelImportService
     /** หัวคอลัมน์ของไฟล์ต้นแบบ (department_code ใช้รหัสหรือชื่อฝ่ายก็ได้) */
     public const COLUMNS = [
         'employee_code', 'title_name', 'first_name', 'last_name', 'nickname', 'gender', 'birth_date',
-        'position', 'position_number', 'academic_rank', 'employment_type', 'education_level', 'education_major',
+        'position', 'position_number', 'academic_rank', 'employment_type', 'education_level', 'education_major', 'screener_reg_no',
         'department_code', 'phone', 'email', 'address', 'start_date', 'end_date', 'status', 'note', 'national_id',
     ];
 
@@ -35,7 +35,7 @@ final class PersonnelImportService
     {
         $example = [
             '', 'นาง', 'สมใจ', 'ใจดี', 'ใจ', 'หญิง', '2528-04-12', 'ครู', '12345', 'ครูชำนาญการ',
-            'ข้าราชการ', 'ปริญญาโท', 'การศึกษาพิเศษ', 'ACADEMIC', '0812345678', 'somjai@py-sec.ac.th', '',
+            'ข้าราชการ', 'ปริญญาโท', 'การศึกษาพิเศษ', '', 'ACADEMIC', '0812345678', 'somjai@py-sec.ac.th', '',
             '2555-05-16', '', 'ปฏิบัติงาน', '', '',
         ];
 
@@ -60,7 +60,9 @@ final class PersonnelImportService
             try {
                 $data = self::normalize($record, $departments);
                 $code = (string) $data['employee_code'];
+                $absent = $data['_absent'];
                 $data = Validator::validate($data, PersonnelService::rules(), PersonnelService::LABELS);
+                $data['_absent'] = $absent;
                 $data['employee_code'] = $code !== '' ? $code : null; // ว่าง = บุคลากรใหม่ ระบบสร้างรหัสให้
                 PersonnelService::assertDepartmentAllowed((int) $data['department_id']);
 
@@ -140,7 +142,13 @@ final class PersonnelImportService
                     if ($current === null || !PersonnelService::canUpdate($current)) {
                         throw new HttpException(403);
                     }
-                    PersonnelService::update($current, $row['data']);
+                    // คอลัมน์ที่ไม่มีในไฟล์ (เช่น ไฟล์ต้นแบบรุ่นเก่า) = คงค่าเดิม ไม่ล้างเป็นค่าว่าง
+                    $data = $row['data'];
+                    foreach ($data['_absent'] ?? [] as $field) {
+                        $data[$field] = (string) ($current[$field] ?? '');
+                    }
+                    unset($data['_absent']);
+                    PersonnelService::update($current, $data);
                     $updated++;
                 } elseif ($row['action'] === 'create' && $code === '') {
                     PersonnelService::create($row['data']);
@@ -264,6 +272,7 @@ final class PersonnelImportService
         foreach (PersonnelService::FIELDS as $field) {
             $data[$field] = $record[$field] ?? '';
         }
+        $data['_absent'] = array_values(array_diff(PersonnelService::FIELDS, array_keys($record), ['department_id']));
         $data['employee_code'] = trim((string) ($record['employee_code'] ?? ''));
         $data['national_id'] = $record['national_id'] ?? '';
         $data['employment_type'] = self::mapLabel($data['employment_type'], UserService::EMPLOYMENT_TYPES, 'other');
