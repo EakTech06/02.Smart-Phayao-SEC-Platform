@@ -9,6 +9,8 @@ use Modules\CoreAdmin\Services\ServiceRoomService;
 /** @var int|null $currentYearId */
 /** @var array<int, string> $nextCodes */
 /** @var array $teachers */
+/** @var list<string> $gradeLevels */
+/** @var array<int, array<int, string>> $assignments */
 
 $isEdit = $room !== null;
 $oldInput = Session::getFlash('old', []);
@@ -24,7 +26,25 @@ $val = static function (string $key, string $default = '') use ($room, $hasOld):
 
 $yearValue = (int) $val('academic_year_id', (string) ($currentYearId ?? ''));
 $codeValue = $val('room_code', $nextCodes[$yearValue] ?? 'R001');
-$teacherValue = (int) $val('homeroom_employee_id');
+$teacherValues = $hasOld
+    ? ServiceRoomService::teacherIdsInput($oldInput['teacher_ids'] ?? [])
+    : array_map(static fn (array $t): int => (int) $t['id'], $room['teachers'] ?? []);
+if ($teacherValues === []) {
+    $teacherValues = [0]; // แสดงช่องว่าง 1 ช่อง
+}
+$teacherOption = static function (int $selected) use ($teachers, $assignments): string {
+    $html = '<option value="">-- เลือกครู --</option>';
+    foreach ($teachers as $t) {
+        // data-rooms = {ปีการศึกษา: รหัสห้อง} ที่ครูเป็นครูประจำชั้นอยู่แล้ว → JS ซ่อนตามปีที่เลือก
+        $rooms = $assignments[(int) $t['id']] ?? [];
+        $html .= '<option value="' . (int) $t['id'] . '"' . ($selected === (int) $t['id'] ? ' selected' : '')
+            . ($rooms !== [] ? ' data-rooms="' . e((string) json_encode($rooms, JSON_UNESCAPED_UNICODE)) . '"' : '') . '>'
+            . e(PersonnelService::displayName($t) . ($t['position'] ? ' — ' . $t['position'] : '')
+                . ($t['status'] !== 'active' ? ' (ไม่ปฏิบัติงาน)' : '')) . '</option>';
+    }
+
+    return $html;
+};
 $action = url($isEdit ? '/service-rooms/' . (int) $room['id'] : '/service-rooms');
 $invalid = static fn (string $f): string => error_for($f) ? ' is-invalid' : '';
 $feedback = static fn (string $f): string => error_for($f) ? '<div class="invalid-feedback">' . e(error_for($f)) . '</div>' : '';
@@ -67,18 +87,27 @@ $feedback = static fn (string $f): string => error_for($f) ? '<div class="invali
           <?= $feedback('name_th') ?>
         </div>
         <div class="col-12 col-md-6">
-          <label class="form-label" for="f-homeroom_employee_id">ครูประจำชั้น</label>
-          <select id="f-homeroom_employee_id" name="homeroom_employee_id" class="form-select<?= $invalid('homeroom_employee_id') ?>">
-            <option value="">-- ยังไม่กำหนด --</option>
-            <?php foreach ($teachers as $t): ?>
-              <option value="<?= (int) $t['id'] ?>" <?= $teacherValue === (int) $t['id'] ? 'selected' : '' ?>>
-                <?= e(PersonnelService::displayName($t) . ($t['position'] ? ' — ' . $t['position'] : '')
-                    . ($t['status'] !== 'active' ? ' (ไม่ปฏิบัติงาน)' : '')) ?>
-              </option>
+          <label class="form-label" for="f-grade_level">ระดับชั้น</label>
+          <input id="f-grade_level" name="grade_level" type="text" class="form-control<?= $invalid('grade_level') ?>"
+                 value="<?= e($val('grade_level')) ?>" maxlength="50" list="room-grade-options" placeholder="เช่น เตรียมความพร้อม">
+          <datalist id="room-grade-options"><?php foreach ($gradeLevels as $g): ?><option value="<?= e($g) ?>"><?php endforeach; ?></datalist>
+          <?= $feedback('grade_level') ?>
+          <div class="form-text">เลือกจากรายการหรือพิมพ์เอง · ใช้เป็นค่าเริ่มต้นระดับชั้นของนักเรียนในห้องนี้</div>
+        </div>
+        <div class="col-12">
+          <label class="form-label">ครูประจำชั้น <span class="text-muted small">(ได้สูงสุด <?= ServiceRoomService::MAX_TEACHERS ?> คน · คนแรก = ครูประจำชั้นหลัก)</span></label>
+          <div class="d-grid gap-2" data-teacher-list data-max="<?= ServiceRoomService::MAX_TEACHERS ?>">
+            <?php foreach ($teacherValues as $i => $tid): ?>
+              <div class="input-group" data-teacher-row>
+                <span class="input-group-text" data-teacher-no style="min-width: 2.75rem;"><?= $i + 1 ?></span>
+                <select name="teacher_ids[]" class="form-select<?= $invalid('teacher_ids') ?>" aria-label="ครูประจำชั้นคนที่ <?= $i + 1 ?>"><?= $teacherOption($tid) ?></select>
+                <button type="button" class="btn btn-outline-danger" data-teacher-remove title="เอาออก"><i class="bi bi-x-lg"></i></button>
+              </div>
             <?php endforeach; ?>
-          </select>
-          <?= $feedback('homeroom_employee_id') ?>
-          <div class="form-text">ดึงจากข้อมูลบุคลากร (เฉพาะสถานะปฏิบัติงาน)</div>
+          </div>
+          <?php foreach (errors()['teacher_ids'] ?? [] as $msg): ?><div class="invalid-feedback d-block"><?= e($msg) ?></div><?php endforeach; ?>
+          <button type="button" class="btn btn-sm btn-outline-primary mt-2" data-teacher-add><i class="bi bi-plus-lg me-1"></i>เพิ่มครูประจำชั้น</button>
+          <div class="form-text">ดึงจากข้อมูลบุคลากร (เฉพาะสถานะปฏิบัติงาน) · ครู 1 คนเป็นครูประจำชั้นได้ 1 ห้องต่อปีการศึกษา: ครูที่มีห้องแล้วจะไม่แสดงในรายการ</div>
         </div>
       </div>
     </div>

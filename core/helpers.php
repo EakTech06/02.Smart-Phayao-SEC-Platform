@@ -30,9 +30,14 @@ function url(string $path = '/'): string
     return base_url() . '/' . ltrim($path, '/');
 }
 
+/** URL ของไฟล์ใน public/assets ต่อท้าย ?v=เวลาแก้ไขไฟล์ เพื่อให้เบราว์เซอร์โหลดไฟล์ใหม่ทุกครั้งที่ไฟล์เปลี่ยน (ไม่ต้องกด Ctrl+F5) */
 function asset(string $path): string
 {
-    return url('assets/' . ltrim($path, '/'));
+    $path = ltrim($path, '/');
+    $file = dirname(__DIR__) . '/public/assets/' . $path;
+    $mtime = is_file($file) ? filemtime($file) : false;
+
+    return url('assets/' . $path) . ($mtime !== false && !str_contains($path, '?') ? '?v=' . $mtime : '');
 }
 
 function current_path(): string

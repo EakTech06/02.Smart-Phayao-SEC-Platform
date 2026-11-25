@@ -44,7 +44,7 @@ final class ServiceRoomController extends Controller
     {
         $this->authorize('core.service_rooms.manage_all');
         $data = $this->validate(ServiceRoomService::rules(), ServiceRoomService::LABELS);
-        ServiceRoomService::create($data);
+        ServiceRoomService::create($data, ServiceRoomService::teacherIdsInput($this->request->input('teacher_ids', [])));
         Session::flash('success', 'เพิ่มห้องบริการเรียบร้อยแล้ว');
 
         return $this->redirect('/service-rooms?year=' . (int) $data['academic_year_id']);
@@ -62,7 +62,7 @@ final class ServiceRoomController extends Controller
         $this->authorize('core.service_rooms.manage_all');
         $room = $this->find($id);
         $data = $this->validate(ServiceRoomService::rules(), ServiceRoomService::LABELS);
-        ServiceRoomService::update($room, $data);
+        ServiceRoomService::update($room, $data, ServiceRoomService::teacherIdsInput($this->request->input('teacher_ids', [])));
         Session::flash('success', 'บันทึกข้อมูลห้องบริการเรียบร้อยแล้ว');
 
         return $this->redirect('/service-rooms?year=' . (int) $data['academic_year_id']);
@@ -91,7 +91,9 @@ final class ServiceRoomController extends Controller
             'years' => ServiceRoomModel::academicYears(),
             'currentYearId' => ServiceRoomModel::currentAcademicYearId(),
             'nextCodes' => ServiceRoomService::nextCodes(),
-            'teachers' => ServiceRoomModel::teacherOptions($room !== null ? (int) ($room['homeroom_employee_id'] ?? 0) : null),
+            'teachers' => ServiceRoomModel::teacherOptions(array_map(static fn (array $t): int => (int) $t['id'], $room['teachers'] ?? [])),
+            'gradeLevels' => ServiceRoomService::GRADE_LEVELS,
+            'assignments' => ServiceRoomModel::roomAssignments($room !== null ? (int) $room['id'] : null),
         ]);
     }
 }

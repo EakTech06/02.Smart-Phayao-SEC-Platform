@@ -96,10 +96,10 @@ final class StudentService
                 $employeeId = self::employeeIdOf($userId);
                 if ($employeeId !== null) {
                     $parts[] = 'EXISTS (SELECT 1 FROM academic_student_enrollments xo
-                        LEFT JOIN service_rooms ro ON ro.id = xo.service_room_id
+                        LEFT JOIN service_room_teachers ro ON ro.service_room_id = xo.service_room_id AND ro.employee_id = ?
                         WHERE xo.student_id = s.id AND xo.academic_year_id = ?
-                          AND (xo.responsible_employee_id = ? OR ro.homeroom_employee_id = ?))';
-                    array_push($params, $year, $employeeId, $employeeId);
+                          AND (xo.responsible_employee_id = ? OR ro.employee_id IS NOT NULL))';
+                    array_push($params, $employeeId, $year, $employeeId);
                 }
                 continue;
             }
@@ -195,7 +195,7 @@ final class StudentService
             }
         }
         if (!empty($filters['mine'])) {
-            $where[] = '(en.responsible_employee_id = ? OR r.homeroom_employee_id = ?)';
+            $where[] = '(en.responsible_employee_id = ? OR EXISTS (SELECT 1 FROM service_room_teachers mt WHERE mt.service_room_id = en.service_room_id AND mt.employee_id = ?))';
             $emp = self::employeeIdOf() ?? 0;
             array_push($params, $emp, $emp);
         }
@@ -319,13 +319,15 @@ final class StudentService
             "SELECT en.*, ay.name AS year_name, ay.year_be, ay.is_current, d.name_th AS department_name,
                     r.room_code, r.name_th AS room_name,
                     TRIM(CONCAT(COALESCE(t.title_name, ''), t.first_name, ' ', t.last_name)) AS teacher_name, t.status AS teacher_status,
-                    TRIM(CONCAT(COALESCE(h.title_name, ''), h.first_name, ' ', h.last_name)) AS homeroom_name
+                    (SELECT GROUP_CONCAT(TRIM(CONCAT(COALESCE(h.title_name, ''), h.first_name, ' ', h.last_name))
+                            ORDER BY st.sort_order SEPARATOR ', ')
+                     FROM service_room_teachers st JOIN employees h ON h.id = st.employee_id
+                     WHERE st.service_room_id = en.service_room_id) AS homeroom_name
              FROM academic_student_enrollments en
              JOIN academic_years ay ON ay.id = en.academic_year_id
              LEFT JOIN departments d ON d.id = en.department_id
              LEFT JOIN service_rooms r ON r.id = en.service_room_id
              LEFT JOIN employees t ON t.id = en.responsible_employee_id
-             LEFT JOIN employees h ON h.id = r.homeroom_employee_id
              WHERE en.student_id = ?
              ORDER BY ay.year_be DESC",
             [$studentId]
@@ -689,7 +691,7 @@ final class StudentService
                  WHERE d.is_active = 1 AND (d.type = 'service_unit' OR p.type = 'service_unit') ORDER BY d.sort_order, d.id"
             ),
             'rooms' => $db->fetchAll(
-                "SELECT r.id, r.academic_year_id, r.room_code, r.name_th FROM service_rooms r ORDER BY r.room_code"
+                "SELECT r.id, r.academic_year_id, r.room_code, r.name_th, r.grade_level FROM service_rooms r ORDER BY r.room_code"
             ),
             'teachers' => $db->fetchAll(
                 "SELECT e.id, e.title_name, e.first_name, e.last_name, e.status FROM employees e
@@ -1012,8 +1014,11 @@ final class StudentService
             $errors['enroll_department_id'][] = 'กรุณาเลือกหน่วยบริการ';
         }
         $roomId = !empty($e['service_room_id']) ? (int) $e['service_room_id'] : null;
+        $roomGrade = null;
         if ($roomId !== null) {
-            $roomYear = $db->fetchColumn('SELECT academic_year_id FROM service_rooms WHERE id = ?', [$roomId]);
+            $roomRow = $db->fetch('SELECT academic_year_id, grade_level FROM service_rooms WHERE id = ?', [$roomId]);
+            $roomYear = $roomRow['academic_year_id'] ?? null;
+            $roomGrade = $roomRow['grade_level'] ?? null;
             if ($roomYear === null || (int) $roomYear !== $yearId) {
                 $errors['enroll_service_room_id'][] = 'ห้องบริการต้องเป็นของปีการศึกษาเดียวกัน';
             }
@@ -1031,7 +1036,7 @@ final class StudentService
             'service_type' => $type,
             'department_id' => $deptId,
             'service_room_id' => $roomId,
-            'grade_level' => ($e['grade_level'] ?? '') !== '' ? $e['grade_level'] : null,
+            'grade_level' => ($e['grade_level'] ?? '') !== '' ? $e['grade_level'] : $roomGrade, // ว่าง = ใช้ระดับชั้นของห้อง
             'responsible_employee_id' => $teacherId,
             'note' => ($e['note'] ?? '') !== '' ? $e['note'] : null,
         ];

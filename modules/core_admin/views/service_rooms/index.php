@@ -8,16 +8,22 @@ use Modules\CoreAdmin\Services\ServiceRoomService;
 /** @var bool $canManage */
 
 $teacherCell = static function (array $room): string {
-    if ($room['homeroom_employee_id'] === null) {
+    if ($room['teachers'] === []) {
         return '<span class="text-muted">- ยังไม่กำหนด -</span>';
     }
-    $html = e(ServiceRoomService::teacherName($room));
-    if ($room['homeroom_deleted_at'] !== null || $room['homeroom_status'] !== 'active') {
-        $html .= ' <span class="badge text-bg-warning" title="ควรเปลี่ยนครูประจำชั้น">พ้นสภาพ/ไม่ปฏิบัติงาน</span>';
+    $parts = [];
+    foreach ($room['teachers'] as $t) {
+        $html = e(ServiceRoomService::teacherName($t));
+        if (ServiceRoomService::teacherInactive($t)) {
+            $html .= ' <span class="badge text-bg-warning" title="ควรเปลี่ยนครูประจำชั้น">พ้นสภาพ/ไม่ปฏิบัติงาน</span>';
+        }
+        $parts[] = '<div>' . $html . '</div>';
     }
 
-    return $html;
+    return implode('', $parts);
 };
+$gradeCell = static fn (array $room): string => $room['grade_level'] !== null && $room['grade_level'] !== ''
+    ? e($room['grade_level']) : '<span class="text-muted">-</span>';
 $deleteForm = static function (array $room): string {
     return '<form method="post" action="' . e(url('/service-rooms/' . (int) $room['id'])) . '" class="d-inline"'
         . ' data-confirm="ลบห้องบริการ ' . e($room['room_code'] . ' ' . $room['name_th']) . ' (ปีการศึกษา ' . (int) $room['year_be'] . ')?">'
@@ -48,7 +54,7 @@ $deleteForm = static function (array $room): string {
       </div>
       <div class="col-6 col-md-5 col-xl-4">
         <label class="form-label small mb-1" for="q">ค้นหา</label>
-        <input type="search" id="q" name="q" class="form-control" value="<?= e($filters['q']) ?>" placeholder="รหัส, ชื่อห้อง, ชื่อครู">
+        <input type="search" id="q" name="q" class="form-control" value="<?= e($filters['q']) ?>" placeholder="รหัส, ชื่อห้อง, ระดับชั้น, ชื่อครู">
       </div>
       <div class="col-12 col-md-4 col-xl-2">
         <button type="submit" class="btn btn-outline-primary w-100"><i class="bi bi-funnel me-1"></i>กรอง</button>
@@ -71,6 +77,7 @@ $deleteForm = static function (array $room): string {
             <th style="width: 8rem;">รหัสห้องบริการ</th>
             <th style="width: 7rem;">ปีการศึกษา</th>
             <th>ชื่อห้องบริการ</th>
+            <th style="width: 10rem;">ระดับชั้น</th>
             <th>ครูประจำชั้น</th>
             <?php if ($canManage): ?><th class="text-end" style="width: 7rem;">จัดการ</th><?php endif; ?>
           </tr>
@@ -81,6 +88,7 @@ $deleteForm = static function (array $room): string {
               <td class="font-monospace fw-semibold"><?= e($room['room_code']) ?></td>
               <td><?= (int) $room['year_be'] ?></td>
               <td><?= e($room['name_th']) ?></td>
+              <td><?= $gradeCell($room) ?></td>
               <td><?= $teacherCell($room) ?></td>
               <?php if ($canManage): ?>
                 <td class="text-end text-nowrap">
@@ -106,7 +114,8 @@ $deleteForm = static function (array $room): string {
               <div><span class="badge text-bg-primary font-monospace"><?= e($room['room_code']) ?></span>
                 <span class="small text-muted ms-1">ปีการศึกษา <?= (int) $room['year_be'] ?></span></div>
               <div class="fw-semibold mt-1"><?= e($room['name_th']) ?></div>
-              <div class="small mt-1"><i class="bi bi-person-badge me-1 text-muted"></i><?= $teacherCell($room) ?></div>
+              <div class="small text-muted"><i class="bi bi-mortarboard me-1"></i>ระดับชั้น <?= $gradeCell($room) ?></div>
+              <div class="small mt-1 d-flex"><i class="bi bi-person-badge me-1 text-muted"></i><div><?= $teacherCell($room) ?></div></div>
             </div>
             <?php if ($canManage): ?>
               <div class="d-flex flex-column gap-1">

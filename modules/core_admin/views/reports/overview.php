@@ -215,12 +215,13 @@ $pct = static fn (int $n, int $total): string => $total > 0 ? number_format($n *
         <p class="text-muted mb-0"><?= $report['rooms']['year'] ? 'ไม่มีข้อมูลห้องบริการในปีการศึกษานี้' : 'ช่วงเวลาที่เลือกไม่ตรงกับปีการศึกษาใด' ?></p>
       <?php else: ?>
         <table class="table table-sm table-bordered align-middle mb-1">
-          <thead class="table-light"><tr><th style="width: 7rem">รหัสห้อง</th><th>ชื่อห้องบริการ</th><th>ครูประจำชั้น</th></tr></thead>
+          <thead class="table-light"><tr><th style="width: 7rem">รหัสห้อง</th><th>ชื่อห้องบริการ</th><th>ระดับชั้น</th><th>ครูประจำชั้น</th></tr></thead>
           <tbody>
             <?php foreach ($report['rooms']['rooms'] as $r): ?>
               <tr>
                 <td class="font-monospace"><?= e($r['room_code']) ?></td>
                 <td><?= e($r['name_th']) ?></td>
+                <td><?= e($r['grade_level'] ?: '-') ?></td>
                 <td><?= e($r['teacher'] ?: '-') ?><?= $r['teacher'] && $r['teacher_status'] !== 'active' ? ' <span class="badge text-bg-warning">ไม่ได้ปฏิบัติงานแล้ว</span>' : '' ?></td>
               </tr>
             <?php endforeach; ?>

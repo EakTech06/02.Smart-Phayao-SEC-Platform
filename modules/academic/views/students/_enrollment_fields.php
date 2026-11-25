@@ -38,7 +38,7 @@ $selectedRoom = $val('enroll_service_room_id');
     <select id="f-enroll_service_room_id" name="enroll_service_room_id" class="form-select<?= $roomError ? ' is-invalid' : '' ?>" data-room-select>
       <option value="">-- ไม่ระบุ --</option>
       <?php foreach ($options['rooms'] as $r): ?>
-        <option value="<?= (int) $r['id'] ?>" data-year="<?= (int) $r['academic_year_id'] ?>"<?= (string) $r['id'] === $selectedRoom ? ' selected' : '' ?>><?= e($r['room_code'] . ' ' . $r['name_th']) ?></option>
+        <option value="<?= (int) $r['id'] ?>" data-year="<?= (int) $r['academic_year_id'] ?>" data-grade="<?= e((string) ($r['grade_level'] ?? '')) ?>"<?= (string) $r['id'] === $selectedRoom ? ' selected' : '' ?>><?= e($r['room_code'] . ' ' . $r['name_th']) ?></option>
       <?php endforeach; ?>
     </select>
     <?php if ($roomError): ?><div class="invalid-feedback"><?= e($roomError) ?></div><?php endif; ?>

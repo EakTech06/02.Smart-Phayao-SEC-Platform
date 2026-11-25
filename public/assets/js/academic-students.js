@@ -44,6 +44,19 @@
     };
     year.addEventListener('change', sync);
     sync();
+
+    // เลือกห้อง → เติมระดับชั้นของห้องให้ (เฉพาะเมื่อช่องระดับชั้นว่าง หรือยังเป็นค่าที่ระบบเติมไว้)
+    const grade = document.getElementById('f-enroll_grade_level');
+    if (grade) {
+      let filled = null;
+      room.addEventListener('change', () => {
+        const g = room.selectedOptions[0] ? room.selectedOptions[0].dataset.grade || '' : '';
+        if (g && (grade.value === '' || grade.value === filled)) {
+          grade.value = g;
+          filled = g;
+        }
+      });
+    }
   }
 
   // เลือกทั้งหมด (หน้ายกยอดปีการศึกษา)

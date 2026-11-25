@@ -274,15 +274,21 @@ final class ReportService
         if ($academicYearId === null || $year === false) {
             return ['year' => null, 'total' => 0, 'with_teacher' => 0, 'rooms' => []];
         }
-        // ผู้ดูรายฝ่าย: นับห้องที่ครูประจำชั้นสังกัดฝ่ายในสิทธิ์
-        [$in, $params] = self::inClause('e.department_id', $departmentIds);
+        // ผู้ดูรายฝ่าย: นับห้องที่มีครูประจำชั้นอย่างน้อย 1 คนสังกัดฝ่ายในสิทธิ์
+        [$in, $params] = self::inClause('fe.department_id', $departmentIds);
         $rooms = $db->fetchAll(
-            "SELECT sr.room_code, sr.name_th,
-                    TRIM(CONCAT_WS(' ', CONCAT(COALESCE(e.title_name, ''), e.first_name), e.last_name)) AS teacher,
-                    e.status AS teacher_status
+            "SELECT sr.room_code, sr.name_th, sr.grade_level,
+                    (SELECT GROUP_CONCAT(TRIM(CONCAT_WS(' ', CONCAT(COALESCE(e.title_name, ''), e.first_name), e.last_name))
+                            ORDER BY st.sort_order SEPARATOR ', ')
+                     FROM service_room_teachers st JOIN employees e ON e.id = st.employee_id AND e.deleted_at IS NULL
+                     WHERE st.service_room_id = sr.id) AS teacher,
+                    CASE WHEN EXISTS (SELECT 1 FROM service_room_teachers st JOIN employees e ON e.id = st.employee_id
+                                      WHERE st.service_room_id = sr.id AND e.deleted_at IS NULL AND e.status = 'active')
+                         THEN 'active' ELSE 'inactive' END AS teacher_status
              FROM service_rooms sr
-             LEFT JOIN employees e ON e.id = sr.homeroom_employee_id AND e.deleted_at IS NULL
-             WHERE sr.academic_year_id = ? AND " . ($departmentIds === null ? '1 = 1' : $in) . '
+             WHERE sr.academic_year_id = ? AND " . ($departmentIds === null ? '1 = 1'
+                : "EXISTS (SELECT 1 FROM service_room_teachers fs JOIN employees fe ON fe.id = fs.employee_id
+                           WHERE fs.service_room_id = sr.id AND fe.deleted_at IS NULL AND {$in})") . '
              ORDER BY sr.room_code',
             array_merge([$academicYearId], $departmentIds === null ? [] : $params)
         );
@@ -545,9 +551,9 @@ final class ReportService
             $breakdown[] = ['วุฒิการศึกษา', $k, $n];
         }
 
-        $rooms = [['รหัสห้อง', 'ชื่อห้องบริการ', 'ครูประจำชั้น']];
+        $rooms = [['รหัสห้อง', 'ชื่อห้องบริการ', 'ระดับชั้น', 'ครูประจำชั้น']];
         foreach ($report['rooms']['rooms'] as $r) {
-            $rooms[] = [$r['room_code'], $r['name_th'], $r['teacher'] ?: '-'];
+            $rooms[] = [$r['room_code'], $r['name_th'], $r['grade_level'] ?: '-', $r['teacher'] ?: '-'];
         }
 
         $activity = [['ปฏิทินกลาง: ฝ่าย/งาน', 'จำนวนกิจกรรม']];

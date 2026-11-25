@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Academic\Services;
 
+use Modules\CoreAdmin\Services\ServiceRoomService;
+
 /**
  * ค่าคงที่/ตัวเลือกของทะเบียนนักเรียน อ้างอิงแบบฟอร์มระบบ SET (สพฐ.)
  * และใบสมัครขอรับบริการช่วยเหลือระยะแรกเริ่มของศูนย์การศึกษาพิเศษ ประจำจังหวัดพะเยา
@@ -195,11 +197,8 @@ final class StudentLookup
     public const REF_TYPE = 'academic_students';
     public const REF_TYPE_SENSITIVE = 'academic_students_sensitive';
 
-    public const GRADE_LEVELS = [
-        'เตรียมความพร้อม', 'อนุบาล 1', 'อนุบาล 2', 'อนุบาล 3',
-        'ประถมศึกษาปีที่ 1', 'ประถมศึกษาปีที่ 2', 'ประถมศึกษาปีที่ 3',
-        'ประถมศึกษาปีที่ 4', 'ประถมศึกษาปีที่ 5', 'ประถมศึกษาปีที่ 6',
-    ];
+    /** รายการเดียวกับระดับชั้นของห้องบริการ */
+    public const GRADE_LEVELS = ServiceRoomService::GRADE_LEVELS;
 
     public const NATIONALITIES = ['ไทย', 'รอให้สัญชาติไทย', 'ไม่มีสัญชาติ', 'บุคคลที่ไม่มีสถานะทางทะเบียน', 'พม่า', 'ลาว', 'จีน', 'กัมพูชา', 'เวียดนาม'];
 

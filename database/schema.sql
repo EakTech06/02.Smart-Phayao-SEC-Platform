@@ -363,15 +363,25 @@ CREATE TABLE IF NOT EXISTS service_rooms (
   room_code VARCHAR(10) NOT NULL COMMENT 'รูปแบบ R + ตัวเลข 3 หลัก เช่น R001',
   academic_year_id INT UNSIGNED NOT NULL,
   name_th VARCHAR(255) NOT NULL,
-  homeroom_employee_id INT UNSIGNED NULL COMMENT 'ครูประจำชั้น (employees.id)',
+  grade_level VARCHAR(50) NULL COMMENT 'ระดับชั้นของห้อง เช่น เตรียมความพร้อม',
   created_by INT UNSIGNED NULL,
   updated_by INT UNSIGNED NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NULL ON UPDATE CURRENT_TIMESTAMP,
   UNIQUE KEY uq_service_rooms_year_code (academic_year_id, room_code),
-  KEY idx_service_rooms_homeroom (homeroom_employee_id),
-  CONSTRAINT fk_service_rooms_year FOREIGN KEY (academic_year_id) REFERENCES academic_years(id) ON DELETE RESTRICT,
-  CONSTRAINT fk_service_rooms_homeroom FOREIGN KEY (homeroom_employee_id) REFERENCES employees(id) ON DELETE SET NULL
+  CONSTRAINT fk_service_rooms_year FOREIGN KEY (academic_year_id) REFERENCES academic_years(id) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ครูประจำชั้นของห้องบริการ (มีได้มากกว่า 1 คน, sort_order 1 = ครูหลัก)
+CREATE TABLE IF NOT EXISTS service_room_teachers (
+  service_room_id INT UNSIGNED NOT NULL,
+  employee_id INT UNSIGNED NOT NULL,
+  sort_order TINYINT UNSIGNED NOT NULL DEFAULT 1,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (service_room_id, employee_id),
+  KEY idx_service_room_teachers_employee (employee_id),
+  CONSTRAINT fk_service_room_teachers_room FOREIGN KEY (service_room_id) REFERENCES service_rooms (id) ON DELETE CASCADE,
+  CONSTRAINT fk_service_room_teachers_employee FOREIGN KEY (employee_id) REFERENCES employees (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- คำขอใช้สิทธิ์ของเจ้าของข้อมูล (PDPA มาตรา 30-36) ต้องดำเนินการภายใน 30 วัน
