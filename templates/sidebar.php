@@ -28,8 +28,6 @@ $groups = [
     ]],
     'academic' => ['label' => 'ฝ่ายบริหารวิชาการ', 'icon' => 'mortarboard', 'items' => [
         ['url' => '/academic/students', 'icon' => 'person-lines-fill', 'label' => 'ทะเบียนนักเรียน', 'show' => $academicOn && Rbac::scope('academic.students', 'read') !== null],
-        ['url' => '/academic/students/import', 'icon' => 'filetype-csv', 'label' => 'นำเข้าข้อมูลนักเรียน', 'show' => $academicOn && can('academic.students.create_all')],
-        ['url' => '/academic/enrollments/promote', 'icon' => 'skip-forward', 'label' => 'ยกยอดปีการศึกษา', 'show' => $academicOn && can('academic.students.update_all')],
     ]],
     'budget' => ['label' => 'ฝ่ายบริหารงบประมาณ', 'icon' => 'cash-coin', 'items' => []],
     'personnel' => ['label' => 'ฝ่ายบริหารงานบุคคล', 'icon' => 'person-vcard', 'items' => [
