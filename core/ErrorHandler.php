@@ -14,7 +14,16 @@ final class ErrorHandler
         'new_password', 'new_password_confirmation', '_csrf', 'code', 'national_id',
     ];
 
+    /** ฟิลด์เพิ่มเติมที่ห้ามเก็บเป็น old input ในคำขอนี้ (เช่น ฟอร์มข้อมูลสุขภาพ) */
+    private static array $noFlash = [];
+
     private static bool $debug = false;
+
+    /** ห้ามเก็บค่าที่กรอกของฟิลด์เหล่านี้ลง Session เมื่อ validate ไม่ผ่าน (ข้อมูลอ่อนไหว) */
+    public static function doNotFlash(string ...$keys): void
+    {
+        array_push(self::$noFlash, ...$keys);
+    }
 
     public static function register(bool $debug): void
     {
@@ -81,7 +90,9 @@ final class ErrorHandler
                 return Response::fail($e->errors(), 422);
             }
             Session::flash('errors', $e->errors());
-            Session::flash('old', $request->except(self::SENSITIVE_INPUT));
+            // เลขบัตรทุกช่อง (*_national_id) และฟิลด์ที่ระบุผ่าน doNotFlash() ไม่ถูกเก็บลง Session
+            $old = $request->except(array_merge(self::SENSITIVE_INPUT, self::$noFlash));
+            Session::flash('old', array_filter($old, static fn ($k): bool => !str_ends_with((string) $k, 'national_id'), ARRAY_FILTER_USE_KEY));
 
             return Response::back($request);
         }

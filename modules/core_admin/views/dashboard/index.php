@@ -42,7 +42,11 @@ $tile = static function (string $icon, string $color, int|string $value, string 
       <?php if ($stats['users'] !== null): ?>
         <div class="col-6 col-md-4"><?= $tile('people', 'primary', $stats['users'], 'ผู้ใช้ที่มองเห็น', '/users') ?></div>
       <?php endif; ?>
-      <div class="col-6 col-md-4"><?= $tile('diagram-3', 'success', $stats['departments'], 'ฝ่าย/งาน') ?></div>
+      <?php if ($stats['students'] !== null): ?>
+        <div class="col-6 col-md-4"><?= $tile('mortarboard', 'primary', $stats['students'], 'นักเรียนที่รับบริการปีนี้', '/academic/students') ?></div>
+      <?php else: ?>
+        <div class="col-6 col-md-4"><?= $tile('diagram-3', 'success', $stats['departments'], 'ฝ่าย/งาน') ?></div>
+      <?php endif; ?>
       <div class="col-6 col-md-4"><?= $tile('door-open', 'success', $stats['rooms'], 'ห้องบริการปีการศึกษานี้', can('core.service_rooms.read_all') ? '/service-rooms' : null) ?></div>
       <div class="col-6 col-md-4"><?= $tile('calendar-event', 'warning', $stats['events_month'], 'กิจกรรมเดือนนี้', can('core.calendar.read_all') ? '/calendar' : null) ?></div>
       <div class="col-6 col-md-4"><?= $tile('bell', $stats['unread'] > 0 ? 'danger' : 'secondary', $stats['unread'], 'แจ้งเตือนที่ยังไม่อ่าน', '/notifications') ?></div>

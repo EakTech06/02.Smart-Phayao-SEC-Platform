@@ -307,8 +307,21 @@ final class FileService
         return $id !== null ? (int) $id : null;
     }
 
+    /** @var array<string, callable(int, int, array): bool> นโยบายไฟล์แนบที่โมดูลอื่นลงทะเบียนไว้ (ref_type => fn(refId, userId, file)) */
+    private static array $attachmentPolicies = [];
+
+    /** ให้โมดูลกำหนดสิทธิ์ดูไฟล์แนบของเอกสารตนเอง (เรียกจาก modules/{module}/routes.php) */
+    public static function registerAttachmentPolicy(string $refType, callable $policy): void
+    {
+        self::$attachmentPolicies[$refType] = $policy;
+    }
+
     private static function canViewAttachment(array $file, int $userId): bool
     {
+        if (isset(self::$attachmentPolicies[$file['ref_type']])) {
+            return (bool) (self::$attachmentPolicies[$file['ref_type']])((int) $file['ref_id'], $userId, $file);
+        }
+
         return match ($file['ref_type']) {
             'pdpa_requests' => PdpaService::canViewRequestId((int) $file['ref_id'], $userId),
             default => (int) $file['owner_user_id'] === $userId || Rbac::can('core.files.read_all', $userId),

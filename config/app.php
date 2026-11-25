@@ -11,5 +11,5 @@ return [
     'debug' => false,
     'timezone' => 'Asia/Bangkok',
     'key' => '',
-    'modules' => ['core_admin'],
+    'modules' => ['core_admin', 'academic'],
 ];

@@ -40,6 +40,9 @@ final class DashboardController extends Controller
                 [date('Y-m-t 23:59:59'), date('Y-m-01 00:00:00')]
             ),
             'unread' => NotificationService::unreadCount(),
+            // Phase 5A: นักเรียนที่กำลังรับบริการปีการศึกษานี้ (ตามสิทธิ์ของผู้ดู) null = ไม่มีสิทธิ์/ไม่ได้เปิดโมดูล
+            'students' => in_array('academic', (array) config('app.modules', []), true)
+                ? \Modules\Academic\Services\StudentService::activeEnrolledCount() : null,
             'academic_year' => $db->fetchColumn('SELECT name FROM academic_years WHERE is_current = 1 LIMIT 1'),
             'fiscal_year' => $db->fetchColumn('SELECT name FROM fiscal_years WHERE is_current = 1 LIMIT 1'),
             'evaluation' => $db->fetchColumn('SELECT name FROM evaluation_periods WHERE is_current = 1 LIMIT 1'),

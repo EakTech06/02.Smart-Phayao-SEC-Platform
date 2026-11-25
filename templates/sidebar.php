@@ -11,6 +11,7 @@ $menu = [
     ['url' => '/notifications', 'icon' => 'bell', 'label' => 'การแจ้งเตือน', 'show' => true],
     ['url' => '/pdpa', 'icon' => 'shield-lock', 'label' => 'คำขอใช้สิทธิ์ PDPA', 'show' => can('core.pdpa.request_own')],
     ['url' => '/personnel', 'icon' => 'person-vcard', 'label' => 'ข้อมูลบุคลากร', 'show' => Rbac::scope('core.employees', 'read') !== null],
+    ['url' => '/academic/students', 'icon' => 'mortarboard', 'label' => 'ทะเบียนนักเรียน', 'show' => in_array('academic', (array) config('app.modules', []), true) && Rbac::scope('academic.students', 'read') !== null],
     ['url' => '/service-rooms', 'icon' => 'door-open', 'label' => 'ข้อมูลห้องบริการ', 'show' => can('core.service_rooms.read_all')],
     ['url' => '/users', 'icon' => 'people', 'label' => 'ผู้ใช้งาน', 'show' => Rbac::scope('core.users', 'read') !== null],
      ['url' => '/roles', 'icon' => 'shield-shaded', 'label' => 'จัดการสิทธิ์บทบาท', 'show' => can('core.roles.read_all')],

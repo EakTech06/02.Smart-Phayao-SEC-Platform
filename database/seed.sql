@@ -165,3 +165,73 @@ INSERT INTO evaluation_periods (academic_year_id, fiscal_year_id, code, name, ro
 ON DUPLICATE KEY UPDATE is_current = VALUES(is_current);
 
 COMMIT;
+
+-- ================================================================ Phase 5A: Academic Module (ทะเบียนนักเรียน)
+-- ---------------------------------------------------------------- หน่วยบริการ (ฝ่ายย่อยภายใต้งานหน่วยบริการ)
+INSERT IGNORE INTO departments (parent_id, code, name_th, type, sort_order)
+SELECT p.id, v.code, v.name_th, 'unit', v.sort_order
+FROM departments p
+JOIN (
+  SELECT 'SU_CHUN' AS code, 'หน่วยบริการจุน' AS name_th, 61 AS sort_order UNION ALL
+  SELECT 'SU_DOKKHAMTAI', 'หน่วยบริการดอกคำใต้', 62 UNION ALL
+  SELECT 'SU_PONG', 'หน่วยบริการปง', 63 UNION ALL
+  SELECT 'SU_PHUKAMYAO', 'หน่วยบริการภูกามยาว', 64 UNION ALL
+  SELECT 'SU_PHUSANG', 'หน่วยบริการภูซาง', 65 UNION ALL
+  SELECT 'SU_CHIANGKHAM', 'หน่วยบริการเชียงคำ', 66 UNION ALL
+  SELECT 'SU_CHIANGMUAN', 'หน่วยบริการเชียงม่วน', 67 UNION ALL
+  SELECT 'SU_MAECHAI', 'หน่วยบริการแม่ใจ', 68
+) v
+WHERE p.code = 'SERVICE_UNIT';
+
+-- ---------------------------------------------------------------- ตั้งค่าเลขประจำตัวนักเรียน
+INSERT INTO settings (setting_group, setting_key, setting_value, value_type, description, is_public) VALUES
+('academic', 'academic.student_code_digits', '5', 'int', 'จำนวนหลักของเลขประจำตัวนักเรียนที่ระบบเสนอให้อัตโนมัติ (3-10)', 0)
+ON DUPLICATE KEY UPDATE description = VALUES(description);
+
+-- ---------------------------------------------------------------- สิทธิ์
+INSERT INTO permissions (code, module, resource, action, scope, description) VALUES
+('academic.students.read_all',                'academic', 'students', 'read',           'all',          'ดูทะเบียนนักเรียนทั้งหมด'),
+('academic.students.read_service_unit',       'academic', 'students', 'read',           'service_unit', 'ดูนักเรียนในหน่วยบริการที่สังกัด'),
+('academic.students.read_department',         'academic', 'students', 'read',           'department',   'ดูนักเรียนที่รับบริการในฝ่าย/งานที่สังกัด'),
+('academic.students.read_own',                'academic', 'students', 'read',           'own',          'ดูนักเรียนที่ตนเป็นครูผู้รับผิดชอบ/ครูประจำชั้น'),
+('academic.students.create_all',              'academic', 'students', 'create',         'all',          'เพิ่มนักเรียน'),
+('academic.students.update_all',              'academic', 'students', 'update',         'all',          'แก้ไขข้อมูลนักเรียนและการรับบริการ'),
+('academic.students.delete_all',              'academic', 'students', 'delete',         'all',          'ลบข้อมูลนักเรียน'),
+('academic.students.export_all',              'academic', 'students', 'export',         'all',          'ส่งออกทะเบียนนักเรียน (Excel)'),
+('academic.students.read_sensitive_all',      'academic', 'students', 'read_sensitive', 'all',          'ดูข้อมูลความพิการ/สุขภาพ/เลขบัตรของนักเรียนทั้งหมด'),
+('academic.students.read_sensitive_service_unit', 'academic', 'students', 'read_sensitive', 'service_unit', 'ดูข้อมูลความพิการ/สุขภาพของนักเรียนในหน่วยบริการ'),
+('academic.students.read_sensitive_own',      'academic', 'students', 'read_sensitive', 'own',          'ดูข้อมูลความพิการ/สุขภาพของนักเรียนที่ตนรับผิดชอบ'),
+('academic.students.update_sensitive_all',    'academic', 'students', 'update_sensitive','all',         'แก้ไขข้อมูลความพิการ/สุขภาพของนักเรียน'),
+('academic.students.change_status_all',      'academic', 'students', 'change_status', 'all',         'เปลี่ยนสถานะนักเรียน (พักการเรียน จบ ย้าย จำหน่าย)')
+ON DUPLICATE KEY UPDATE description = VALUES(description);
+
+INSERT IGNORE INTO role_permissions (role_id, permission_id)
+SELECT r.id, p.id FROM roles r JOIN permissions p ON p.code LIKE 'academic.students.%'
+WHERE r.code = 'super_admin';
+
+INSERT IGNORE INTO role_permissions (role_id, permission_id)
+SELECT r.id, p.id FROM roles r JOIN permissions p ON p.code IN (
+  'academic.students.read_all','academic.students.create_all','academic.students.update_all','academic.students.delete_all',
+  'academic.students.export_all','academic.students.read_sensitive_all','academic.students.update_sensitive_all',
+  'academic.students.change_status_all')
+WHERE r.code = 'admin';
+
+INSERT IGNORE INTO role_permissions (role_id, permission_id)
+SELECT r.id, p.id FROM roles r JOIN permissions p ON p.code IN (
+  'academic.students.read_all','academic.students.export_all','academic.students.read_sensitive_all')
+WHERE r.code IN ('director','deputy_director');
+
+INSERT IGNORE INTO role_permissions (role_id, permission_id)
+SELECT r.id, p.id FROM roles r JOIN permissions p ON p.code IN (
+  'academic.students.read_service_unit','academic.students.read_sensitive_service_unit','academic.students.read_own','academic.students.read_sensitive_own')
+WHERE r.code = 'service_unit_head';
+
+INSERT IGNORE INTO role_permissions (role_id, permission_id)
+SELECT r.id, p.id FROM roles r JOIN permissions p ON p.code IN (
+  'academic.students.read_department','academic.students.read_own','academic.students.read_sensitive_own')
+WHERE r.code = 'department_head';
+
+INSERT IGNORE INTO role_permissions (role_id, permission_id)
+SELECT r.id, p.id FROM roles r JOIN permissions p ON p.code IN ('academic.students.read_own','academic.students.read_sensitive_own')
+WHERE r.code = 'teacher';
+
