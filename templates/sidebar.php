@@ -28,7 +28,6 @@ $groups = [
     ]],
     'academic' => ['label' => 'ฝ่ายบริหารวิชาการ', 'icon' => 'mortarboard', 'items' => [
         ['url' => '/academic/students', 'icon' => 'person-lines-fill', 'label' => 'ทะเบียนนักเรียน', 'show' => $academicOn && Rbac::scope('academic.students', 'read') !== null],
-        ['url' => '/academic/students/completeness', 'icon' => 'clipboard-check', 'label' => 'ตรวจความครบถ้วนข้อมูล', 'show' => $academicOn && Rbac::scope('academic.students', 'read') !== null],
         ['url' => '/academic/students/import', 'icon' => 'filetype-csv', 'label' => 'นำเข้าข้อมูลนักเรียน', 'show' => $academicOn && can('academic.students.create_all')],
         ['url' => '/academic/enrollments/promote', 'icon' => 'skip-forward', 'label' => 'ยกยอดปีการศึกษา', 'show' => $academicOn && can('academic.students.update_all')],
     ]],
@@ -56,7 +55,7 @@ $groups = [
     ]],
 ];
 
-// เมนูที่ active = url ที่ตรงกับ path ยาวที่สุด (เช่น /academic/students/completeness ไม่ทำให้ทะเบียนนักเรียน active ด้วย)
+// เมนูที่ active = url ที่ตรงกับ path ยาวที่สุด (เช่น /academic/students/import ไม่ทำให้ทะเบียนนักเรียน active ด้วย)
 $activeUrl = null;
 foreach ($groups as $g) {
     foreach ($g['items'] as $item) {
