@@ -41,6 +41,7 @@ $hasEmployee = StudentService::employeeIdOf() !== null;
       <a href="<?= e(url('/academic/students/export' . ($query !== '' ? '?' . $query : ''))) ?>" class="btn btn-outline-success"><i class="bi bi-file-earmark-excel me-1"></i>ส่งออก Excel</a>
     <?php endif; ?>
     <?php if (can('academic.students.create_all')): ?>
+      <a href="<?= e(url('/academic/students/import')) ?>" class="btn btn-outline-primary"><i class="bi bi-filetype-csv me-1"></i>นำเข้า CSV</a>
       <a href="<?= e(url('/academic/students/create')) ?>" class="btn btn-primary"><i class="bi bi-person-plus me-1"></i>เพิ่มนักเรียน</a>
     <?php endif; ?>
   </div>

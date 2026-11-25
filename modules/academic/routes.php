@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Core\Router;
 use Modules\Academic\Controllers\EnrollmentPromotionController;
 use Modules\Academic\Controllers\StudentController;
+use Modules\Academic\Controllers\StudentImportController;
 use Modules\Academic\Controllers\StudentReportController;
 use Modules\Academic\Services\StudentLookup;
 use Modules\Academic\Services\StudentService;
@@ -39,6 +40,13 @@ $router->group(['middleware' => ['auth', 'password.fresh']], static function (Ro
     // Phase 5B: เปลี่ยนสถานะ ตรวจความครบถ้วน ยกยอดปีการศึกษา
     $r->post('/academic/students/{id:\d+}/status', [StudentController::class, 'statusStore'], ['csrf', 'perm:' . StudentStatusService::PERMISSION]);
     $r->get('/academic/students/completeness', [StudentReportController::class, 'completeness'], [$studentRead]);
+
+    // นำเข้าจาก CSV (แก้ไขข้อมูลเดิมต้องมีสิทธิ์ update_all เพิ่ม ตรวจใน StudentImportService)
+    $import = 'perm:academic.students.create_all';
+    $r->get('/academic/students/import', [StudentImportController::class, 'form'], [$import]);
+    $r->get('/academic/students/import/template', [StudentImportController::class, 'template'], [$import]);
+    $r->post('/academic/students/import', [StudentImportController::class, 'preview'], ['csrf', $import]);
+    $r->post('/academic/students/import/confirm', [StudentImportController::class, 'commit'], ['csrf', $import]);
     $r->get('/academic/enrollments/promote', [EnrollmentPromotionController::class, 'index'], [$update]);
     $r->post('/academic/enrollments/promote', [EnrollmentPromotionController::class, 'store'], ['csrf', $update]);
 

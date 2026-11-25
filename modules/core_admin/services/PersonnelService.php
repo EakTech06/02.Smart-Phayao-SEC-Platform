@@ -92,6 +92,38 @@ final class PersonnelService
         return EmployeeModel::canAccess($row, 'update');
     }
 
+    /** ฟิลด์ที่ผู้ใช้แก้ไขข้อมูลของตนเองได้ (ข้อมูลการปฏิบัติงาน/ตำแหน่ง/ฝ่าย/สถานะ แก้ได้เฉพาะงานบุคคล) */
+    public const SELF_EDIT_FIELDS = [
+        'title_name', 'first_name', 'last_name', 'nickname', 'gender', 'birth_date', 'national_id',
+        'phone', 'email', 'address', 'education_level', 'education_major',
+    ];
+
+    /** แก้ไขรายการนี้ได้เพียงเพราะเป็นข้อมูลของตนเอง (core.employees.update_own) จึงแก้ได้เฉพาะ SELF_EDIT_FIELDS */
+    public static function isSelfEditOnly(array $row): bool
+    {
+        if (Rbac::can('core.employees.update_all')) {
+            return false;
+        }
+        if (Rbac::can('core.employees.update_department') && $row['department_id'] !== null
+            && in_array((int) $row['department_id'], Rbac::departmentIds(), true)) {
+            return false;
+        }
+
+        return $row['user_id'] !== null && (int) $row['user_id'] === Auth::id();
+    }
+
+    /** ข้อมูลที่ส่งมาจากฟอร์มของตนเอง: ฟิลด์นอก SELF_EDIT_FIELDS ใช้ค่าเดิมเสมอ (ไม่เชื่อค่าจาก request) */
+    public static function selfEditInput(array $current, array $input): array
+    {
+        foreach (self::FIELDS as $field) {
+            if (!in_array($field, self::SELF_EDIT_FIELDS, true)) {
+                $input[$field] = $current[$field] === null ? '' : (string) $current[$field];
+            }
+        }
+
+        return $input;
+    }
+
     public static function canDelete(array $row): bool
     {
         return Rbac::can('core.employees.delete_all') && self::canManageLinkedAccount($row);

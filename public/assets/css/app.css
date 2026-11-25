@@ -16,14 +16,16 @@ body { font-family: 'Sarabun', system-ui, -apple-system, 'Segoe UI', sans-serif;
 
 /* เมนูด้านข้างแบบจัดหมวด */
 .sidebar-group {
-  padding: .4rem .75rem; font-size: .78rem; font-weight: 600; letter-spacing: .02em;
-  color: var(--bs-secondary-color); border: 0; border-radius: var(--bs-border-radius);
+  margin-top: .35rem; padding: .6rem .75rem; font-size: 1rem; font-weight: 700;
+  color: var(--bs-emphasis-color); background: var(--bs-tertiary-bg);
+  border: 0; border-radius: var(--bs-border-radius);
 }
-.sidebar-group:hover, .sidebar-group:focus-visible { background: var(--bs-tertiary-bg); color: var(--bs-body-color); }
-.sidebar-group.has-active { color: var(--bs-primary); }
-.sidebar-chevron { font-size: .7rem; transition: transform .2s; }
+.sidebar-group > .bi:first-child { font-size: 1.15rem; }
+.sidebar-group:hover, .sidebar-group:focus-visible { background: var(--bs-secondary-bg); }
+.sidebar-group.has-active { color: var(--bs-primary); background: var(--bs-primary-bg-subtle); }
+.sidebar-chevron { font-size: .8rem; transition: transform .2s; }
 .sidebar-group.collapsed .sidebar-chevron { transform: rotate(-90deg); }
-.sidebar .nav-link { padding-top: .4rem; padding-bottom: .4rem; }
+.sidebar .nav-link { padding-top: .45rem; padding-bottom: .45rem; font-size: .95rem; }
 
 .bottom-nav { z-index: 1020; padding-bottom: env(safe-area-inset-bottom); }
 .bottom-nav a, .bottom-nav button {
@@ -59,3 +61,5 @@ body { font-family: 'Sarabun', system-ui, -apple-system, 'Segoe UI', sans-serif;
 /* Phase 5B: ความครบถ้วน */
 .completeness-bar { height: 8px; }
 .completeness-bar.mini { height: 6px; min-width: 64px; }
+.import-columns { max-height: 75vh; }
+.import-preview { max-height: 60vh; }

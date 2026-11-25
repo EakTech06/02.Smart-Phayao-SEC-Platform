@@ -1,9 +1,13 @@
 <?php
 
+use Core\Auth;
 use Core\Rbac;
 
 $currentPath = current_path();
 $academicOn = in_array('academic', (array) config('app.modules', []), true);
+// สิทธิ์ระดับ own (เห็นเฉพาะข้อมูลตนเอง) ไม่ถือเป็นเมนูของฝ่าย: แสดงใต้ "บัญชีของฉัน" แทน
+$beyondOwn = static fn (string $resource): bool => !in_array(Rbac::scope($resource, 'read'), [null, 'own'], true);
+$myEmployeeId = (int) (Auth::user()['employee_id'] ?? 0);
 
 /*
  * เมนูจัดเป็นหมวดตามโครงสร้างการบริหาร 4 ฝ่าย + งานหน่วยบริการ
@@ -25,11 +29,12 @@ $groups = [
     'academic' => ['label' => 'ฝ่ายบริหารวิชาการ', 'icon' => 'mortarboard', 'items' => [
         ['url' => '/academic/students', 'icon' => 'person-lines-fill', 'label' => 'ทะเบียนนักเรียน', 'show' => $academicOn && Rbac::scope('academic.students', 'read') !== null],
         ['url' => '/academic/students/completeness', 'icon' => 'clipboard-check', 'label' => 'ตรวจความครบถ้วนข้อมูล', 'show' => $academicOn && Rbac::scope('academic.students', 'read') !== null],
+        ['url' => '/academic/students/import', 'icon' => 'filetype-csv', 'label' => 'นำเข้าข้อมูลนักเรียน', 'show' => $academicOn && can('academic.students.create_all')],
         ['url' => '/academic/enrollments/promote', 'icon' => 'skip-forward', 'label' => 'ยกยอดปีการศึกษา', 'show' => $academicOn && can('academic.students.update_all')],
     ]],
     'budget' => ['label' => 'ฝ่ายบริหารงบประมาณ', 'icon' => 'cash-coin', 'items' => []],
     'personnel' => ['label' => 'ฝ่ายบริหารงานบุคคล', 'icon' => 'person-vcard', 'items' => [
-        ['url' => '/personnel', 'icon' => 'people', 'label' => 'ข้อมูลบุคลากร', 'show' => Rbac::scope('core.employees', 'read') !== null],
+        ['url' => '/personnel', 'icon' => 'people', 'label' => 'ข้อมูลบุคลากร', 'show' => $beyondOwn('core.employees')],
     ]],
     'general' => ['label' => 'ฝ่ายบริหารทั่วไป', 'icon' => 'building', 'items' => []],
     'service_unit' => ['label' => 'งานหน่วยบริการ', 'icon' => 'geo-alt', 'items' => []],
@@ -37,13 +42,16 @@ $groups = [
         ['url' => '/service-rooms', 'icon' => 'door-open', 'label' => 'ข้อมูลห้องบริการ', 'show' => can('core.service_rooms.read_all')],
     ]],
     'system' => ['label' => 'ผู้ดูแลระบบ', 'icon' => 'sliders', 'items' => [
-        ['url' => '/users', 'icon' => 'person-gear', 'label' => 'ผู้ใช้งาน', 'show' => Rbac::scope('core.users', 'read') !== null],
+        ['url' => '/users', 'icon' => 'person-gear', 'label' => 'ผู้ใช้งาน', 'show' => $beyondOwn('core.users')],
         ['url' => '/roles', 'icon' => 'shield-shaded', 'label' => 'จัดการสิทธิ์บทบาท', 'show' => can('core.roles.read_all')],
         ['url' => '/audit-logs', 'icon' => 'clock-history', 'label' => 'ประวัติการใช้งาน', 'show' => can('core.audit.read_all')],
         ['url' => '/sessions', 'icon' => 'display', 'label' => 'จัดการเซสชัน', 'show' => can('core.sessions.read_all')],
         ['url' => '/settings', 'icon' => 'gear', 'label' => 'ตั้งค่าระบบ', 'show' => can('core.settings.manage')],
     ]],
     'account' => ['label' => 'บัญชีของฉัน', 'icon' => 'person-circle', 'items' => [
+        ['url' => '/profile', 'icon' => 'person-badge', 'label' => 'โปรไฟล์ของฉัน', 'show' => true],
+        ['url' => '/personnel/' . $myEmployeeId, 'icon' => 'person-vcard', 'label' => 'ข้อมูลบุคลากรของฉัน',
+            'show' => $myEmployeeId > 0 && Rbac::scope('core.employees', 'read') !== null],
         ['url' => '/password/change', 'icon' => 'key', 'label' => 'ความปลอดภัยบัญชี', 'show' => true],
     ]],
 ];

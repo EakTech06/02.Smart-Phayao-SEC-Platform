@@ -11,6 +11,7 @@ use Core\Exceptions\ValidationException;
 use Core\Rbac;
 use Core\Response;
 use Core\Session;
+use Core\Validator;
 use Modules\CoreAdmin\Models\EmployeeModel;
 use Modules\CoreAdmin\Services\PersonnelImportService;
 use Modules\CoreAdmin\Services\PersonnelService;
@@ -77,8 +78,12 @@ final class PersonnelController extends Controller
     public function update(string $id): Response
     {
         $employee = $this->findUpdatable($id);
-        $data = $this->validate(PersonnelService::rules(), PersonnelService::LABELS);
-        PersonnelService::assertDepartmentAllowed((int) $data['department_id']);
+        $selfOnly = PersonnelService::isSelfEditOnly($employee);
+        $input = $selfOnly ? PersonnelService::selfEditInput($employee, $this->request->all()) : $this->request->all();
+        $data = Validator::validate($input, PersonnelService::rules(), PersonnelService::LABELS);
+        if (!$selfOnly) {
+            PersonnelService::assertDepartmentAllowed((int) $data['department_id']); // แก้ของตนเอง: ฝ่ายคงเดิม
+        }
 
         PersonnelService::update($employee, $data);
         Session::flash('success', 'บันทึกข้อมูลบุคลากรเรียบร้อยแล้ว'
@@ -249,6 +254,7 @@ final class PersonnelController extends Controller
             'employee' => $employee,
             'departments' => PersonnelService::departmentOptions(),
             'canChangeStatus' => $employee === null || PersonnelService::canManageLinkedAccount($employee),
+            'selfOnly' => $employee !== null && PersonnelService::isSelfEditOnly($employee),
         ]);
     }
 

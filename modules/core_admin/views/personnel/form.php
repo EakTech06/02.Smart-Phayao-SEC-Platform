@@ -7,6 +7,8 @@ use Modules\CoreAdmin\Services\UserService;
 /** @var array|null $employee */
 /** @var array $departments */
 /** @var bool $canChangeStatus */
+/** @var bool $selfOnly แก้ไขข้อมูลของตนเอง: ข้อมูลการปฏิบัติงานแสดงอย่างเดียว */
+$selfOnly ??= false;
 
 $isEdit = $employee !== null;
 $oldInput = Session::getFlash('old', []);
@@ -21,7 +23,9 @@ $val = static function (string $key) use ($employee, $hasOld): string {
     return is_scalar($value) ? (string) $value : '';
 };
 
-$field = static function (string $name, array $opt = []) use ($val): string {
+$field = static function (string $name, array $opt = []) use ($val, $selfOnly): string {
+    // แก้ข้อมูลของตนเอง: ฟิลด์นอก SELF_EDIT_FIELDS ปิดการแก้ไข (ฝั่ง server ใช้ค่าเดิมอยู่แล้ว)
+    $locked = $selfOnly && !in_array($name, PersonnelService::SELF_EDIT_FIELDS, true);
     $label = PersonnelService::LABELS[$name] ?? $name;
     $error = error_for($name);
     $required = !empty($opt['required']);
@@ -32,7 +36,8 @@ $field = static function (string $name, array $opt = []) use ($val): string {
         . (isset($opt['placeholder']) ? ' placeholder="' . e($opt['placeholder']) . '"' : '')
         . (isset($opt['list']) ? ' list="' . e($opt['list']) . '"' : '')
         . (isset($opt['inputmode']) ? ' inputmode="' . e($opt['inputmode']) . '"' : '')
-        . (isset($opt['autocomplete']) ? ' autocomplete="' . e($opt['autocomplete']) . '"' : '');
+        . (isset($opt['autocomplete']) ? ' autocomplete="' . e($opt['autocomplete']) . '"' : '')
+        . ($locked ? ' disabled' : '');
     $value = array_key_exists('value', $opt) ? (string) $opt['value'] : $val($name);
     $class = ($opt['type'] ?? '') === 'select' ? 'form-select' : 'form-control';
     $class .= $error ? ' is-invalid' : '';
@@ -64,11 +69,17 @@ $departmentOptions = [];
 foreach ($departments as $d) {
     $departmentOptions[(string) $d['id']] = $d['name_th'];
 }
+if ($isEdit && $employee['department_id'] !== null && !isset($departmentOptions[(string) $employee['department_id']])) {
+    $departmentOptions[(string) $employee['department_id']] = (string) ($employee['department_name'] ?? '-'); // แสดงฝ่ายเดิม
+}
 $statusValue = $val('status') !== '' ? $val('status') : 'active';
 $action = url($isEdit ? '/personnel/' . (int) $employee['id'] : '/personnel');
 ?>
 <a href="<?= e(url($isEdit ? '/personnel/' . (int) $employee['id'] : '/personnel')) ?>" class="btn btn-link px-0 mb-2"><i class="bi bi-arrow-left"></i> กลับ</a>
-<h1 class="h4 mb-3"><?= $isEdit ? 'แก้ไขข้อมูลบุคลากร' : 'เพิ่มบุคลากร' ?></h1>
+<h1 class="h4 mb-3"><?= $isEdit ? ($selfOnly ? 'แก้ไขข้อมูลส่วนตัวของฉัน' : 'แก้ไขข้อมูลบุคลากร') : 'เพิ่มบุคลากร' ?></h1>
+<?php if ($selfOnly): ?>
+  <div class="alert alert-info small"><i class="bi bi-info-circle me-1"></i>แก้ไขได้เฉพาะข้อมูลส่วนบุคคลและวุฒิการศึกษา · ตำแหน่ง ฝ่าย/งาน วันที่ปฏิบัติงาน และสถานะ แก้ไขโดยงานบริหารงานบุคคล</div>
+<?php endif; ?>
 
 <form method="post" action="<?= e($action) ?>" novalidate>
   <?= csrf_field() ?>
@@ -126,7 +137,7 @@ $action = url($isEdit ? '/personnel/' . (int) $employee['id'] : '/personnel');
         <?= $field('start_date', ['type' => 'date']) ?>
         <?= $field('end_date', ['type' => 'date']) ?>
 
-        <?php if ($canChangeStatus): ?>
+        <?php if ($canChangeStatus && !$selfOnly): ?>
           <?= $field('status', ['type' => 'select', 'required' => true, 'options' => PersonnelService::STATUSES, 'value' => $statusValue,
               'help' => 'เปลี่ยนเป็นสถานะอื่นที่ไม่ใช่ "ปฏิบัติงาน" ระบบจะระงับบัญชีผู้ใช้ที่ผูกไว้อัตโนมัติ']) ?>
         <?php else: ?>
@@ -134,7 +145,7 @@ $action = url($isEdit ? '/personnel/' . (int) $employee['id'] : '/personnel');
           <div class="col-12 col-md-6 col-lg-4">
             <label class="form-label">สถานะ</label>
             <input type="text" class="form-control" value="<?= e(PersonnelService::STATUSES[$employee['status']] ?? $employee['status']) ?>" disabled>
-            <div class="form-text">ไม่สามารถเปลี่ยนสถานะของบุคลากรที่มีบัญชีระดับสิทธิ์เท่ากันหรือสูงกว่าได้</div>
+            <div class="form-text"><?= $selfOnly ? 'แก้ไขโดยงานบริหารงานบุคคล' : 'ไม่สามารถเปลี่ยนสถานะของบุคลากรที่มีบัญชีระดับสิทธิ์เท่ากันหรือสูงกว่าได้' ?></div>
           </div>
         <?php endif; ?>
 

@@ -41,6 +41,7 @@ INSERT INTO permissions (code, module, resource, action, scope, description) VAL
 ('core.employees.read_service_unit','core','employees',     'read',   'service_unit', 'ดูข้อมูลบุคลากรในหน่วยบริการ'),
 ('core.employees.read_all',        'core', 'employees',     'read',   'all',          'ดูข้อมูลบุคลากรทั้งหมด'),
 ('core.employees.update_all',      'core', 'employees',     'update', 'all',          'แก้ไขข้อมูลบุคลากร'),
+('core.employees.update_own',      'core', 'employees',     'update', 'own',          'แก้ไขข้อมูลส่วนบุคคลของตนเอง'),
 ('core.employees.create_all',      'core', 'employees',     'create', 'all',          'เพิ่มข้อมูลบุคลากร'),
 ('core.employees.update_department','core','employees',     'update', 'department',   'แก้ไขข้อมูลบุคลากรในฝ่าย'),
 ('core.employees.delete_all',      'core', 'employees',     'delete', 'all',          'ลบข้อมูลบุคลากร'),
@@ -83,7 +84,7 @@ WHERE r.code = 'admin' AND p.code NOT IN ('core.roles.update_all', 'core.permiss
 -- สิทธิ์พื้นฐานของทุกคน
 INSERT IGNORE INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id FROM roles r JOIN permissions p ON p.code IN (
-  'core.dashboard.view','core.users.read_own','core.users.update_own','core.employees.read_own',
+  'core.dashboard.view','core.users.read_own','core.users.update_own','core.employees.read_own','core.employees.update_own',
   'core.files.read_own','core.files.upload_own','core.notifications.read_own','core.calendar.read_all',
   'core.service_rooms.read_all','core.pdpa.request_own')
 WHERE r.code IN ('director','deputy_director','department_head','service_unit_head','teacher','staff');

@@ -90,7 +90,8 @@ $router->group(['middleware' => ['auth', 'password.fresh']], static function (Ro
 
     // Phase 2: Personnel Base & Account Sync
     $empRead = 'perm:core.employees.read_all,core.employees.read_service_unit,core.employees.read_department,core.employees.read_own';
-    $empUpdate = 'perm:core.employees.update_all,core.employees.update_department';
+    // update_own: แก้ข้อมูลส่วนตัวของตนเอง (ฟิลด์ตาม PersonnelService::SELF_EDIT_FIELDS)
+    $empUpdate = 'perm:core.employees.update_all,core.employees.update_department,core.employees.update_own';
     $r->get('/personnel', [PersonnelController::class, 'index'], [$empRead]);
     $r->get('/personnel/create', [PersonnelController::class, 'create'], ['perm:core.employees.create_all']);
     $r->post('/personnel', [PersonnelController::class, 'store'], ['csrf', 'perm:core.employees.create_all']);

@@ -11,6 +11,8 @@ final class Database
 {
     private static ?self $instance = null;
     private PDO $pdo;
+    /** ระดับ transaction ที่ซ้อนอยู่ (0 = ไม่มี) */
+    private int $depth = 0;
 
     private function __construct(array $config)
     {
@@ -129,9 +131,32 @@ final class Database
         return $this->query('DELETE FROM ' . self::quote($table) . " WHERE {$cond}", array_values($where))->rowCount();
     }
 
+    /**
+     * transaction ซ้อนกันได้: ชั้นในใช้ SAVEPOINT (ล้มเฉพาะชั้นใน ชั้นนอกตัดสินใจ commit/rollback เอง)
+     */
     public function transaction(callable $callback): mixed
     {
+        if ($this->depth > 0 && $this->pdo->inTransaction()) {
+            $savepoint = 'sp_' . $this->depth;
+            $this->pdo->exec("SAVEPOINT {$savepoint}");
+            $this->depth++;
+            try {
+                $result = $callback($this);
+                $this->pdo->exec("RELEASE SAVEPOINT {$savepoint}");
+
+                return $result;
+            } catch (\Throwable $e) {
+                if ($this->pdo->inTransaction()) {
+                    $this->pdo->exec("ROLLBACK TO SAVEPOINT {$savepoint}");
+                }
+                throw $e;
+            } finally {
+                $this->depth--;
+            }
+        }
+
         $this->pdo->beginTransaction();
+        $this->depth = 1;
         try {
             $result = $callback($this);
             $this->pdo->commit();
@@ -142,6 +167,8 @@ final class Database
                 $this->pdo->rollBack();
             }
             throw $e;
+        } finally {
+            $this->depth = 0;
         }
     }
 }
