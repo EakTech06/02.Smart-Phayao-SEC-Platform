@@ -104,3 +104,30 @@
       }
     });
   });
+
+/* เมนูด้านข้าง: จำหมวดที่ผู้ใช้ย่อไว้ (หมวดของหน้าปัจจุบันเปิดเสมอ) */
+(() => {
+  'use strict';
+  const KEY = 'sidebar.collapsed';
+  const read = () => {
+    try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch (e) { return []; }
+  };
+  const write = (list) => {
+    try { localStorage.setItem(KEY, JSON.stringify(list)); } catch (e) { /* private mode */ }
+  };
+  document.addEventListener('DOMContentLoaded', () => {
+    const collapsed = new Set(read());
+    document.querySelectorAll('[data-sidebar-group]').forEach((btn) => {
+      const key = btn.dataset.sidebarGroup;
+      const target = document.querySelector(btn.dataset.bsTarget);
+      if (!target) return;
+      if (collapsed.has(key) && !btn.hasAttribute('data-keep-open')) {
+        target.classList.remove('show');
+        btn.classList.add('collapsed');
+        btn.setAttribute('aria-expanded', 'false');
+      }
+      target.addEventListener('hidden.bs.collapse', () => { collapsed.add(key); write([...collapsed]); });
+      target.addEventListener('shown.bs.collapse', () => { collapsed.delete(key); write([...collapsed]); });
+    });
+  });
+})();

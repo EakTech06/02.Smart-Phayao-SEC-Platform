@@ -14,6 +14,17 @@ body { font-family: 'Sarabun', system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
 @media (min-width: 1200px) { .main-footer { margin-left: 16.666%; } }
 
+/* เมนูด้านข้างแบบจัดหมวด */
+.sidebar-group {
+  padding: .4rem .75rem; font-size: .78rem; font-weight: 600; letter-spacing: .02em;
+  color: var(--bs-secondary-color); border: 0; border-radius: var(--bs-border-radius);
+}
+.sidebar-group:hover, .sidebar-group:focus-visible { background: var(--bs-tertiary-bg); color: var(--bs-body-color); }
+.sidebar-group.has-active { color: var(--bs-primary); }
+.sidebar-chevron { font-size: .7rem; transition: transform .2s; }
+.sidebar-group.collapsed .sidebar-chevron { transform: rotate(-90deg); }
+.sidebar .nav-link { padding-top: .4rem; padding-bottom: .4rem; }
+
 .bottom-nav { z-index: 1020; padding-bottom: env(safe-area-inset-bottom); }
 .bottom-nav a, .bottom-nav button {
   flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px;
