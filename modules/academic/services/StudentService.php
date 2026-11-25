@@ -12,6 +12,7 @@ use Core\Exceptions\HttpException;
 use Core\Exceptions\ValidationException;
 use Core\Rbac;
 use Core\Setting;
+use Core\Validator;
 
 /**
  * Phase 5A: ทะเบียนนักเรียน
@@ -403,6 +404,63 @@ final class StudentService
         'health_note' => 'หมายเหตุด้านสุขภาพ',
     ];
 
+    /** ข้อมูลอ่อนไหวที่กรอกได้ในฟอร์มข้อมูลนักเรียน (ส่วนที่เหลืออยู่ในฟอร์มความพิการและสุขภาพ) */
+    public const BASIC_SENSITIVE_INPUTS = ['disability_type', 'multiple_disabilities', 'blood_group'];
+
+    /** ผู้ใช้กรอกประเภทความพิการ/กลุ่มเลือดในฟอร์มข้อมูลนักเรียนได้หรือไม่ ($studentId null = ตอนเพิ่มนักเรียน) */
+    public static function canEditBasicSensitive(?int $studentId): bool
+    {
+        return Rbac::can('academic.students.update_sensitive_all') && ($studentId === null || self::canViewSensitive($studentId));
+    }
+
+    /**
+     * ตรวจประเภทความพิการ/ความพิการซ้อน/กลุ่มเลือดจากฟอร์มข้อมูลนักเรียน
+     * @return array{disability_type: ?string, multiple_disabilities: list<string>, blood_group: ?string}
+     */
+    public static function basicSensitiveInput(array $input): array
+    {
+        $data = Validator::validate($input, [
+            'disability_type' => 'nullable|in:' . implode(',', array_keys(StudentLookup::DISABILITY_TYPES)),
+            'blood_group' => 'nullable|in:' . implode(',', array_keys(StudentLookup::BLOOD_GROUPS)),
+        ], self::SENSITIVE_LABELS);
+        $raw = $input['multiple_disabilities'] ?? [];
+        $multiple = is_array($raw) ? array_values(array_intersect(
+            array_unique(array_map('strval', array_filter($raw, 'is_scalar'))),
+            array_diff(array_keys(StudentLookup::DISABILITY_TYPES), ['multiple'])
+        )) : [];
+        if ($data['disability_type'] === 'multiple' && count($multiple) < 2) {
+            throw new ValidationException(['multiple_disabilities' => ['บุคคลพิการซ้อนต้องเลือกประเภทความพิการอย่างน้อย 2 ประเภท']]);
+        }
+
+        return [
+            'disability_type' => $data['disability_type'],
+            'multiple_disabilities' => $data['disability_type'] === 'multiple' ? $multiple : [],
+            'blood_group' => $data['blood_group'],
+        ];
+    }
+
+    /** รวมค่าจากฟอร์มข้อมูลนักเรียนเข้ากับข้อมูลอ่อนไหวเดิม (ไม่ทับช่องอื่น) แล้วเข้ารหัสบันทึก */
+    private static function writeBasicSensitive(Database $db, int $studentId, array $basics): void
+    {
+        $blob = $db->fetchColumn('SELECT data_encrypted FROM academic_student_sensitive WHERE student_id = ?', [$studentId]);
+        $existing = $blob !== null && $blob !== false ? (self::decryptSensitive((string) $blob) ?? []) : [];
+        $payload = array_merge($existing, $basics);
+        // ระดับความพิการต้องตรงกับประเภท (เปลี่ยนประเภทแล้วระดับเดิมใช้ไม่ได้)
+        $level = $payload['disability_level'] ?? null;
+        if ($level !== null && (StudentLookup::DISABILITY_LEVELS[$level][1] ?? null) !== $payload['disability_type']) {
+            $payload['disability_level'] = null;
+        }
+        if ($payload == $existing || ($existing === [] && $basics['disability_type'] === null && $basics['blood_group'] === null)) {
+            return; // ไม่มีอะไรเปลี่ยน
+        }
+        $db->query(
+            'INSERT INTO academic_student_sensitive (student_id, data_encrypted, updated_by) VALUES (?, ?, ?)
+             ON DUPLICATE KEY UPDATE data_encrypted = VALUES(data_encrypted), updated_by = VALUES(updated_by)',
+            [$studentId, Crypto::encrypt(json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR)), Auth::id()]
+        );
+        Audit::log('academic.student.sensitive_updated', 'academic', 'academic_students', $studentId);
+    }
+
     /** @param array $data ผลจาก Validator + multiple_disabilities/card_types (list) */
     public static function saveSensitive(int $studentId, array $data, array $multiple, array $cardTypes): void
     {
@@ -488,6 +546,7 @@ final class StudentService
             'redcross_status' => 'nullable|in:' . implode(',', array_keys(StudentLookup::REDCROSS_STATUSES)),
             'cur_same' => 'nullable|in:1',
             'primary_contact' => 'nullable|in:' . implode(',', array_keys(StudentLookup::RELATIONS)),
+            'guardian_source' => 'nullable|in:father,mother',
         ];
         foreach (array_keys(StudentLookup::SIBLING_FIELDS) as $key) {
             $rules[$key] = 'nullable|integer';
@@ -553,8 +612,11 @@ final class StudentService
         return $labels;
     }
 
-    /** @return int id ของนักเรียนใหม่ */
-    public static function create(array $data, bool $withEnrollment): int
+    /**
+     * @param array|null $sensitiveInput ค่าที่ส่งมาจากฟอร์ม (ประเภทความพิการ/กลุ่มเลือด) ใช้เมื่อผู้ใช้มีสิทธิ์แก้ข้อมูลอ่อนไหว
+     * @return int id ของนักเรียนใหม่
+     */
+    public static function create(array $data, bool $withEnrollment, ?array $sensitiveInput = null): int
     {
         if (!Rbac::can('academic.students.create_all')) {
             throw new HttpException(403);
@@ -572,13 +634,22 @@ final class StudentService
         } catch (ValidationException $e) {
             $errors += $e->errors();
         }
+        $basics = null;
+        try {
+            $basics = $sensitiveInput !== null && self::canEditBasicSensitive(null) ? self::basicSensitiveInput($sensitiveInput) : null;
+        } catch (ValidationException $e) {
+            $errors += $e->errors();
+        }
         if ($errors !== []) {
             throw new ValidationException($errors);
         }
 
-        $id = Database::instance()->transaction(static function (Database $db) use ($row, $identity, $data, $enrollment): int {
+        $id = Database::instance()->transaction(static function (Database $db) use ($row, $identity, $data, $enrollment, $basics): int {
             $id = self::insertWithCode($db, $row + $identity + ['created_by' => Auth::id()], $data['student_code'] ?? null);
             self::saveGuardians($db, $id, $data);
+            if ($basics !== null) {
+                self::writeBasicSensitive($db, $id, $basics);
+            }
             if ($enrollment !== null) {
                 $db->insert('academic_student_enrollments', $enrollment + ['student_id' => $id, 'created_by' => Auth::id()]);
             }
@@ -591,22 +662,39 @@ final class StudentService
         return $id;
     }
 
-    public static function update(array $current, array $data): void
+    public static function update(array $current, array $data, ?array $sensitiveInput = null): void
     {
         if (!Rbac::can('academic.students.update_all')) {
             throw new HttpException(403);
         }
         $id = (int) $current['id'];
-        [$row, $identity] = self::prepare($data, $id);
+        $errors = [];
+        try {
+            [$row, $identity] = self::prepare($data, $id);
+        } catch (ValidationException $e) {
+            $errors = $e->errors();
+        }
+        $basics = null;
+        try {
+            $basics = $sensitiveInput !== null && self::canEditBasicSensitive($id) ? self::basicSensitiveInput($sensitiveInput) : null;
+        } catch (ValidationException $e) {
+            $errors += $e->errors();
+        }
+        if ($errors !== []) {
+            throw new ValidationException($errors);
+        }
         $code = trim((string) ($data['student_code'] ?? ''));
         if ($code !== '' && $code !== $current['student_code']) {
             $row['student_code'] = $code;
         }
         $before = self::snapshot($id);
-        Database::instance()->transaction(static function (Database $db) use ($id, $row, $identity, $data): void {
+        Database::instance()->transaction(static function (Database $db) use ($id, $row, $identity, $data, $basics): void {
             self::recordIdentityChange($db, $id, (string) $data['id_type'], $identity, $row['g_code'], $data['identity_change_reason'] ?? null);
             $db->update('academic_students', $row + $identity + ['updated_by' => Auth::id()], ['id' => $id]);
             self::saveGuardians($db, $id, $data);
+            if ($basics !== null) {
+                self::writeBasicSensitive($db, $id, $basics);
+            }
         });
         Audit::log('academic.student.updated', 'academic', 'academic_students', $id, $before, self::snapshot($id));
     }
@@ -686,12 +774,19 @@ final class StudentService
 
         return [
             'years' => $db->fetchAll('SELECT id, name, is_current FROM academic_years ORDER BY year_be DESC'),
+            // หน่วยบริการรายอำเภอ (ไม่รวม "งานหน่วยบริการ" ที่เป็นหน่วยแม่ของหน่วยย่อย)
             'units' => $db->fetchAll(
                 "SELECT d.id, d.name_th FROM departments d LEFT JOIN departments p ON p.id = d.parent_id
-                 WHERE d.is_active = 1 AND (d.type = 'service_unit' OR p.type = 'service_unit') ORDER BY d.sort_order, d.id"
+                 WHERE d.is_active = 1 AND (d.type = 'service_unit' OR p.type = 'service_unit')
+                   AND NOT EXISTS (SELECT 1 FROM departments c WHERE c.parent_id = d.id AND c.is_active = 1)
+                 ORDER BY d.sort_order, d.id"
             ),
+            // teacher_ids = ครูประจำชั้นของห้อง (ครูหลักก่อน) ใช้กรองช่องครูผู้รับผิดชอบ
             'rooms' => $db->fetchAll(
-                "SELECT r.id, r.academic_year_id, r.room_code, r.name_th, r.grade_level FROM service_rooms r ORDER BY r.room_code"
+                "SELECT r.id, r.academic_year_id, r.room_code, r.name_th, r.grade_level,
+                        (SELECT GROUP_CONCAT(st.employee_id ORDER BY st.sort_order) FROM service_room_teachers st
+                         WHERE st.service_room_id = r.id) AS teacher_ids
+                 FROM service_rooms r ORDER BY r.room_code"
             ),
             'teachers' => $db->fetchAll(
                 "SELECT e.id, e.title_name, e.first_name, e.last_name, e.status FROM employees e
@@ -961,6 +1056,18 @@ final class StudentService
     /** บิดา/มารดา/ผู้ปกครอง: กรอกชื่อ = บันทึก, ลบชื่อออก = ลบรายการ; เลขบัตรเว้นว่าง = คงค่าเดิม */
     private static function saveGuardians(Database $db, int $studentId, array $data): void
     {
+        // ผู้ปกครองคือบิดา/มารดา: ใช้ข้อมูลของบิดา/มารดาเป็นข้อมูลผู้ปกครอง (เลขบัตรเว้นว่าง = ใช้เลขที่บันทึกไว้ของบิดา/มารดา)
+        $source = in_array($data['guardian_source'] ?? '', ['father', 'mother'], true) ? (string) $data['guardian_source'] : null;
+        if ($source !== null && trim((string) ($data["{$source}_first_name"] ?? '')) !== '') {
+            foreach (self::GUARDIAN_FIELDS as $f) {
+                $data["guardian_{$f}"] = $data["{$source}_{$f}"] ?? null;
+            }
+            $data['guardian_relation_note'] = StudentLookup::RELATIONS[$source];
+            $data['guardian_national_id'] = $data["{$source}_national_id"] ?? '';
+        } else {
+            $source = null;
+        }
+
         foreach (array_keys(StudentLookup::RELATIONS) as $rel) {
             $first = trim((string) ($data["{$rel}_first_name"] ?? ''));
             if ($first === '') {
@@ -982,6 +1089,14 @@ final class StudentService
             if ($nid !== '') {
                 $row['national_id_encrypted'] = Crypto::encrypt($nid);
                 $row['national_id_last4'] = substr($nid, -4);
+            } elseif ($rel === 'guardian' && $source !== null) {
+                // บิดา/มารดาถูกบันทึกก่อนในรอบนี้แล้ว จึงคัดลอกเลขบัตร (เข้ารหัส) ของบิดา/มารดามาได้
+                $parentId = $db->fetch(
+                    'SELECT national_id_encrypted, national_id_last4 FROM academic_student_guardians WHERE student_id = ? AND relation = ?',
+                    [$studentId, $source]
+                );
+                $row['national_id_encrypted'] = $parentId['national_id_encrypted'] ?? null;
+                $row['national_id_last4'] = $parentId['national_id_last4'] ?? null;
             }
             $columns = array_keys($row);
             $updates = implode(', ', array_map(static fn (string $c): string => "`{$c}` = VALUES(`{$c}`)", array_diff($columns, ['student_id', 'relation'])));
@@ -1026,6 +1141,19 @@ final class StudentService
         $teacherId = !empty($e['responsible_employee_id']) ? (int) $e['responsible_employee_id'] : null;
         if ($teacherId !== null && $teacherId !== (int) ($current['responsible_employee_id'] ?? 0) && !self::isActiveEmployee($teacherId)) {
             $errors['enroll_responsible_employee_id'][] = 'กรุณาเลือกครูที่ยังปฏิบัติงานอยู่';
+        }
+        // ห้องที่มีครูประจำชั้น: ครูผู้รับผิดชอบต้องเป็นครูประจำชั้นของห้องนั้น (เว้นว่าง = ครูประจำชั้นหลัก)
+        if ($roomId !== null && !isset($errors['enroll_service_room_id'])) {
+            $roomTeachers = array_map('intval', array_column($db->fetchAll(
+                'SELECT employee_id FROM service_room_teachers WHERE service_room_id = ? ORDER BY sort_order', [$roomId]
+            ), 'employee_id'));
+            $unchanged = $current !== null && $teacherId === (int) ($current['responsible_employee_id'] ?? 0)
+                && $roomId === (int) ($current['service_room_id'] ?? 0);
+            if ($roomTeachers !== [] && $teacherId === null) {
+                $teacherId = $roomTeachers[0];
+            } elseif ($roomTeachers !== [] && !$unchanged && !in_array($teacherId, $roomTeachers, true)) {
+                $errors['enroll_responsible_employee_id'][] = 'ครูผู้รับผิดชอบต้องเป็นครูประจำชั้นของห้องบริการที่เลือก';
+            }
         }
         if ($errors !== []) {
             throw new ValidationException($errors);

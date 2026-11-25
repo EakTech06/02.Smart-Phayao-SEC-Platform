@@ -9,6 +9,8 @@ use Modules\Academic\Services\StudentService;
 /** @var array|null $options ตัวเลือกการรับบริการ (เฉพาะตอนเพิ่ม) */
 /** @var int|null $currentYearId */
 /** @var string|null $nextCode */
+/** @var bool $canEditBasicSensitive */
+/** @var array $basicSensitive ประเภทความพิการ/กลุ่มเลือดที่บันทึกไว้ (ถอดรหัสแล้ว) */
 
 $isEdit = $student !== null;
 $oldInput = Session::getFlash('old', []);
@@ -98,13 +100,63 @@ $action = url($isEdit ? '/academic/students/' . (int) $student['id'] : '/academi
         <?= $field('first_name_en', ['max' => 100, 'col' => 'col-6 col-md-4']) ?>
         <?= $field('last_name_en', ['max' => 100, 'col' => 'col-12 col-md-5']) ?>
         <?= $field('gender', ['type' => 'select', 'options' => StudentLookup::GENDERS, 'col' => 'col-6 col-md-3']) ?>
-        <?= $field('birth_date', ['type' => 'date', 'col' => 'col-6 col-md-3']) ?>
+        <?= $field('birth_date', ['type' => 'date', 'col' => 'col-6 col-md-3', 'attrs' => ' data-birth-date']) ?>
+        <div class="col-6 col-md-3">
+          <label class="form-label" for="f-age">อายุ</label>
+          <input id="f-age" type="text" class="form-control bg-body-tertiary" readonly tabindex="-1" data-age
+                 value="<?= e($val('birth_date') !== '' ? StudentLookup::age($val('birth_date')) : '') ?>" placeholder="คำนวณจากวันเกิด">
+        </div>
         <?= $field('nationality', ['max' => 50, 'list' => 'nationality-options', 'col' => 'col-6 col-md-3']) ?>
         <?= $field('ethnicity', ['max' => 50, 'list' => 'nationality-options', 'col' => 'col-6 col-md-3']) ?>
         <?= $field('religion', ['max' => 50, 'list' => 'religion-options', 'col' => 'col-6 col-md-3']) ?>
         <?= $field('tribe', ['max' => 50, 'list' => 'tribe-options', 'col' => 'col-6 col-md-3']) ?>
         <?= $field('phone', ['type' => 'tel', 'max' => 30, 'inputmode' => 'tel', 'col' => 'col-12 col-md-6']) ?>
       </div>
+      <?php if ($canEditBasicSensitive): ?>
+        <?php
+        // ข้อมูลอ่อนไหว: ไม่เก็บค่าที่กรอกค้างใน Session จึงแสดงค่าที่บันทึกไว้เสมอ
+        $sv = static fn (string $k): string => is_scalar($basicSensitive[$k] ?? null) ? (string) $basicSensitive[$k] : '';
+        $disType = $sv('disability_type');
+        $multiple = is_array($basicSensitive['multiple_disabilities'] ?? null) ? $basicSensitive['multiple_disabilities'] : [];
+        $sensitiveSelect = static function (string $name, array $options, string $value, string $col, string $attrs = ''): string {
+            $err = error_for($name);
+            $html = '<div class="' . $col . '"><label class="form-label" for="f-' . $name . '">' . e(StudentService::SENSITIVE_LABELS[$name]) . '</label>'
+                . '<select id="f-' . $name . '" name="' . $name . '" class="form-select' . ($err ? ' is-invalid' : '') . '"' . $attrs . '>'
+                . '<option value="">-- ไม่ระบุ --</option>';
+            foreach ($options as $k => $label) {
+                $html .= '<option value="' . e((string) $k) . '"' . ((string) $k === $value ? ' selected' : '') . '>' . e($label) . '</option>';
+            }
+
+            return $html . '</select>' . ($err ? '<div class="invalid-feedback">' . e($err) . '</div>' : '') . '</div>';
+        };
+        ?>
+        <hr>
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <i class="bi bi-shield-lock text-primary"></i>
+          <span class="small text-muted">ข้อมูลอ่อนไหว (PDPA) เข้ารหัสก่อนบันทึก รายละเอียดอื่นบันทึกที่ "ข้อมูลความพิการและสุขภาพ"</span>
+        </div>
+        <?php if (errors() !== []): ?>
+          <div class="alert alert-warning py-2 small mb-2"><i class="bi bi-exclamation-triangle me-1"></i>ช่องประเภทความพิการและกลุ่มเลือดไม่เก็บค่าที่กรอกค้างไว้ กรุณาเลือกใหม่อีกครั้ง</div>
+        <?php endif; ?>
+        <div class="row g-3">
+          <?= $sensitiveSelect('disability_type', StudentLookup::DISABILITY_TYPES, $disType, 'col-12 col-md-8 col-lg-6', ' data-disability-type') ?>
+          <?= $sensitiveSelect('blood_group', StudentLookup::BLOOD_GROUPS, $sv('blood_group'), 'col-6 col-md-4 col-lg-3') ?>
+          <div class="col-12 multiple-fields<?= $disType === 'multiple' || error_for('multiple_disabilities') ? '' : ' d-none' ?>">
+            <div class="form-label">ประเภทความพิการ (เลือกอย่างน้อย 2 ประเภท) <span class="text-danger">*</span></div>
+            <div class="d-flex flex-wrap gap-3">
+              <?php foreach (StudentLookup::DISABILITY_TYPES as $k => $label): ?>
+                <?php if ($k === 'multiple') { continue; } ?>
+                <div class="form-check">
+                  <input class="form-check-input<?= error_for('multiple_disabilities') ? ' is-invalid' : '' ?>" type="checkbox" name="multiple_disabilities[]"
+                         value="<?= e($k) ?>" id="md-<?= e($k) ?>"<?= in_array($k, $multiple, true) ? ' checked' : '' ?>>
+                  <label class="form-check-label" for="md-<?= e($k) ?>"><?= e($label) ?></label>
+                </div>
+              <?php endforeach; ?>
+            </div>
+            <?php if (error_for('multiple_disabilities')): ?><div class="invalid-feedback d-block"><?= e(error_for('multiple_disabilities')) ?></div><?php endif; ?>
+          </div>
+        </div>
+      <?php endif; ?>
     </div>
   </div>
 
@@ -198,6 +250,28 @@ $action = url($isEdit ? '/academic/students/' . (int) $student['id'] : '/academi
               <div class="accordion-body">
                 <div class="row g-3">
                   <?php if ($rel === 'guardian'): ?>
+                    <?php
+                    // ผู้ปกครองคือบิดา/มารดา: ค่าที่กรอกค้าง > เดาจากข้อมูลเดิม (ความเกี่ยวข้อง + ชื่อตรงกัน)
+                    $source = $hasOld ? old('guardian_source') : '';
+                    if (!$hasOld && $isEdit) {
+                        foreach (['father', 'mother'] as $p) {
+                            if (($current['guardian_relation_note'] ?? '') === StudentLookup::RELATIONS[$p] && ($current['guardian_first_name'] ?? '') !== ''
+                                && ($current['guardian_first_name'] ?? '') === ($current["{$p}_first_name"] ?? '')
+                                && ($current['guardian_last_name'] ?? '') === ($current["{$p}_last_name"] ?? '')) {
+                                $source = $p;
+                            }
+                        }
+                    }
+                    ?>
+                    <div class="col-12 col-md-6 col-lg-4">
+                      <label class="form-label" for="f-guardian_source">ผู้ปกครองคือ</label>
+                      <select id="f-guardian_source" name="guardian_source" class="form-select" data-guardian-source>
+                        <option value="">บุคคลอื่น (กรอกเอง)</option>
+                        <option value="father"<?= $source === 'father' ? ' selected' : '' ?>>บิดา (ใช้ข้อมูลบิดา)</option>
+                        <option value="mother"<?= $source === 'mother' ? ' selected' : '' ?>>มารดา (ใช้ข้อมูลมารดา)</option>
+                      </select>
+                      <div class="form-text">เลือกบิดา/มารดา ระบบนำข้อมูลมาใส่ให้อัตโนมัติ (รวมเลขประจำตัวประชาชน)</div>
+                    </div>
                     <?= $field('guardian_relation_note', ['label' => 'ความเกี่ยวข้องกับนักเรียน', 'max' => 50, 'placeholder' => 'เช่น ปู่ ย่า ตา ยาย ลุง ป้า']) ?>
                   <?php endif; ?>
                   <?= $field("{$rel}_title_name", ['label' => 'คำนำหน้า', 'max' => 30, 'list' => 'adult-title-options', 'col' => 'col-6 col-md-3 col-lg-2']) ?>

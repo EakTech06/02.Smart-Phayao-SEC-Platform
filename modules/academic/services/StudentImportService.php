@@ -349,7 +349,8 @@ final class StudentImportService
         }
         $db = Database::instance();
         $errors = [];
-        $type = self::mapChoice((string) ($r['enroll_service_type'] ?? ''), self::choices()['enroll_service_type']);
+        $rawType = trim((string) ($r['enroll_service_type'] ?? ''));
+        $type = StudentLookup::SERVICE_TYPE_ALIASES[$rawType] ?? self::mapChoice($rawType, self::choices()['enroll_service_type']);
         if (!isset(StudentLookup::SERVICE_TYPES[$type])) {
             $errors['enroll_service_type'][] = 'กรุณาระบุประเภทการรับบริการเมื่อกรอกข้อมูลการรับบริการ';
         }

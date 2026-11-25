@@ -90,8 +90,8 @@ final class StudentController extends Controller
 
     public function store(): Response
     {
-        $data = $this->validate(StudentService::rules(true, $this->request->all()), StudentService::labels());
-        $id = StudentService::create($data, true);
+        $data = $this->validateStudent(true, null);
+        $id = StudentService::create($data, true, $this->request->all());
         Session::flash('success', 'เพิ่มนักเรียนเรียบร้อยแล้ว');
 
         return $this->redirect('/academic/students/' . $id);
@@ -105,8 +105,8 @@ final class StudentController extends Controller
     public function update(string $id): Response
     {
         $student = $this->find($id);
-        $data = $this->validate(StudentService::rules(false, $this->request->all()), StudentService::labels());
-        StudentService::update($student, $data);
+        $data = $this->validateStudent(false, (int) $student['id']);
+        StudentService::update($student, $data, $this->request->all());
         Session::flash('success', 'บันทึกข้อมูลนักเรียนเรียบร้อยแล้ว');
 
         return $this->redirect('/academic/students/' . (int) $student['id']);
@@ -309,9 +309,43 @@ final class StudentController extends Controller
         ]);
     }
 
+    /**
+     * ตรวจข้อมูลนักเรียน + ประเภทความพิการ/กลุ่มเลือด แล้วแจ้งข้อผิดพลาดพร้อมกัน
+     * ค่าความพิการ/กลุ่มเลือดเป็นข้อมูลอ่อนไหว จึงไม่เก็บค่าที่กรอกค้างไว้ใน Session
+     */
+    private function validateStudent(bool $isCreate, ?int $studentId): array
+    {
+        ErrorHandler::doNotFlash(...StudentService::BASIC_SENSITIVE_INPUTS);
+        $errors = [];
+        $data = [];
+        try {
+            $data = $this->validate(StudentService::rules($isCreate, $this->request->all()), StudentService::labels());
+        } catch (ValidationException $e) {
+            $errors = $e->errors();
+        }
+        if (StudentService::canEditBasicSensitive($studentId)) {
+            try {
+                StudentService::basicSensitiveInput($this->request->all());
+            } catch (ValidationException $e) {
+                $errors += $e->errors();
+            }
+        }
+        if ($errors !== []) {
+            throw new ValidationException($errors);
+        }
+
+        return $data;
+    }
+
     private function renderForm(?array $student): Response
     {
+        $studentId = $student !== null ? (int) $student['id'] : null;
+        $canBasic = StudentService::canEditBasicSensitive($studentId);
+
         return $this->view('academic::students/form', [
+            'canEditBasicSensitive' => $canBasic,
+            // เปิดฟอร์มแก้ไข = เปิดดูข้อมูลอ่อนไหว (บันทึก Audit)
+            'basicSensitive' => $canBasic && $studentId !== null ? (StudentService::sensitive($studentId) ?? []) : [],
             'title' => $student === null ? 'เพิ่มนักเรียน' : 'แก้ไขข้อมูลนักเรียน',
             'student' => $student,
             'guardians' => $student !== null ? StudentService::guardians((int) $student['id']) : [],

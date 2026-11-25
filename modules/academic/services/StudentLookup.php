@@ -105,13 +105,32 @@ final class StudentLookup
     public const SERVICE_TYPES = [
         'center_boarding' => ['ประจำ (ในศูนย์)', 'center'],
         'center_day' => ['ไป-กลับ (ในศูนย์)', 'center'],
-        'service_unit' => ['หน่วยบริการ', 'outreach'],
+        'service_unit' => ['ที่หน่วยบริการ', 'outreach'],
         'home' => ['ให้บริการที่บ้าน', 'outreach'],
-        'hospital' => ['เจ็บป่วยเรื้อรังในโรงพยาบาล', 'outreach'],
+        'hospital' => ['ศูนย์การเรียนสำหรับเด็กในโรงพยาบาล', 'outreach'],
         'learning_center' => ['ศูนย์การเรียนเฉพาะความพิการ', 'outreach'],
     ];
 
     public const SERVICE_GROUPS = ['center' => 'รับบริการที่ศูนย์', 'outreach' => 'รับบริการนอกศูนย์'];
+
+    /** ชื่อสั้นในช่องเลือกแบบ 2 ขั้น (เลือกกลุ่มก่อน แล้วเลือกประเภท) */
+    public const SERVICE_TYPE_SHORT = [
+        'center_boarding' => 'ประจำ',
+        'center_day' => 'ไป-กลับ',
+    ];
+
+    /** ชื่อเดิม/ชื่ออื่นที่ยังรับได้ตอนนำเข้า CSV => service_type */
+    public const SERVICE_TYPE_ALIASES = [
+        'หน่วยบริการ' => 'service_unit',
+        'เจ็บป่วยเรื้อรังในโรงพยาบาล' => 'hospital',
+        'ประจำ' => 'center_boarding',
+        'ไป-กลับ' => 'center_day',
+    ];
+
+    public static function serviceTypeShort(string $type): string
+    {
+        return self::SERVICE_TYPE_SHORT[$type] ?? (self::SERVICE_TYPES[$type][0] ?? $type);
+    }
 
     public const PARENTS_STATUSES = [
         'together' => 'อยู่ร่วมกัน',
@@ -139,8 +158,8 @@ final class StudentLookup
         'learning' => 'บกพร่องทางการเรียนรู้',
         'speech_language' => 'บกพร่องทางการพูดและภาษา',
         'behavioral_emotional' => 'บกพร่องทางพฤติกรรมหรืออารมณ์',
-        'autism' => 'ออทิสติก',
-        'multiple' => 'พิการซ้อน',
+        'autism' => 'บุคคลออทิสติก',
+        'multiple' => 'บุคคลพิการซ้อน',
     ];
 
     /** ระดับความพิการ (เฉพาะการเห็น/การได้ยิน) */
