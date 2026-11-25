@@ -53,11 +53,11 @@ final class StudentController extends Controller
         if ($withSensitive) {
             $head[] = 'ประเภทความพิการ';
         }
-        $rows = [['ทะเบียนนักเรียน ' . ($year ?? ''), 'ข้อมูล ณ ' . date('Y-m-d H:i')], [], $head];
+        $rows = [['ทะเบียนนักเรียน ' . ($year ?? ''), 'ข้อมูล ณ ' . thai_date_numeric(date('Y-m-d H:i'), true)], [], $head];
         foreach ($students as $s) {
             $line = [
                 $s['student_code'], $s['title_name'], $s['first_name'], $s['last_name'], $s['nickname'],
-                StudentLookup::GENDERS[$s['gender']] ?? '', $s['birth_date'], StudentLookup::age($s['birth_date']),
+                StudentLookup::GENDERS[$s['gender']] ?? '', thai_date_numeric($s['birth_date']), StudentLookup::age($s['birth_date']),
                 StudentLookup::statusLabel((string) $s['status']), $s['service_type'] ? StudentLookup::serviceLabel($s['service_type']) : '',
                 $s['department_name'], $s['room_code'] ? $s['room_code'] . ' ' . $s['room_name'] : '', $s['grade_level'], $s['teacher_name'],
             ];

@@ -99,6 +99,17 @@ function thai_date(?string $datetime, bool $withTime = true, bool $fullMonth = f
     return $withTime ? $text . ' ' . date('H:i', $ts) : $text;
 }
 
+/** วันที่แบบตัวเลข พ.ศ. เช่น 10/05/2563 (ใช้ในไฟล์ส่งออก/ช่องที่ต้องการแบบสั้น) */
+function thai_date_numeric(?string $datetime, bool $withTime = false): string
+{
+    $ts = $datetime !== null && $datetime !== '' ? strtotime($datetime) : false;
+    if ($ts === false) {
+        return '';
+    }
+
+    return date('d/m/', $ts) . ((int) date('Y', $ts) + 543) . ($withTime ? ' ' . date('H:i', $ts) : '');
+}
+
 /** เวลาที่ผ่านมาแบบสั้น เช่น "5 นาทีที่แล้ว" (เกิน 7 วันแสดงวันที่) */
 function time_ago(?string $datetime): string
 {

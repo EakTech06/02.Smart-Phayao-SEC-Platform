@@ -40,7 +40,7 @@
           <?php else: ?>
             <?php foreach ($logs as $log): ?>
               <tr>
-                <td><?= e($log['created_at']) ?></td>
+                <td class="text-nowrap" data-order="<?= e($log['created_at']) ?>"><?= e(thai_date($log['created_at'])) ?></td>
                 <td><?= e($log['username'] ?? 'System/Guest') ?></td>
                 <td><span class="badge text-bg-secondary"><?= e(strtoupper((string) ($log['module'] ?? ''))) ?></span></td>
                 <td class="fw-semibold"><code><?= e($log['action'] ?? '-') ?></code></td>

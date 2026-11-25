@@ -498,9 +498,9 @@ final class ReportService
 
         $summary = [
             ['รายงานภาพรวมหน่วยงาน', $orgName],
-            ['ช่วงเวลา', $p['label'] . ' (' . $p['from'] . ' ถึง ' . $p['to'] . ')'],
+            ['ช่วงเวลา', $p['label'] . ' (' . thai_date_numeric($p['from']) . ' ถึง ' . thai_date_numeric($p['to']) . ')'],
             ['ขอบเขต', $report['org_wide'] ? 'ทั้งหน่วยงาน' : implode(', ', array_column($report['departments_in_scope'], 'name_th'))],
-            ['ออกรายงานเมื่อ', $report['generated_at']],
+            ['ออกรายงานเมื่อ', thai_date_numeric($report['generated_at'], true)],
             [],
             ['หัวข้อ', 'จำนวน'],
             ['บุคลากรที่ปฏิบัติงาน', array_sum(array_column($report['personnel'], 'total'))],

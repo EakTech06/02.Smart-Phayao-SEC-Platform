@@ -45,7 +45,7 @@ final class ReportController extends Controller
             'format' => 'xlsx',
         ]);
 
-        $name = 'รายงานภาพรวม_' . $report['period']['from'] . '_' . $report['period']['to'] . '.xlsx';
+        $name = 'รายงานภาพรวม_' . str_replace('/', '-', thai_date_numeric($report['period']['from']) . '_' . thai_date_numeric($report['period']['to'])) . '.xlsx';
 
         return new Response($content, 200, [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',

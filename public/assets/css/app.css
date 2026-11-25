@@ -63,3 +63,13 @@ body { font-family: 'Sarabun', system-ui, -apple-system, 'Segoe UI', sans-serif;
 .completeness-bar.mini { height: 6px; min-width: 64px; }
 .import-columns { max-height: 75vh; }
 .import-preview { max-height: 60vh; }
+
+/* ช่องวันที่ พ.ศ. (assets/js/thai-date.js) */
+.thai-date { position: relative; flex-wrap: nowrap; }
+.thai-date-pop { top: 100%; left: 0; width: 17.5rem; margin-top: 2px; z-index: 1060; }
+.thai-date-pop.thai-date-up { top: auto; bottom: 100%; margin-top: 0; margin-bottom: 2px; }
+.thai-date-year { max-width: 5.75rem; }
+.thai-date-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
+.thai-date-dow { font-size: .75rem; font-weight: 600; color: var(--bs-secondary-color); padding: .15rem 0; }
+.thai-date-day { padding: .2rem 0; font-size: .85rem; }
+.thai-date input.thai-date-bad { border-color: var(--bs-danger); }

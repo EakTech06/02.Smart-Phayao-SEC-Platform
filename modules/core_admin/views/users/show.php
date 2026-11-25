@@ -102,7 +102,7 @@ $isActive = $user['status'] === 'active';
       <dt class="col-sm-4 col-lg-3">บทบาท</dt><dd class="col-sm-8 col-lg-9"><?= e($user['role_names'] ?? '-') ?></dd>
       <dt class="col-sm-4 col-lg-3">ต้องเปลี่ยนรหัสผ่าน</dt>
       <dd class="col-sm-8 col-lg-9"><?= (int) $user['must_change_password'] === 1 ? 'ใช่' : 'ไม่' ?></dd>
-      <dt class="col-sm-4 col-lg-3">เข้าใช้ล่าสุด</dt><dd class="col-sm-8 col-lg-9"><?= e($user['last_login_at'] ?? '-') ?></dd>
+      <dt class="col-sm-4 col-lg-3">เข้าใช้ล่าสุด</dt><dd class="col-sm-8 col-lg-9"><?= e(thai_date($user['last_login_at'] ?? null)) ?></dd>
     </dl>
   </div>
 </div>

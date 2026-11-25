@@ -74,7 +74,7 @@ $id = (int) $user['id'];
                         <?= strtoupper($o['effect']) ?>
                       </span>
                     </td>
-                    <td class="small"><?= e($o['expires_at'] ?? 'ถาวร') ?></td>
+                    <td class="small"><?= e($o['expires_at'] !== null ? thai_date($o['expires_at'], false) : 'ถาวร') ?></td>
                     <td class="text-end">
 
                     <form method="post" action="<?= e(url('/users/' . $id . '/permissions/delete')) ?>" class="d-inline" data-confirm="ลบการกำหนดสิทธิ์นี้?">

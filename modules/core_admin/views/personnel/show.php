@@ -132,7 +132,7 @@ $accountErrors = array_filter([error_for('account'), error_for('username'), erro
             <dt class="col-5 text-muted fw-normal">ชื่อผู้ใช้</dt><dd class="col-7 font-monospace"><?= e($employee['username']) ?></dd>
             <dt class="col-5 text-muted fw-normal">สถานะบัญชี</dt>
             <dd class="col-7"><span class="badge text-bg-<?= $employee['user_status'] === 'active' ? 'success' : 'secondary' ?>"><?= e(UserService::STATUSES[$employee['user_status']] ?? $employee['user_status']) ?></span></dd>
-            <dt class="col-5 text-muted fw-normal">เข้าใช้ล่าสุด</dt><dd class="col-7"><?= e($employee['last_login_at'] ?? '-') ?></dd>
+            <dt class="col-5 text-muted fw-normal">เข้าใช้ล่าสุด</dt><dd class="col-7"><?= e(thai_date($employee['last_login_at'] ?? null)) ?></dd>
           </dl>
           <?php if (Core\Rbac::scope('core.users', 'read') !== null): ?>
             <a href="<?= e(url('/users/' . (int) $employee['user_id'])) ?>" class="btn btn-sm btn-outline-primary w-100"><i class="bi bi-box-arrow-up-right me-1"></i>จัดการบัญชีผู้ใช้</a>
@@ -186,8 +186,8 @@ $accountErrors = array_filter([error_for('account'), error_for('username'), erro
 
     <div class="card shadow-sm">
       <div class="card-body small text-muted">
-        <div>สร้างเมื่อ: <?= e($employee['created_at']) ?></div>
-        <div>แก้ไขล่าสุด: <?= e($employee['updated_at'] ?? '-') ?></div>
+        <div>สร้างเมื่อ: <?= e(thai_date($employee['created_at'])) ?></div>
+        <div>แก้ไขล่าสุด: <?= e(thai_date($employee['updated_at'] ?? null)) ?></div>
       </div>
     </div>
   </div>
