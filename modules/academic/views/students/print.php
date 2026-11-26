@@ -62,6 +62,7 @@ $base = url('/academic/students/' . (int) $student['id']);
     <?php if ($report['sensitive']): ?>
       <p class="small text-muted mb-0"><i class="bi bi-shield-lock me-1"></i>เอกสารนี้มีข้อมูลอ่อนไหวตาม PDPA มาตรา 26 ใช้เฉพาะในการจัดการศึกษาและการให้บริการนักเรียนเท่านั้น</p>
     <?php endif; ?>
+    <?= Core\View::template('print_footer') ?>
   </div>
 </article>
 <script src="<?= e(asset('js/reports.js')) ?>" defer></script>

@@ -303,4 +303,5 @@ $pct = static fn (int $n, int $total): string => $total > 0 ? number_format($n *
   </div>
 </div>
 
+<?= Core\View::template('print_footer') ?>
 <script src="<?= e(asset('js/reports.js')) ?>" defer></script>

@@ -239,6 +239,8 @@ final class StudentProfileReport
                 $rows[] = $r;
             }
         }
+        $rows[] = [];
+        $rows[] = [print_footer_text()];
 
         return $rows;
     }

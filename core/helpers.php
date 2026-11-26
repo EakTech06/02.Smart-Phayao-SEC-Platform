@@ -110,6 +110,17 @@ function thai_date_numeric(?string $datetime, bool $withTime = false): string
     return date('d/m/', $ts) . ((int) date('Y', $ts) + 543) . ($withTime ? ' ' . date('H:i', $ts) : '');
 }
 
+/** ข้อความท้ายกระดาษรายงาน: พิมพ์ออกจากระบบ ... ผู้พิมพ์ ... เมื่อวันที่ วว/ดด/ปปปป (พ.ศ.) เวลา ชม.:นาที น. */
+function print_footer_text(?int $timestamp = null): string
+{
+    $ts = $timestamp ?? time();
+
+    return 'พิมพ์ออกจากระบบ ' . config('app.name', 'Smart Phayao SEC Platform')
+        . ' ผู้พิมพ์: ' . (\Core\Auth::displayName() ?: '-')
+        . ' เมื่อวันที่ ' . thai_date_numeric(date('Y-m-d', $ts))
+        . ' เวลา ' . date('H:i', $ts) . ' น.';
+}
+
 /** เวลาที่ผ่านมาแบบสั้น เช่น "5 นาทีที่แล้ว" (เกิน 7 วันแสดงวันที่) */
 function time_ago(?string $datetime): string
 {
