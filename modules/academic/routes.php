@@ -30,7 +30,9 @@ $router->group(['middleware' => ['auth', 'password.fresh']], static function (Ro
     $r->get('/academic/students/create', [StudentController::class, 'create'], ['perm:academic.students.create_all']);
     $r->post('/academic/students', [StudentController::class, 'store'], ['csrf', 'perm:academic.students.create_all']);
     $r->get('/academic/students/{id:\d+}', [StudentController::class, 'show'], [$studentRead]);
-    $r->get('/academic/students/{id:\d+}/edit', [StudentController::class, 'edit'], [$update]);
+    $r->get('/academic/students/{id:\d+}/print', [StudentController::class, 'printProfile'], [$studentRead]);
+    $r->get('/academic/students/{id:\d+}/excel', [StudentController::class, 'exportProfile'], [$studentRead]);
+    $r->get('/academic/students/{id:\d+}/edit',[StudentController::class, 'edit'], [$update]);
     $r->put('/academic/students/{id:\d+}', [StudentController::class, 'update'], ['csrf', $update]);
     $r->delete('/academic/students/{id:\d+}', [StudentController::class, 'destroy'], ['csrf', 'perm:academic.students.delete_all']);
     $r->post('/academic/students/{id:\d+}/reveal-id', [StudentController::class, 'revealNationalId'], [

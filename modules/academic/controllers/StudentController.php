@@ -16,7 +16,9 @@ use Core\Response;
 use Core\Session;
 use Core\XlsxWriter;
 use Modules\Academic\Services\StudentCompleteness;
+use Core\Setting;
 use Modules\Academic\Services\StudentLookup;
+use Modules\Academic\Services\StudentProfileReport;
 use Modules\Academic\Services\StudentService;
 use Modules\Academic\Services\StudentStatusService;
 use Modules\CoreAdmin\Services\FileService;
@@ -81,6 +83,39 @@ final class StudentController extends Controller
     public function show(string $id): Response
     {
         return $this->renderShow($this->find($id));
+    }
+
+    /** รายงานรายบุคคลสำหรับพิมพ์/บันทึกเป็น PDF (ผ่านหน้าต่างพิมพ์ของเบราว์เซอร์) */
+    public function printProfile(string $id): Response
+    {
+        $student = $this->find($id);
+        $report = StudentProfileReport::build($student);
+        Audit::log('academic.student.profile_printed', 'academic', 'academic_students', (int) $student['id'], null, ['with_sensitive' => $report['sensitive']]);
+
+        return $this->view('academic::students/print', [
+            'title' => $report['title'] . ' ' . $student['student_code'],
+            'report' => $report,
+            'orgName' => (string) Setting::get('org.name', config('app.org')),
+            'photo' => $this->photoOf((int) $student['id']),
+        ]);
+    }
+
+    /** รายงานรายบุคคลเป็นไฟล์ Excel */
+    public function exportProfile(string $id): Response
+    {
+        $student = $this->find($id);
+        $report = StudentProfileReport::build($student);
+        $rows = StudentProfileReport::toRows($report, (string) Setting::get('org.name', config('app.org')));
+        $content = (new XlsxWriter())->addSheet((string) $student['student_code'], $rows)->build();
+        Audit::log('academic.student.profile_exported', 'academic', 'academic_students', (int) $student['id'], null, ['with_sensitive' => $report['sensitive']]);
+        $file = 'ข้อมูลนักเรียน_' . $student['student_code'] . '_' . date('Ymd') . '.xlsx';
+
+        return new Response($content, 200, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Length' => (string) strlen($content),
+            'Content-Disposition' => 'attachment; filename="student-' . preg_replace('/[^A-Za-z0-9_-]/', '', (string) $student['student_code']) . '-' . date('Ymd')
+                . ".xlsx\"; filename*=UTF-8''" . rawurlencode($file),
+        ]);
     }
 
     public function create(): Response
@@ -270,14 +305,7 @@ final class StudentController extends Controller
         $canSensitive = StudentService::canViewSensitive($id);
         $documents = FileService::attachments(StudentLookup::REF_TYPE, $id);
         $sensitiveDocs = $canSensitive ? FileService::attachments(StudentLookup::REF_TYPE_SENSITIVE, $id) : [];
-        $photoTitle = StudentLookup::DOCUMENT_TYPES['photo'][0];
-        $photo = null;
-        foreach (array_reverse($documents) as $doc) {
-            if (str_starts_with((string) $doc['title'], $photoTitle) && str_starts_with((string) $doc['mime_type'], 'image/')) {
-                $photo = $doc;
-                break;
-            }
-        }
+        $photo = $this->photoOf($id, $documents);
 
         $guardians = StudentService::guardians($id);
         $enrollments = StudentService::enrollments($id);
@@ -415,14 +443,22 @@ final class StudentController extends Controller
     }
 
     /** ชื่อครูผู้คัดกรอง + เลขทะเบียนผู้คัดกรองคนพิการ (ถ้ามี) */
+    /** รูปถ่ายล่าสุดจากเอกสารแนบ (ชื่อขึ้นต้นด้วย "รูปถ่ายนักเรียน" และเป็นไฟล์ภาพ) */
+    private function photoOf(int $id, ?array $documents = null): ?array
+    {
+        $documents ??= FileService::attachments(StudentLookup::REF_TYPE, $id);
+        $photoTitle = StudentLookup::DOCUMENT_TYPES['photo'][0];
+        foreach (array_reverse($documents) as $doc) {
+            if (str_starts_with((string) $doc['title'], $photoTitle) && str_starts_with((string) $doc['mime_type'], 'image/')) {
+                return $doc;
+            }
+        }
+
+        return null;
+    }
+
     private static function employeeName(mixed $id): ?string
     {
-        if ($id === null) {
-            return null;
-        }
-        $row = Database::instance()->fetch('SELECT title_name, first_name, last_name, screener_reg_no FROM employees WHERE id = ?', [(int) $id]);
-
-        return $row !== null ? trim(($row['title_name'] ?? '') . $row['first_name'] . ' ' . $row['last_name'])
-            . (!empty($row['screener_reg_no']) ? ' (เลขทะเบียนผู้คัดกรอง ' . $row['screener_reg_no'] . ')' : '') : null;
+        return StudentProfileReport::employeeName($id);
     }
 }

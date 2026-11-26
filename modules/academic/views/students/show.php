@@ -54,6 +54,8 @@ $code = static fn (array $list, mixed $k): string => $k === null || $k === '' ? 
       </div>
     </div>
     <div class="d-flex flex-wrap gap-2">
+      <a href="<?= e($base . '/print') ?>" class="btn btn-outline-secondary"><i class="bi bi-printer me-1"></i>พิมพ์/PDF</a>
+      <a href="<?= e($base . '/excel') ?>" class="btn btn-outline-success"><i class="bi bi-file-earmark-excel me-1"></i>ส่งออก Excel</a>
       <?php if ($canUpdate): ?>
         <a href="<?= e($base . '/edit') ?>" class="btn btn-outline-primary"><i class="bi bi-pencil me-1"></i>แก้ไข</a>
       <?php endif; ?>
