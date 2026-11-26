@@ -12,6 +12,8 @@ use Core\Response;
 use Core\View;
 use Modules\CoreAdmin\Models\UserModel;
 use Modules\CoreAdmin\Services\CalendarService;
+use Modules\CoreAdmin\Services\LicenseReminderService;
+use Modules\CoreAdmin\Services\PersonnelService;
 use Modules\CoreAdmin\Services\NotificationService;
 use Modules\CoreAdmin\Services\PdpaService;
 use Modules\CoreAdmin\Services\ReportService;
@@ -27,6 +29,7 @@ final class DashboardController extends Controller
     public function index(): Response
     {
         $db = Database::instance();
+        LicenseReminderService::runDaily(); // ตรวจใบประกอบวิชาชีพครูวันละครั้ง (แจ้งเตือนเข้ากระดิ่ง)
         $stats = [
             'users' => Rbac::scope('core.users', 'read') !== null ? UserModel::countVisible() : null,
             'personnel' => (int) $db->fetchColumn("SELECT COUNT(*) FROM employees WHERE deleted_at IS NULL AND status = 'active'"),
@@ -51,7 +54,7 @@ final class DashboardController extends Controller
 
         // สถิติรายฝ่ายเป็นตัวเลขสรุปเท่านั้น (ไม่มีข้อมูลรายบุคคล) จึงแสดงให้ทุกคนที่ดูแดชบอร์ดได้
         $departments = ReportService::departmentSummary();
-        $types = UserService::EMPLOYMENT_TYPES;
+        $types = ReportService::employmentTypes();
         $typeTotals = [];
         foreach (array_keys($types) as $t) {
             $typeTotals[$t] = array_sum(array_map(static fn (array $d): int => $d['by_type'][$t] ?? 0, $departments));
@@ -87,7 +90,39 @@ final class DashboardController extends Controller
             'pdpa' => PdpaService::canManage() ? PdpaService::counts() : null,
             'canReport' => Rbac::canAny(['core.reports.view_all', 'core.reports.view_department']),
             'recent' => $recent,
+            'license' => self::licenseAlerts(),
         ]);
+    }
+
+    /**
+     * แจ้งเตือนใบประกอบวิชาชีพครูบนแดชบอร์ด: ของตนเอง (ถ้าหมดอายุ/ใกล้หมดอายุ) และจำนวนที่งานบุคคลต้องติดตาม
+     * @return array{own: ?array, own_id: ?int, expired: int, expiring: int, can_manage: bool}
+     */
+    private static function licenseAlerts(): array
+    {
+        $db = Database::instance();
+        $own = $db->fetch(
+            "SELECT e.id, e.license_expiry_date FROM users u JOIN employees e ON e.id = u.employee_id
+             WHERE u.id = ? AND e.deleted_at IS NULL AND e.status = 'active'",
+            [(int) Auth::id()]
+        );
+        $ownStatus = $own !== null ? PersonnelService::licenseStatus($own['license_expiry_date']) : null;
+        $canManage = Rbac::can('core.employees.update_all');
+        $counts = $canManage ? $db->fetch(
+            "SELECT COALESCE(SUM(license_expiry_date < CURDATE()), 0) AS expired,
+                    COALESCE(SUM(license_expiry_date >= CURDATE()), 0) AS expiring
+             FROM employees WHERE deleted_at IS NULL AND status = 'active'
+               AND license_expiry_date <= CURDATE() + INTERVAL ? DAY",
+            [PersonnelService::LICENSE_WARN_DAYS]
+        ) : null;
+
+        return [
+            'own' => $ownStatus !== null && $ownStatus['state'] !== 'valid' ? $ownStatus : null,
+            'own_id' => $own !== null ? (int) $own['id'] : null,
+            'expired' => (int) ($counts['expired'] ?? 0),
+            'expiring' => (int) ($counts['expiring'] ?? 0),
+            'can_manage' => $canManage,
+        ];
     }
 
     /** HMVC widget: เรียกจาก View อื่นผ่าน Hmvc::call() */

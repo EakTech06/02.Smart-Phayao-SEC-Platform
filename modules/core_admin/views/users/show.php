@@ -97,7 +97,7 @@ $isActive = $user['status'] === 'active';
       <dt class="col-sm-4 col-lg-3">อีเมล</dt><dd class="col-sm-8 col-lg-9"><?= e($user['email'] ?? '-') ?></dd>
       <dt class="col-sm-4 col-lg-3">ตำแหน่ง</dt><dd class="col-sm-8 col-lg-9"><?= e($user['position'] ?? '-') ?></dd>
       <dt class="col-sm-4 col-lg-3">ประเภทบุคลากร</dt>
-      <dd class="col-sm-8 col-lg-9"><?= e(UserService::EMPLOYMENT_TYPES[$user['employment_type'] ?? ''] ?? '-') ?></dd>
+      <dd class="col-sm-8 col-lg-9"><?= e(UserService::EMPLOYMENT_TYPE_LABELS[$user['employment_type'] ?? ''] ?? '-') ?></dd>
       <dt class="col-sm-4 col-lg-3">ฝ่าย/งาน</dt><dd class="col-sm-8 col-lg-9"><?= e($user['department_name'] ?? '-') ?></dd>
       <dt class="col-sm-4 col-lg-3">บทบาท</dt><dd class="col-sm-8 col-lg-9"><?= e($user['role_names'] ?? '-') ?></dd>
       <dt class="col-sm-4 col-lg-3">ต้องเปลี่ยนรหัสผ่าน</dt>

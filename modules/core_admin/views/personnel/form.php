@@ -13,6 +13,8 @@ use Modules\CoreAdmin\Services\UserService;
 $selfOnly ??= false;
 $serviceUnits ??= [];
 $canSetServiceUnit ??= false;
+/** @var array $educations ข้อมูลการศึกษาเดิม (employee_educations) */
+$educations ??= [];
 
 $isEdit = $employee !== null;
 $oldInput = Session::getFlash('old', []);
@@ -66,6 +68,7 @@ $field = static function (string $name, array $opt = []) use ($val, $selfOnly): 
         . $control
         . ($error ? '<div class="invalid-feedback">' . e($error) . '</div>' : '')
         . (isset($opt['help']) ? '<div class="form-text">' . e($opt['help']) . '</div>' : '')
+        . ($opt['extra'] ?? '') // HTML ที่สร้างในหน้านี้ (escape แล้ว)
         . '</div>';
 };
 
@@ -86,12 +89,27 @@ if ($isEdit && $employee['service_unit_id'] !== null && !isset($unitOptions[(str
     $unitOptions[(string) $employee['service_unit_id']] = ($employee['service_unit_name'] ?? '-') . ' (ปิดใช้งาน)';
 }
 $statusValue = $val('status') !== '' ? $val('status') : 'active';
+// ข้อมูลการศึกษา: กรอกผิดแล้วกลับมาแสดงค่าที่กรอกไว้ / เพิ่มใหม่เริ่มด้วยแถวว่าง 1 แถว
+$eduRows = $hasOld
+    ? (is_array($oldInput['educations'] ?? null) ? array_values(array_filter($oldInput['educations'], 'is_array')) : [])
+    : $educations;
+if ($eduRows === []) {
+    $eduRows = [[]];
+}
+$eduErrors = errors()['educations'] ?? [];
+// ช่องคำนวณอัตโนมัติ (ปี เดือน) จากวันที่ในช่อง from ถึงวันนี้ หรือถึงช่อง to ถ้ามีค่า (personnel-form.js)
+$durationField = static function (string $label, string $from, ?string $to, ?string $value, string $help): string {
+    return '<div class="col-12 col-md-6 col-lg-4"><label class="form-label">' . e($label) . '</label>'
+        . '<input type="text" class="form-control bg-body-tertiary" readonly tabindex="-1" value="' . e($value ?? '') . '" placeholder="คำนวณอัตโนมัติ"'
+        . ' data-duration-from="' . e($from) . '"' . ($to !== null ? ' data-duration-to="' . e($to) . '"' : '') . '>'
+        . '<div class="form-text">' . e($help) . '</div></div>';
+};
 $action = url($isEdit ? '/personnel/' . (int) $employee['id'] : '/personnel');
 ?>
 <a href="<?= e(url($isEdit ? '/personnel/' . (int) $employee['id'] : '/personnel')) ?>" class="btn btn-link px-0 mb-2"><i class="bi bi-arrow-left"></i> กลับ</a>
 <h1 class="h4 mb-3"><?= $isEdit ? ($selfOnly ? 'แก้ไขข้อมูลส่วนตัวของฉัน' : 'แก้ไขข้อมูลบุคลากร') : 'เพิ่มบุคลากร' ?></h1>
 <?php if ($selfOnly): ?>
-  <div class="alert alert-info small"><i class="bi bi-info-circle me-1"></i>แก้ไขได้เฉพาะข้อมูลส่วนบุคคลและวุฒิการศึกษา · ตำแหน่ง ฝ่าย/งาน วันที่ปฏิบัติงาน และสถานะ แก้ไขโดยงานบริหารงานบุคคล</div>
+  <div class="alert alert-info small"><i class="bi bi-info-circle me-1"></i>แก้ไขได้เฉพาะข้อมูลส่วนบุคคล ข้อมูลการศึกษา เลขทะเบียนผู้คัดกรอง และใบประกอบวิชาชีพครู · ตำแหน่ง ฝ่าย/งาน วันที่ปฏิบัติงาน และสถานะ แก้ไขโดยงานบริหารงานบุคคล</div>
 <?php endif; ?>
 
 <form method="post" action="<?= e($action) ?>" novalidate>
@@ -119,6 +137,7 @@ $action = url($isEdit ? '/personnel/' . (int) $employee['id'] : '/personnel');
         <?= $field('nickname', ['max' => 50]) ?>
         <?= $field('gender', ['type' => 'select', 'options' => PersonnelService::GENDERS]) ?>
         <?= $field('birth_date', ['type' => 'date']) ?>
+        <?= $durationField('อายุ', 'f-birth_date', null, PersonnelService::duration($val('birth_date')), 'คำนวณจากวันเดือนปีเกิด') ?>
         <?= $field('national_id', [
             'value' => '',
             'inputmode' => 'numeric',
@@ -150,10 +169,17 @@ $action = url($isEdit ? '/personnel/' . (int) $employee['id'] : '/personnel');
             'help' => !$canSetServiceUnit ? 'กำหนดโดยงานบุคคล'
                 : ($unitOptions === [] ? 'ยังไม่มีหน่วยบริการ: เพิ่มที่ ข้อมูลพื้นฐาน > ข้อมูลฝ่าย/งาน (ประเภท "หน่วยบริการ/หน่วยย่อย" สังกัด "งานหน่วยบริการ")'
                 : 'หน่วยบริการที่สังกัดเพิ่มเติม 1 หน่วย (ถ้ามี)')]) ?>
-        <?= $field('education_level', ['max' => 100, 'list' => 'education-options']) ?>
-        <?= $field('education_major', ['max' => 150]) ?>
         <?= $field('screener_reg_no', ['max' => 50, 'help' => 'สำหรับครูที่ขึ้นทะเบียนเป็นผู้คัดกรองคนพิการ']) ?>
+        <?= $field('license_no', ['max' => 50]) ?>
+        <?php $license = PersonnelService::licenseStatus($val('license_expiry_date')); ?>
+        <?= $field('license_expiry_date', ['type' => 'date', 'extra' => '<div class="small mt-1 fw-semibold ' . e($license['class'] ?? '') . '"'
+            . ' data-license-status data-warn-days="' . PersonnelService::LICENSE_WARN_DAYS . '">' . e($license['text'] ?? '') . '</div>']) ?>
+        <?= $field('appointment_date', ['type' => 'date']) ?>
+        <?= $durationField('อายุราชการ', 'f-appointment_date', null, PersonnelService::duration($val('appointment_date')), 'นับจากวันที่บรรจุถึงวันนี้') ?>
+        <?= $field('first_position', ['max' => 150, 'list' => 'position-options']) ?>
         <?= $field('start_date', ['type' => 'date']) ?>
+        <?= $durationField('อายุปฏิบัติงาน (ที่แห่งนี้)', 'f-start_date', 'f-end_date', PersonnelService::duration($val('start_date'), $val('end_date')),
+            'นับจากวันที่เริ่มถึงวันนี้ (หรือถึงวันที่สิ้นสุด)') ?>
         <?= $field('end_date', ['type' => 'date']) ?>
 
         <?php if ($canChangeStatus && !$selfOnly): ?>
@@ -170,6 +196,58 @@ $action = url($isEdit ? '/personnel/' . (int) $employee['id'] : '/personnel');
 
         <?= $field('note', ['type' => 'textarea', 'max' => 500, 'col' => 'col-12 col-lg-8']) ?>
       </div>
+    </div>
+  </div>
+
+  <div class="card shadow-sm mb-3">
+    <div class="card-header bg-white fw-semibold d-flex justify-content-between align-items-center">
+      <span><i class="bi bi-mortarboard me-1"></i>ข้อมูลการศึกษา</span>
+      <button type="button" class="btn btn-sm btn-outline-primary" data-edu-add><i class="bi bi-plus-lg me-1"></i>เพิ่มระดับการศึกษา</button>
+    </div>
+    <div class="card-body">
+      <input type="hidden" name="_educations" value="1">
+      <?php if ($eduErrors !== []): ?>
+        <div class="alert alert-danger small py-2 mb-3"><?= implode('<br>', array_map('e', $eduErrors)) ?></div>
+      <?php endif; ?>
+      <div class="vstack gap-3" data-edu-list data-edu-max="<?= PersonnelService::MAX_EDUCATIONS ?>"
+           data-edu-no-major="<?= e(implode(',', PersonnelService::EDUCATION_NO_MAJOR)) ?>">
+        <?php foreach ($eduRows as $i => $edu): $ev = static fn (string $k): string => is_scalar($edu[$k] ?? null) ? (string) $edu[$k] : ''; ?>
+          <div class="border rounded p-3 position-relative" data-edu-row>
+            <div class="row g-2">
+              <div class="col-12 col-md-6 col-lg-4">
+                <label class="form-label small mb-1">ระดับการศึกษา</label>
+                <select name="educations[<?= (int) $i ?>][level]" class="form-select" data-edu-level>
+                  <option value="">-- เลือก --</option>
+                  <?php foreach (PersonnelService::EDUCATION_LEVELS as $k => $label): ?>
+                    <option value="<?= e($k) ?>" <?= $ev('level') === $k ? 'selected' : '' ?>><?= e($label) ?></option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
+              <div class="col-12 col-md-6 col-lg-4">
+                <label class="form-label small mb-1">สถาบัน</label>
+                <input type="text" name="educations[<?= (int) $i ?>][institution]" class="form-control" maxlength="191" value="<?= e($ev('institution')) ?>" list="institution-options">
+              </div>
+              <div class="col-12 col-md-6 col-lg-4">
+                <label class="form-label small mb-1">วุฒิการศึกษา</label>
+                <input type="text" name="educations[<?= (int) $i ?>][degree]" class="form-control" maxlength="150" value="<?= e($ev('degree')) ?>" placeholder="เช่น ค.บ., ศษ.ม., ม.6">
+              </div>
+              <div class="col-12 col-md-6 col-lg-4" data-edu-major-wrap>
+                <label class="form-label small mb-1">สาขาวิชา</label>
+                <input type="text" name="educations[<?= (int) $i ?>][major]" class="form-control" maxlength="150" value="<?= e($ev('major')) ?>" data-edu-major>
+                <div class="form-text d-none" data-edu-major-note>ต่ำกว่าปริญญาตรี ไม่ต้องระบุสาขา</div>
+              </div>
+              <div class="col-8 col-md-4 col-lg-3">
+                <label class="form-label small mb-1">ปีที่สำเร็จการศึกษา (พ.ศ.)</label>
+                <input type="text" name="educations[<?= (int) $i ?>][graduated_year]" class="form-control" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" value="<?= e($ev('graduated_year')) ?>" placeholder="เช่น 2560">
+              </div>
+              <div class="col-4 col-md-2 col-lg-1 d-flex align-items-end">
+                <button type="button" class="btn btn-outline-danger w-100" data-edu-remove title="ลบรายการนี้" aria-label="ลบรายการนี้"><i class="bi bi-trash"></i></button>
+              </div>
+            </div>
+          </div>
+        <?php endforeach; ?>
+      </div>
+      <div class="form-text mt-2">เพิ่มได้หลายระดับ (ไม่เกิน <?= PersonnelService::MAX_EDUCATIONS ?> รายการ) · ระดับสูงสุดใช้เป็นวุฒิการศึกษาในรายงาน</div>
     </div>
   </div>
 
@@ -190,6 +268,8 @@ $action = url($isEdit ? '/personnel/' . (int) $employee['id'] : '/personnel');
   <option value="ครูชำนาญการ"><option value="ครูชำนาญการพิเศษ"><option value="ครูเชี่ยวชาญ"><option value="ครูเชี่ยวชาญพิเศษ">
   <option value="ผู้อำนวยการชำนาญการพิเศษ"><option value="รองผู้อำนวยการชำนาญการพิเศษ">
 </datalist>
-<datalist id="education-options">
-  <option value="ปริญญาเอก"><option value="ปริญญาโท"><option value="ปริญญาตรี"><option value="อนุปริญญา/ปวส."><option value="มัธยมศึกษาตอนปลาย/ปวช."><option value="ต่ำกว่ามัธยมศึกษา">
+<datalist id="institution-options">
+  <option value="มหาวิทยาลัยพะเยา"><option value="มหาวิทยาลัยราชภัฏเชียงราย"><option value="มหาวิทยาลัยราชภัฏลำปาง"><option value="มหาวิทยาลัยราชภัฏเชียงใหม่">
+  <option value="มหาวิทยาลัยเชียงใหม่"><option value="มหาวิทยาลัยนเรศวร"><option value="มหาวิทยาลัยสุโขทัยธรรมาธิราช">
 </datalist>
+<script src="<?= e(asset('js/personnel-form.js')) ?>" defer></script>

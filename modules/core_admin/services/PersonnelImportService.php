@@ -28,6 +28,7 @@ final class PersonnelImportService
     public const COLUMNS = [
         'employee_code', 'title_name', 'first_name', 'last_name', 'nickname', 'gender', 'birth_date',
         'position', 'position_number', 'academic_rank', 'employment_type', 'education_level', 'education_major', 'screener_reg_no',
+        'license_no', 'license_expiry_date', 'first_position', 'appointment_date',
         'department_code', 'service_unit_code', 'phone', 'email', 'address', 'start_date', 'end_date', 'status', 'note', 'national_id',
     ];
 
@@ -35,7 +36,8 @@ final class PersonnelImportService
     {
         $example = [
             '', 'นาง', 'สมใจ', 'ใจดี', 'ใจ', 'หญิง', '2528-04-12', 'ครู', '12345', 'ครูชำนาญการ',
-            'ข้าราชการ', 'ปริญญาโท', 'การศึกษาพิเศษ', '', 'ACADEMIC', 'SU_PONG', '0812345678', 'somjai@py-sec.ac.th', '',
+            'ข้าราชการ', 'ปริญญาโท', 'การศึกษาพิเศษ', '', 'ค12345678', '2572-03-31', 'ครูผู้ช่วย', '2555-05-16',
+            'ACADEMIC', 'SU_PONG', '0812345678', 'somjai@py-sec.ac.th', '',
             '2555-05-16', '', 'ปฏิบัติงาน', '', '',
         ];
 
@@ -61,8 +63,10 @@ final class PersonnelImportService
                 $data = self::normalize($record, $departments);
                 $code = (string) $data['employee_code'];
                 $absent = $data['_absent'];
+                $education = $data['_education'];
                 $data = Validator::validate($data, PersonnelService::rules(), PersonnelService::LABELS);
                 $data['_absent'] = $absent;
+                $data['_education'] = $education;
                 $data['employee_code'] = $code !== '' ? $code : null; // ว่าง = บุคลากรใหม่ ระบบสร้างรหัสให้
                 PersonnelService::assertDepartmentAllowed((int) $data['department_id']);
 
@@ -147,11 +151,20 @@ final class PersonnelImportService
                     foreach ($data['_absent'] ?? [] as $field) {
                         $data[$field] = (string) ($current[$field] ?? '');
                     }
-                    unset($data['_absent']);
+                    unset($data['_absent'], $data['_education']);
+                    $education = $row['data']['_education'] ?? null;
+                    if ($education !== null) {
+                        $data['educations'] = self::mergeEducation(PersonnelService::educations((int) $current['id']), $education);
+                    }
                     PersonnelService::update($current, $data);
                     $updated++;
                 } elseif ($row['action'] === 'create' && $code === '') {
-                    PersonnelService::create($row['data']);
+                    $data = $row['data'];
+                    if (($data['_education'] ?? null) !== null) {
+                        $data['educations'] = [$data['_education']];
+                    }
+                    unset($data['_absent'], $data['_education']);
+                    PersonnelService::create($data);
                     $created++;
                 } else {
                     throw new ValidationException(['employee_code' => ['ข้อมูลรหัสบุคลากรเปลี่ยนไประหว่างรอยืนยัน']]);
@@ -278,7 +291,7 @@ final class PersonnelImportService
         }
         $data['employee_code'] = trim((string) ($record['employee_code'] ?? ''));
         $data['national_id'] = $record['national_id'] ?? '';
-        $data['employment_type'] = self::mapLabel($data['employment_type'], UserService::EMPLOYMENT_TYPES, 'other');
+        $data['employment_type'] = self::mapLabel($data['employment_type'], UserService::EMPLOYMENT_TYPES, 'civil_servant');
         $data['gender'] = self::mapLabel($data['gender'], PersonnelService::GENDERS, '');
         $data['status'] = self::mapLabel($data['status'], PersonnelService::STATUSES, 'active');
 
@@ -293,11 +306,56 @@ final class PersonnelImportService
         if ($data['service_unit_id'] === null) {
             throw new ValidationException(['service_unit_id' => ['ไม่พบหน่วยบริการ "' . $record['service_unit_code'] . '"']]);
         }
-        foreach (['birth_date', 'start_date', 'end_date'] as $field) {
+        foreach (['birth_date', 'start_date', 'end_date', 'license_expiry_date', 'appointment_date'] as $field) {
             $data[$field] = self::normalizeDate((string) $data[$field], PersonnelService::LABELS[$field]);
         }
+        $data['_education'] = self::education($record);
 
         return $data;
+    }
+
+    /**
+     * วุฒิการศึกษาในไฟล์ (education_level + education_major) → ข้อมูลการศึกษา 1 รายการ (null = ไม่มีในไฟล์)
+     * ระดับรับได้ทั้งรหัสและชื่อ (เช่น master, ปริญญาโท) ข้อความอื่นบันทึกเป็นระดับ "อื่นๆ" พร้อมข้อความในช่องวุฒิการศึกษา
+     */
+    private static function education(array $record): ?array
+    {
+        $text = trim((string) ($record['education_level'] ?? ''));
+        if ($text === '') {
+            return null;
+        }
+        $level = self::mapLabel($text, PersonnelService::EDUCATION_LEVELS, 'other');
+        $known = isset(PersonnelService::EDUCATION_LEVELS[$level]);
+        $rows = PersonnelService::educationInput([[
+            'level' => $known ? $level : 'other',
+            'degree' => $known ? '' : $text,
+            'major' => (string) ($record['education_major'] ?? ''),
+        ]]);
+
+        return $rows[0];
+    }
+
+    /**
+     * รวมวุฒิจากไฟล์เข้ากับข้อมูลการศึกษาเดิม: ระดับที่มีอยู่แล้ว (และวุฒิเดียวกัน) ไม่เพิ่มซ้ำ แต่เติมสาขาวิชาถ้าเดิมว่าง
+     * ข้อมูลการศึกษาเดิมที่ไม่อยู่ในไฟล์คงไว้ทั้งหมด
+     */
+    private static function mergeEducation(array $existing, array $new): array
+    {
+        $rows = array_map(static fn (array $e): array => [
+            'level' => (string) $e['level'], 'institution' => $e['institution'], 'degree' => $e['degree'],
+            'major' => $e['major'], 'graduated_year' => $e['graduated_year'] !== null ? (int) $e['graduated_year'] : null,
+        ], $existing);
+        foreach ($rows as &$row) {
+            if ($row['level'] === $new['level'] && ($new['level'] !== 'other' || $row['degree'] === $new['degree'])) {
+                $row['major'] ??= $new['major'];
+
+                return $rows;
+            }
+        }
+        unset($row);
+        $rows[] = $new;
+
+        return $rows;
     }
 
     private static function mapLabel(string $value, array $options, string $default): string

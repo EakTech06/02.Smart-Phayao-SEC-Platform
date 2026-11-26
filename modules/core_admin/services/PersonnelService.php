@@ -27,25 +27,75 @@ final class PersonnelService
 
     public const GENDERS = ['male' => 'ชาย', 'female' => 'หญิง', 'unspecified' => 'ไม่ระบุ'];
 
+    /** แจ้งเตือนใบประกอบวิชาชีพครูล่วงหน้า (วัน) */
+    public const LICENSE_WARN_DAYS = 90;
+
+    /**
+     * สถานะใบประกอบวิชาชีพครูจากวันหมดอายุ (null = ไม่มีวันหมดอายุ)
+     * @return array{state: 'expired'|'expiring'|'valid', days: int, text: string, class: string}|null
+     */
+    public static function licenseStatus(?string $expiry): ?array
+    {
+        if ($expiry === null || preg_match('/^\d{4}-\d{2}-\d{2}$/', $expiry) !== 1) {
+            return null;
+        }
+        $days = (int) (new \DateTimeImmutable('today'))->diff(new \DateTimeImmutable($expiry))->format('%r%a');
+        if ($days < 0) {
+            return ['state' => 'expired', 'days' => $days, 'class' => 'text-danger',
+                'text' => 'ใบประกอบวิชาชีพครูหมดอายุแล้ว ' . abs($days) . ' วัน กรุณาต่ออายุ'];
+        }
+        if ($days <= self::LICENSE_WARN_DAYS) {
+            return ['state' => 'expiring', 'days' => $days, 'class' => 'text-danger',
+                'text' => $days === 0 ? 'ใบประกอบวิชาชีพครูหมดอายุวันนี้' : "ใบประกอบวิชาชีพครูจะหมดอายุในอีก {$days} วัน"];
+        }
+
+        return ['state' => 'valid', 'days' => $days, 'class' => 'text-success', 'text' => 'ใบประกอบวิชาชีพครูยังไม่หมดอายุ'];
+    }
+
+    /** ระดับการศึกษา (employee_educations.level) */
+    public const EDUCATION_LEVELS = [
+        'primary' => 'ประถมศึกษา',
+        'lower_secondary' => 'มัธยมศึกษาตอนต้น',
+        'upper_secondary' => 'มัธยมศึกษาตอนปลาย',
+        'graduate_diploma' => 'ประกาศนียบัตรบัณฑิต',
+        'bachelor' => 'ปริญญาตรี',
+        'master' => 'ปริญญาโท',
+        'other' => 'อื่นๆ',
+    ];
+
+    /** ต่ำกว่าปริญญาตรี: ไม่มีสาขาวิชา */
+    public const EDUCATION_NO_MAJOR = ['primary', 'lower_secondary', 'upper_secondary'];
+
+    /** ลำดับวุฒิ ใช้หาวุฒิสูงสุดเก็บใน employees.education_level (ป.บัณฑิตสูงกว่าปริญญาตรี) */
+    private const EDUCATION_RANK = [
+        'other' => 0, 'primary' => 1, 'lower_secondary' => 2, 'upper_secondary' => 3,
+        'bachelor' => 4, 'graduate_diploma' => 5, 'master' => 6,
+    ];
+
+    public const MAX_EDUCATIONS = 20;
+
     /**
      * ฟิลด์ที่บันทึกลง employees จากฟอร์ม/CSV (ไม่รวมเลขบัตรซึ่งจัดการแยก)
      * employee_code ไม่อยู่ในรายการนี้: ระบบสร้างให้อัตโนมัติตอนเพิ่ม และแก้ไขไม่ได้
      */
     public const FIELDS = [
         'title_name', 'first_name', 'last_name', 'nickname', 'gender', 'birth_date',
-        'position', 'position_number', 'academic_rank', 'employment_type', 'education_level', 'education_major', 'screener_reg_no',
+        'position', 'position_number', 'academic_rank', 'employment_type', 'screener_reg_no',
+        'license_no', 'license_expiry_date', 'appointment_date', 'first_position',
         'department_id', 'service_unit_id', 'phone', 'email', 'address', 'start_date', 'end_date', 'status', 'note',
     ];
 
     public const LABELS = [
         'employee_code' => 'รหัสบุคลากร', 'title_name' => 'คำนำหน้า', 'first_name' => 'ชื่อ', 'last_name' => 'นามสกุล',
-        'nickname' => 'ชื่อเล่น', 'gender' => 'เพศ', 'birth_date' => 'วันเกิด', 'position' => 'ตำแหน่ง',
+        'nickname' => 'ชื่อเล่น', 'gender' => 'เพศ', 'birth_date' => 'วันเดือนปีเกิด', 'position' => 'ตำแหน่ง (ปัจจุบัน)',
         'position_number' => 'เลขที่ตำแหน่ง', 'academic_rank' => 'วิทยฐานะ', 'employment_type' => 'ประเภทบุคลากร',
         'education_level' => 'วุฒิการศึกษา', 'education_major' => 'สาขาวิชา', 'screener_reg_no' => 'เลขทะเบียนผู้คัดกรองคนพิการ',
         'department_id' => 'สังกัดหลัก (ฝ่าย/งาน)', 'service_unit_id' => 'สังกัดรอง (หน่วยบริการ)',
-        'phone' => 'เบอร์โทรศัพท์', 'email' => 'อีเมล', 'address' => 'ที่อยู่', 'start_date' => 'วันที่เริ่มปฏิบัติงาน',
+        'phone' => 'เบอร์โทรศัพท์', 'email' => 'อีเมล', 'address' => 'ที่อยู่', 'start_date' => 'วันที่เริ่มปฏิบัติงาน (ที่แห่งนี้)',
         'end_date' => 'วันที่สิ้นสุดการปฏิบัติงาน', 'status' => 'สถานะ', 'note' => 'หมายเหตุ',
         'national_id' => 'เลขประจำตัวประชาชน',
+        'license_no' => 'เลขที่ใบประกอบวิชาชีพครู', 'license_expiry_date' => 'วันหมดอายุใบประกอบวิชาชีพครู',
+        'first_position' => 'ตำแหน่งเริ่มต้น (ที่แห่งนี้)', 'appointment_date' => 'วันที่บรรจุเข้ารับราชการ',
     ];
 
     /** กฎตรวจสอบข้อมูล (ใช้ร่วมกันทั้งฟอร์มและ CSV import) */
@@ -65,6 +115,10 @@ final class PersonnelService
             'education_level' => 'nullable|max:100',
             'education_major' => 'nullable|max:150',
             'screener_reg_no' => 'nullable|max:50',
+            'license_no' => 'nullable|max:50',
+            'license_expiry_date' => 'nullable|date',
+            'first_position' => 'nullable|max:150',
+            'appointment_date' => 'nullable|date',
             'department_id' => 'required|integer',
             'service_unit_id' => 'nullable|integer',
             'phone' => 'nullable|max:30',
@@ -95,10 +149,10 @@ final class PersonnelService
         return EmployeeModel::canAccess($row, 'update');
     }
 
-    /** ฟิลด์ที่ผู้ใช้แก้ไขข้อมูลของตนเองได้ (ข้อมูลการปฏิบัติงาน/ตำแหน่ง/ฝ่าย/สถานะ แก้ได้เฉพาะงานบุคคล) */
+    /** ฟิลด์ที่ผู้ใช้แก้ไขข้อมูลของตนเองได้ (+ ข้อมูลการศึกษา) ตำแหน่ง/ฝ่าย/วันที่ปฏิบัติงาน/สถานะ แก้ได้เฉพาะงานบุคคล */
     public const SELF_EDIT_FIELDS = [
         'title_name', 'first_name', 'last_name', 'nickname', 'gender', 'birth_date', 'national_id',
-        'phone', 'email', 'address', 'education_level', 'education_major', 'screener_reg_no',
+        'phone', 'email', 'address', 'screener_reg_no', 'license_no', 'license_expiry_date',
     ];
 
     /** แก้ไขรายการนี้ได้เพียงเพราะเป็นข้อมูลของตนเอง (core.employees.update_own) จึงแก้ได้เฉพาะ SELF_EDIT_FIELDS */
@@ -338,15 +392,140 @@ final class PersonnelService
         }
     }
 
+    // ------------------------------------------------------------------ ข้อมูลการศึกษา (หลายระดับ)
+
+    /** @return list<array> */
+    public static function educations(int $employeeId): array
+    {
+        return Database::instance()->fetchAll(
+            'SELECT id, level, institution, degree, major, graduated_year FROM employee_educations
+             WHERE employee_id = ? ORDER BY sort_order, id', [$employeeId]
+        );
+    }
+
+    /**
+     * แปลง/ตรวจข้อมูลการศึกษาจากฟอร์ม (educations[i][level|institution|degree|major|graduated_year])
+     * แถวที่ว่างทั้งแถวข้ามไป · ต่ำกว่าปริญญาตรีล้างสาขาวิชา · ปีรับทั้ง พ.ศ. และ ค.ศ. (เก็บเป็น พ.ศ.)
+     * @return list<array{level: string, institution: ?string, degree: ?string, major: ?string, graduated_year: ?int}>
+     */
+    public static function educationInput(mixed $raw): array
+    {
+        $rows = [];
+        $errors = [];
+        $currentBe = (int) date('Y') + 543;
+        foreach (is_array($raw) ? array_values($raw) : [] as $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+            $v = static fn (string $k, int $max): ?string => ($s = trim(mb_substr(is_scalar($item[$k] ?? null) ? (string) $item[$k] : '', 0, $max))) !== '' ? $s : null;
+            $row = [
+                'level' => $v('level', 30),
+                'institution' => $v('institution', 191),
+                'degree' => $v('degree', 150),
+                'major' => $v('major', 150),
+                'graduated_year' => $v('graduated_year', 10),
+            ];
+            if (array_filter($row, static fn ($x): bool => $x !== null) === []) {
+                continue;
+            }
+            $n = count($rows) + 1;
+            $msg = [];
+            if ($row['level'] === null || !isset(self::EDUCATION_LEVELS[$row['level']])) {
+                $msg[] = 'เลือกระดับการศึกษา';
+            } elseif (in_array($row['level'], self::EDUCATION_NO_MAJOR, true)) {
+                $row['major'] = null;
+            }
+            if ($row['graduated_year'] !== null) {
+                $year = ctype_digit($row['graduated_year']) ? (int) $row['graduated_year'] : 0;
+                if ($year >= 1900 && $year < 2400) {
+                    $year += 543; // ค.ศ. → พ.ศ.
+                }
+                if ($year < 2400 || $year > $currentBe + 1) {
+                    $msg[] = 'ปีที่สำเร็จการศึกษาต้องเป็นปี พ.ศ. 4 หลัก (ไม่เกิน ' . ($currentBe + 1) . ')';
+                } else {
+                    $row['graduated_year'] = $year;
+                }
+            }
+            if ($msg !== []) {
+                $errors[] = "รายการที่ {$n}: " . implode(', ', $msg);
+            }
+            $rows[] = $row;
+        }
+        if (count($rows) > self::MAX_EDUCATIONS) {
+            $errors[] = 'บันทึกได้ไม่เกิน ' . self::MAX_EDUCATIONS . ' รายการ';
+        }
+        if ($errors !== []) {
+            throw new ValidationException(['educations' => $errors]);
+        }
+
+        return $rows;
+    }
+
+    /** แทนที่ข้อมูลการศึกษาทั้งหมด + เก็บวุฒิสูงสุดไว้ที่ employees.education_level/education_major (ใช้ในรายงาน) */
+    private static function saveEducations(Database $db, int $employeeId, array $rows): void
+    {
+        $db->query('DELETE FROM employee_educations WHERE employee_id = ?', [$employeeId]);
+        $highest = null;
+        foreach ($rows as $i => $row) {
+            $db->insert('employee_educations', ['employee_id' => $employeeId, 'sort_order' => $i] + $row);
+            if ($highest === null || self::EDUCATION_RANK[$row['level']] > self::EDUCATION_RANK[$highest['level']]) {
+                $highest = $row;
+            }
+        }
+        $db->update('employees', [
+            'education_level' => $highest === null ? null
+                : ($highest['level'] === 'other' && $highest['degree'] !== null ? $highest['degree'] : self::EDUCATION_LEVELS[$highest['level']]),
+            'education_major' => $highest['major'] ?? null,
+        ], ['id' => $employeeId]);
+    }
+
+    /** ข้อความสรุป 1 รายการ เช่น "ปริญญาโท ศษ.ม. สาขาการบริหารการศึกษา มหาวิทยาลัยพะเยา (2560)" */
+    public static function educationText(array $e): string
+    {
+        $parts = [self::EDUCATION_LEVELS[$e['level']] ?? $e['level']];
+        if (!empty($e['degree'])) {
+            $parts[] = $e['degree'];
+        }
+        if (!empty($e['major'])) {
+            $parts[] = 'สาขา' . $e['major'];
+        }
+        if (!empty($e['institution'])) {
+            $parts[] = $e['institution'];
+        }
+
+        return implode(' ', $parts) . (!empty($e['graduated_year']) ? ' (' . $e['graduated_year'] . ')' : '');
+    }
+
+    /** ระยะเวลา "x ปี y เดือน" จากวันที่ถึงวันนี้ (หรือถึงวันที่สิ้นสุด) — ใช้กับอายุ อายุราชการ อายุงาน */
+    public static function duration(?string $from, ?string $to = null): ?string
+    {
+        if ($from === null || $from === '') {
+            return null;
+        }
+        $end = new \DateTimeImmutable($to !== null && $to !== '' ? $to : 'today');
+        if ($end > new \DateTimeImmutable('today')) {
+            $end = new \DateTimeImmutable('today');
+        }
+        $diff = (new \DateTimeImmutable($from))->diff($end);
+
+        return $diff->invert ? null : "{$diff->y} ปี {$diff->m} เดือน";
+    }
+
     public static function create(array $data): int
     {
         $nid = self::nationalIdFields($data['national_id'] ?? null);
         self::assertUnique($data, null, $nid['national_id_hash']);
         self::assertAffiliation($data, null);
 
-        $id = self::insertWithCode(Database::instance(), self::row($data) + $nid + [
-            'created_by' => Auth::id(),
-        ]);
+        $row = self::row($data) + $nid + ['created_by' => Auth::id()];
+        $id = Database::instance()->transaction(static function (Database $db) use ($row, $data): int {
+            $id = self::insertWithCode($db, $row);
+            if (isset($data['educations'])) {
+                self::saveEducations($db, $id, $data['educations']);
+            }
+
+            return $id;
+        });
         Audit::log('employee.created', 'core', 'employees', $id, null, self::snapshot($id));
 
         return $id;
@@ -373,8 +552,11 @@ final class PersonnelService
             $row += $nid; // เว้นว่าง = ไม่เปลี่ยนเลขบัตรเดิม
         }
 
-        Database::instance()->transaction(static function (Database $db) use ($id, $row, $current): void {
+        Database::instance()->transaction(static function (Database $db) use ($id, $row, $current, $data): void {
             $db->update('employees', $row, ['id' => $id]);
+            if (isset($data['educations'])) {
+                self::saveEducations($db, $id, $data['educations']);
+            }
             if ($current['user_id'] !== null) {
                 self::syncLinkedUser($db, (int) $current['user_id'], $row);
                 self::syncSecondaryDepartment($db, (int) $current['user_id'],
@@ -490,6 +672,7 @@ final class PersonnelService
     {
         $row = EmployeeModel::findDetail($id) ?? [];
         unset($row['national_id_last4'], $row['has_national_id_encrypted'], $row['last_login_at']);
+        $row['educations'] = array_map([self::class, 'educationText'], self::educations($id));
 
         return $row;
     }

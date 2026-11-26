@@ -14,7 +14,7 @@ use Modules\CoreAdmin\Services\UserService;
 
 $p = $report['period'];
 $u = $report['users'];
-$types = UserService::EMPLOYMENT_TYPES;
+$types = ReportService::employmentTypes();
 $personnel = $report['personnel'];
 $personnelTotal = array_sum(array_column($personnel, 'total'));
 $query = http_build_query(array_filter([

@@ -13,6 +13,8 @@ use Modules\CoreAdmin\Services\UserService;
 /** @var array $roles */
 /** @var array $unlinkedUsers */
 /** @var string $defaultUsername */
+/** @var array $educations */
+$educations ??= [];
 
 $id = (int) $employee['id'];
 $name = PersonnelService::displayName($employee);
@@ -77,7 +79,8 @@ $accountErrors = array_filter([error_for('account'), error_for('username'), erro
         <dl class="row mb-0">
           <?= $row('ชื่อ-สกุล', $name) ?>
           <?= $row('เพศ', PersonnelService::GENDERS[$employee['gender'] ?? ''] ?? null) ?>
-          <?= $row('วันเกิด', $thaiDate($employee['birth_date'])) ?>
+          <?= $row('วันเดือนปีเกิด', $thaiDate($employee['birth_date'])) ?>
+          <?= $row('อายุ', PersonnelService::duration($employee['birth_date'])) ?>
           <dt class="col-sm-4 col-lg-3 text-muted fw-normal">เลขประจำตัวประชาชน</dt>
           <dd class="col-sm-8 col-lg-9">
             <?php if ($nationalId !== null): ?>
@@ -105,19 +108,55 @@ $accountErrors = array_filter([error_for('account'), error_for('username'), erro
       <div class="card-header bg-white fw-semibold"><i class="bi bi-briefcase me-1"></i>ข้อมูลการปฏิบัติงาน</div>
       <div class="card-body">
         <dl class="row mb-0">
-          <?= $row('ตำแหน่ง', $employee['position']) ?>
+          <?= $row('ตำแหน่ง (ปัจจุบัน)', $employee['position']) ?>
           <?= $row('เลขที่ตำแหน่ง', $employee['position_number']) ?>
           <?= $row('วิทยฐานะ', $employee['academic_rank']) ?>
-          <?= $row('ประเภทบุคลากร', UserService::EMPLOYMENT_TYPES[$employee['employment_type']] ?? null) ?>
+          <?= $row('ประเภทบุคลากร', UserService::EMPLOYMENT_TYPE_LABELS[$employee['employment_type']] ?? null) ?>
           <?= $row('สังกัดหลัก (ฝ่าย/งาน)', $employee['department_name']) ?>
           <?= $row('สังกัดรอง (หน่วยบริการ)', $employee['service_unit_name']) ?>
-          <?= $row('วุฒิการศึกษา', trim(($employee['education_level'] ?? '') . ' ' . ($employee['education_major'] ?? ''))) ?>
           <?= $row('เลขทะเบียนผู้คัดกรองคนพิการ', $employee['screener_reg_no']) ?>
-          <?= $row('วันที่เริ่มปฏิบัติงาน', $thaiDate($employee['start_date'])) ?>
-          <?= $row('วันที่สิ้นสุด', $thaiDate($employee['end_date'])) ?>
+          <?= $row('เลขที่ใบประกอบวิชาชีพครู', $employee['license_no']) ?>
+          <?php $license = PersonnelService::licenseStatus($employee['license_expiry_date']); ?>
+          <dt class="col-sm-4 col-lg-3 text-muted fw-normal">วันหมดอายุใบประกอบวิชาชีพครู</dt>
+          <dd class="col-sm-8 col-lg-9"><?= e($thaiDate($employee['license_expiry_date'])) ?>
+            <?php if ($license !== null && $license['state'] !== 'valid'): ?>
+              <div class="text-danger fw-semibold small"><i class="bi bi-exclamation-triangle-fill me-1"></i><?= e($license['text']) ?></div>
+            <?php endif; ?>
+          </dd>
+          <?= $row('วันที่บรรจุเข้ารับราชการ', $thaiDate($employee['appointment_date'])) ?>
+          <?= $row('อายุราชการ', PersonnelService::duration($employee['appointment_date'])) ?>
+          <?= $row('ตำแหน่งเริ่มต้น (ที่แห่งนี้)', $employee['first_position']) ?>
+          <?= $row('วันที่เริ่มปฏิบัติงาน (ที่แห่งนี้)', $thaiDate($employee['start_date'])) ?>
+          <?= $row('อายุปฏิบัติงาน (ที่แห่งนี้)', PersonnelService::duration($employee['start_date'], $employee['end_date'])) ?>
+          <?= $row('วันที่สิ้นสุดการปฏิบัติงาน', $thaiDate($employee['end_date'])) ?>
+          <?= $row('สถานะ', PersonnelService::STATUSES[$employee['status']] ?? $employee['status']) ?>
           <?= $row('หมายเหตุ', $employee['note']) ?>
         </dl>
       </div>
+    </div>
+
+    <div class="card shadow-sm mb-3">
+      <div class="card-header bg-white fw-semibold"><i class="bi bi-mortarboard me-1"></i>ข้อมูลการศึกษา</div>
+      <?php if ($educations === []): ?>
+        <div class="card-body text-muted small">ยังไม่มีข้อมูลการศึกษา</div>
+      <?php else: ?>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-0">
+            <thead class="table-light"><tr><th>ระดับการศึกษา</th><th>วุฒิการศึกษา</th><th>สาขาวิชา</th><th>สถาบัน</th><th class="text-nowrap">ปีที่สำเร็จ</th></tr></thead>
+            <tbody>
+              <?php foreach ($educations as $edu): ?>
+                <tr>
+                  <td class="text-nowrap"><?= e(PersonnelService::EDUCATION_LEVELS[$edu['level']] ?? $edu['level']) ?></td>
+                  <td><?= e($edu['degree'] ?? '-') ?></td>
+                  <td><?= e($edu['major'] ?? '-') ?></td>
+                  <td><?= e($edu['institution'] ?? '-') ?></td>
+                  <td><?= e($edu['graduated_year'] ?? '-') ?></td>
+                </tr>
+              <?php endforeach; ?>
+            </tbody>
+          </table>
+        </div>
+      <?php endif; ?>
     </div>
   </div>
 

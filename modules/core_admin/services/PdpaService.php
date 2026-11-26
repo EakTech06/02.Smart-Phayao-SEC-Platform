@@ -241,6 +241,7 @@ final class PdpaService
         $employee = $user['employee_id'] !== null ? $db->fetch(
             'SELECT e.employee_code, e.title_name, e.first_name, e.last_name, e.nickname, e.gender, e.birth_date, e.position,
                     e.position_number, e.academic_rank, e.employment_type, e.education_level, e.education_major, e.screener_reg_no,
+                    e.license_no, e.license_expiry_date, e.first_position, e.appointment_date,
                     d.name_th AS department, su.name_th AS service_unit, e.phone, e.email, e.address, e.start_date, e.end_date, e.status, e.national_id_last4
              FROM employees e LEFT JOIN departments d ON d.id = e.department_id
              LEFT JOIN departments su ON su.id = e.service_unit_id WHERE e.id = ?',
@@ -249,6 +250,10 @@ final class PdpaService
         if ($employee !== null) {
             $employee['national_id'] = $employee['national_id_last4'] !== null ? '*********' . $employee['national_id_last4'] : null;
             unset($employee['national_id_last4']);
+            $employee['educations'] = $db->fetchAll(
+                'SELECT level, institution, degree, major, graduated_year FROM employee_educations WHERE employee_id = ? ORDER BY sort_order, id',
+                [(int) $user['employee_id']]
+            );
         }
         unset($user['employee_id']);
         Audit::log('pdpa.data_exported', 'core', 'users', $userId);

@@ -28,6 +28,7 @@ final class PersonnelController extends Controller
             'status' => $this->stringQuery('status', 20, array_keys(PersonnelService::STATUSES)),
             'employment_type' => $this->stringQuery('employment_type', 30, array_keys(UserService::EMPLOYMENT_TYPES)),
             'account' => $this->stringQuery('account', 10, ['with', 'without']),
+            'license' => $this->stringQuery('license', 10, ['alert']), // ลิงก์จากแจ้งเตือน: ใบประกอบหมดอายุ/ใกล้หมดอายุ
         ];
         $bulk = Session::getFlash('bulk_accounts');
 
@@ -59,7 +60,7 @@ final class PersonnelController extends Controller
     public function store(): Response
     {
         $this->authorize('core.employees.create_all');
-        $data = $this->validate(PersonnelService::rules(), PersonnelService::LABELS);
+        $data = $this->personnelData($this->request->all());
         PersonnelService::assertDepartmentAllowed((int) $data['department_id']);
 
         $id = PersonnelService::create($data);
@@ -80,7 +81,7 @@ final class PersonnelController extends Controller
         $employee = $this->findUpdatable($id);
         $selfOnly = PersonnelService::isSelfEditOnly($employee);
         $input = $selfOnly ? PersonnelService::selfEditInput($employee, $this->request->all()) : $this->request->all();
-        $data = Validator::validate($input, PersonnelService::rules(), PersonnelService::LABELS);
+        $data = $this->personnelData($input);
         if (!$selfOnly) {
             PersonnelService::assertDepartmentAllowed((int) $data['department_id']); // แก้ของตนเอง: ฝ่ายคงเดิม
         }
@@ -244,7 +245,38 @@ final class PersonnelController extends Controller
             'roles' => $canSync ? UserService::assignableRoles() : [],
             'unlinkedUsers' => Rbac::can('core.users.update_all') && $employee['user_id'] === null ? EmployeeModel::unlinkedUsers() : [],
             'defaultUsername' => UserService::defaultUsername($employee),
+            'educations' => PersonnelService::educations((int) $employee['id']),
         ]);
+    }
+
+    /**
+     * ตรวจข้อมูลฟอร์มบุคลากร + ข้อมูลการศึกษา (แสดงข้อผิดพลาดทั้งสองส่วนพร้อมกัน)
+     * ข้อมูลการศึกษาบันทึกเฉพาะเมื่อฟอร์มส่ง _educations มา (ฟอร์มที่ไม่มีส่วนนี้ไม่ล้างข้อมูลเดิม)
+     */
+    private function personnelData(array $input): array
+    {
+        $educations = null;
+        $eduErrors = [];
+        if (isset($input['_educations'])) {
+            try {
+                $educations = PersonnelService::educationInput($input['educations'] ?? []);
+            } catch (ValidationException $e) {
+                $eduErrors = $e->errors();
+            }
+        }
+        try {
+            $data = Validator::validate($input, PersonnelService::rules(), PersonnelService::LABELS);
+        } catch (ValidationException $e) {
+            throw new ValidationException($e->errors() + $eduErrors);
+        }
+        if ($eduErrors !== []) {
+            throw new ValidationException($eduErrors);
+        }
+        if ($educations !== null) {
+            $data['educations'] = $educations;
+        }
+
+        return $data;
     }
 
     private function renderForm(?array $employee): Response
@@ -257,6 +289,7 @@ final class PersonnelController extends Controller
             'selfOnly' => $employee !== null && PersonnelService::isSelfEditOnly($employee),
             'serviceUnits' => PersonnelService::serviceUnitOptions(),
             'canSetServiceUnit' => PersonnelService::canSetServiceUnit(),
+            'educations' => $employee !== null ? PersonnelService::educations((int) $employee['id']) : [],
         ]);
     }
 

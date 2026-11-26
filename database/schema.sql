@@ -31,10 +31,16 @@ CREATE TABLE IF NOT EXISTS employees (
   position VARCHAR(150) NULL,
   position_number VARCHAR(30) NULL,
   academic_rank VARCHAR(100) NULL,
-  employment_type ENUM('civil_servant','government_employee','permanent_employee','temporary_employee','other') NOT NULL DEFAULT 'other',
-  education_level VARCHAR(100) NULL,
-  education_major VARCHAR(150) NULL,
+  employment_type ENUM('civil_servant','government_employee','permanent_employee','temporary_employee',
+    'contract_9000','contract_15000','other') NOT NULL DEFAULT 'civil_servant' COMMENT 'other = ข้อมูลเดิม (ไม่เป็นตัวเลือกแล้ว)',
+  education_level VARCHAR(100) NULL COMMENT 'วุฒิสูงสุดจาก employee_educations',
+  education_major VARCHAR(150) NULL COMMENT 'สาขาของวุฒิสูงสุด',
   screener_reg_no VARCHAR(50) NULL COMMENT 'เลขทะเบียนผู้คัดกรองคนพิการ',
+  license_no VARCHAR(50) NULL COMMENT 'เลขที่ใบประกอบวิชาชีพครู',
+  license_expiry_date DATE NULL COMMENT 'วันหมดอายุใบประกอบวิชาชีพครู',
+  license_alert_key VARCHAR(30) NULL COMMENT 'แจ้งเตือนใบประกอบล่าสุด: วันหมดอายุ|ระดับ (กันแจ้งซ้ำ)',
+  first_position VARCHAR(150) NULL COMMENT 'ตำแหน่ง (เริ่มต้นที่แห่งนี้)',
+  appointment_date DATE NULL COMMENT 'วันที่บรรจุเข้ารับราชการ',
   department_id INT UNSIGNED NULL COMMENT 'สังกัดหลัก: ฝ่าย',
   service_unit_id INT UNSIGNED NULL COMMENT 'สังกัดรอง: หน่วยบริการ (departments.id)',
   phone VARCHAR(30) NULL,
@@ -60,6 +66,21 @@ CREATE TABLE IF NOT EXISTS employees (
   KEY idx_employees_status (status),
   CONSTRAINT fk_employees_department FOREIGN KEY (department_id) REFERENCES departments (id) ON DELETE SET NULL,
   CONSTRAINT fk_employees_service_unit FOREIGN KEY (service_unit_id) REFERENCES departments (id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS employee_educations (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  employee_id INT UNSIGNED NOT NULL,
+  level VARCHAR(30) NOT NULL COMMENT 'primary, lower_secondary, upper_secondary, graduate_diploma, bachelor, master, other',
+  institution VARCHAR(191) NULL,
+  degree VARCHAR(150) NULL COMMENT 'วุฒิการศึกษา เช่น ค.บ., ศษ.ม.',
+  major VARCHAR(150) NULL COMMENT 'สาขาวิชา (ต่ำกว่าปริญญาตรีไม่มี)',
+  graduated_year SMALLINT UNSIGNED NULL COMMENT 'ปีที่สำเร็จการศึกษา (พ.ศ.)',
+  sort_order TINYINT UNSIGNED NOT NULL DEFAULT 0,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_employee_educations_employee (employee_id),
+  CONSTRAINT fk_employee_educations_employee FOREIGN KEY (employee_id) REFERENCES employees (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS users (

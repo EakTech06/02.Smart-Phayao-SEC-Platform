@@ -14,6 +14,15 @@ use Modules\CoreAdmin\Services\UserService;
 
 $statusClass = ['active' => 'success', 'inactive' => 'secondary', 'retired' => 'info', 'resigned' => 'dark'];
 $hasFilter = array_filter($filters) !== [];
+// ใบประกอบวิชาชีพครูหมดอายุ/ใกล้หมดอายุ: ป้ายสีแดงในรายการ
+$licenseBadge = static function (array $emp): string {
+    $s = PersonnelService::licenseStatus($emp['license_expiry_date'] ?? null);
+
+    return $s !== null && $s['state'] !== 'valid'
+        ? '<div><span class="badge text-bg-danger fw-normal" title="' . e($s['text']) . '"><i class="bi bi-exclamation-triangle-fill me-1"></i>'
+          . ($s['state'] === 'expired' ? 'ใบประกอบหมดอายุ' : 'ใบประกอบใกล้หมดอายุ') . '</span></div>'
+        : '';
+};
 $selectable = static fn (array $emp): bool => $canSync && $emp['user_id'] === null && $emp['status'] === 'active';
 $selectableCount = count(array_filter($employees, $selectable));
 ?>
@@ -87,6 +96,10 @@ $selectableCount = count(array_filter($employees, $selectable));
 <div class="card shadow-sm mb-3">
   <div class="card-body">
     <form method="get" action="<?= e(url('/personnel')) ?>" class="row g-2 align-items-end">
+      <?php if ($filters['license'] !== ''): ?>
+        <input type="hidden" name="license" value="<?= e($filters['license']) ?>">
+        <div class="col-12"><span class="badge text-bg-danger"><i class="bi bi-funnel me-1"></i>เฉพาะใบประกอบวิชาชีพครูหมดอายุ/ใกล้หมดอายุ (ภายใน <?= PersonnelService::LICENSE_WARN_DAYS ?> วัน)</span></div>
+      <?php endif; ?>
       <div class="col-12 col-md-4 col-xl-3">
         <label class="form-label small mb-1" for="q">ค้นหา</label>
         <input type="search" id="q" name="q" class="form-control" value="<?= e($filters['q']) ?>" placeholder="รหัส, ชื่อ, นามสกุล, ตำแหน่ง">
@@ -190,7 +203,7 @@ $selectableCount = count(array_filter($employees, $selectable));
                 <?php endif; ?>
                 <td class="font-monospace small"><?= e($emp['employee_code']) ?></td>
                 <td>
-                  <div class="fw-semibold"><?= e(PersonnelService::displayName($emp)) ?></div>
+                  <div class="fw-semibold"><?= e(PersonnelService::displayName($emp)) ?></div><?= $licenseBadge($emp) ?>
                   <?php if (!empty($emp['nickname'])): ?><div class="small text-muted">(<?= e($emp['nickname']) ?>)</div><?php endif; ?>
                 </td>
                 <td class="small"><?= e($emp['position'] ?? '-') ?><?php if (!empty($emp['academic_rank'])): ?><div class="text-muted"><?= e($emp['academic_rank']) ?></div><?php endif; ?></td>
@@ -224,7 +237,7 @@ $selectableCount = count(array_filter($employees, $selectable));
             <?php endif; ?>
             <a class="text-decoration-none text-body flex-fill min-w-0" href="<?= e(url('/personnel/' . (int) $emp['id'])) ?>">
               <div class="d-flex justify-content-between gap-2">
-                <span class="fw-semibold text-truncate"><?= e(PersonnelService::displayName($emp)) ?></span>
+                <span class="fw-semibold text-truncate"><?= e(PersonnelService::displayName($emp)) ?><?= $licenseBadge($emp) ?></span>
                 <span class="badge text-bg-<?= e($statusClass[$emp['status']] ?? 'secondary') ?> align-self-start"><?= e(PersonnelService::STATUSES[$emp['status']] ?? $emp['status']) ?></span>
               </div>
               <div class="small text-muted"><?= e($emp['employee_code']) ?> · <?= e($emp['position'] ?? '-') ?></div>

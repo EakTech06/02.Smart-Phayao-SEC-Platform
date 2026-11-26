@@ -2,6 +2,7 @@
 
 use Core\Hmvc;
 use Modules\CoreAdmin\Services\PdpaService;
+use Modules\CoreAdmin\Services\PersonnelService;
 use Modules\CoreAdmin\Services\ReportService;
 use Modules\CoreAdmin\Services\UserService;
 
@@ -54,6 +55,26 @@ $tile = static function (string $icon, string $color, int|string $value, string 
   </div>
 </div>
 
+<?php $license ??= ['own' => null, 'own_id' => null, 'expired' => 0, 'expiring' => 0, 'can_manage' => false]; ?>
+<?php if ($license['own'] !== null): ?>
+  <div class="alert alert-danger d-flex flex-wrap align-items-center gap-2">
+    <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+    <span class="fw-semibold"><?= e($license['own']['text']) ?></span>
+    <a href="<?= e(url('/personnel/' . (int) $license['own_id'])) ?>" class="btn btn-sm btn-outline-danger ms-auto">ดูข้อมูลของฉัน</a>
+  </div>
+<?php endif; ?>
+<?php if ($license['can_manage'] && ($license['expired'] + $license['expiring']) > 0): ?>
+  <div class="alert alert-danger d-flex flex-wrap align-items-center gap-2">
+    <i class="bi bi-person-vcard fs-5"></i>
+    <span>ใบประกอบวิชาชีพครู:
+      <?php if ($license['expired'] > 0): ?>หมดอายุแล้ว <strong><?= (int) $license['expired'] ?></strong> คน<?php endif; ?>
+      <?php if ($license['expired'] > 0 && $license['expiring'] > 0): ?> · <?php endif; ?>
+      <?php if ($license['expiring'] > 0): ?>ใกล้หมดอายุ (ภายใน <?= PersonnelService::LICENSE_WARN_DAYS ?> วัน) <strong><?= (int) $license['expiring'] ?></strong> คน<?php endif; ?>
+    </span>
+    <a href="<?= e(url('/personnel?license=alert')) ?>" class="btn btn-sm btn-outline-danger ms-auto">ดูรายชื่อ</a>
+  </div>
+<?php endif; ?>
+
 <?php if ($pdpa !== null && ($pdpa['open'] > 0 || $pdpa['overdue'] > 0)): ?>
   <div class="alert <?= $pdpa['overdue'] > 0 ? 'alert-danger' : 'alert-warning' ?> d-flex flex-wrap align-items-center gap-2">
     <i class="bi bi-shield-exclamation fs-5"></i>
@@ -86,7 +107,7 @@ $tile = static function (string $icon, string $color, int|string $value, string 
     <div class="card shadow-sm h-100">
       <div class="card-header bg-white fw-semibold"><i class="bi bi-pie-chart me-1"></i>สัดส่วนประเภทบุคลากร</div>
       <div class="card-body">
-        <?php foreach (UserService::EMPLOYMENT_TYPES as $type => $label): ?>
+        <?php foreach (ReportService::employmentTypes() as $type => $label): ?>
           <?php $n = $typeTotals[$type]; $pct = $personnelTotal > 0 ? round($n * 100 / $personnelTotal) : 0; ?>
           <div class="mb-3">
             <div class="d-flex justify-content-between small">

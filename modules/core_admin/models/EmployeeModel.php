@@ -15,7 +15,8 @@ final class EmployeeModel extends Model
 
     private const SELECT = "SELECT e.id, e.employee_code, e.title_name, e.first_name, e.last_name, e.nickname,
             e.gender, e.birth_date, e.position, e.position_number, e.academic_rank, e.employment_type,
-            e.education_level, e.education_major, e.screener_reg_no, e.department_id, d.name_th AS department_name,
+            e.education_level, e.education_major, e.screener_reg_no, e.license_no, e.license_expiry_date, e.first_position, e.appointment_date,
+            e.department_id, d.name_th AS department_name,
             e.service_unit_id, su.name_th AS service_unit_name,
             e.phone, e.email, e.address, e.avatar, e.national_id_last4,
             (e.national_id_encrypted IS NOT NULL) AS has_national_id_encrypted,
@@ -53,6 +54,10 @@ final class EmployeeModel extends Model
         if (($filters['employment_type'] ?? '') !== '') {
             $sql .= ' AND e.employment_type = ?';
             $params[] = (string) $filters['employment_type'];
+        }
+        if (($filters['license'] ?? '') === 'alert') {
+            $sql .= ' AND e.license_expiry_date <= CURDATE() + INTERVAL ? DAY';
+            $params[] = \Modules\CoreAdmin\Services\PersonnelService::LICENSE_WARN_DAYS;
         }
         if (($filters['account'] ?? '') === 'with') {
             $sql .= ' AND u.id IS NOT NULL';

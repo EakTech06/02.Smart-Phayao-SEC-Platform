@@ -25,8 +25,24 @@ final class ReportService
         'government_employee' => '#eb6834',
         'permanent_employee' => '#1baf7a',
         'temporary_employee' => '#eda100',
+        'contract_9000' => '#7a5fd3',
+        'contract_15000' => '#19a3b8',
         'other' => '#e87ba4',
     ];
+
+    /** ประเภทบุคลากรในรายงาน: ตัวเลือกปัจจุบัน + ประเภทเดิม ('other') เฉพาะเมื่อยังมีบุคลากรประเภทนั้น */
+    public static function employmentTypes(): array
+    {
+        static $types = null;
+        if ($types === null) {
+            $hasLegacy = Database::instance()->fetchColumn(
+                "SELECT 1 FROM employees WHERE employment_type = 'other' AND deleted_at IS NULL LIMIT 1"
+            ) !== null;
+            $types = $hasLegacy ? UserService::EMPLOYMENT_TYPE_LABELS : UserService::EMPLOYMENT_TYPES;
+        }
+
+        return $types;
+    }
 
     public const PERIOD_MONTH = 'month';
     public const PERIOD_CUSTOM = 'custom';
@@ -492,7 +508,7 @@ final class ReportService
      */
     public static function toSheets(array $report, string $orgName): array
     {
-        $types = UserService::EMPLOYMENT_TYPES;
+        $types = self::employmentTypes();
         $p = $report['period'];
         $u = $report['users'];
 

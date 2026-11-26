@@ -47,6 +47,9 @@ use Modules\CoreAdmin\Services\UserService;
             <li>วันที่: <code>2568-05-16</code> หรือ <code>16/05/2568</code> (พ.ศ. หรือ ค.ศ.)</li>
             <li>ประเภท: <?= e(implode(', ', UserService::EMPLOYMENT_TYPES)) ?></li>
             <li>สถานะ: <?= e(implode(', ', PersonnelService::STATUSES)) ?> (ว่าง = ปฏิบัติงาน)</li>
+            <li><code>education_level</code>: <?= e(implode(', ', PersonnelService::EDUCATION_LEVELS)) ?>
+              — เพิ่มเป็นข้อมูลการศึกษา 1 รายการ (ระดับที่มีอยู่แล้วไม่เพิ่มซ้ำ) หลายระดับให้เพิ่มที่หน้าแก้ไขบุคลากร</li>
+            <li>คอลัมน์ที่ไม่มีในไฟล์ (เช่น ไฟล์ต้นแบบรุ่นเก่า) จะคงค่าเดิมเมื่ออัปเดต</li>
             <li>Excel: บันทึกเป็น "CSV UTF-8 (Comma delimited)"</li>
           </ul>
           <div class="fw-semibold">รหัสฝ่าย/งาน (department_code)</div>

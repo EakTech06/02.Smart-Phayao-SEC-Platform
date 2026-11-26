@@ -20,8 +20,12 @@ final class UserService
         'government_employee' => 'พนักงานราชการ',
         'permanent_employee' => 'ลูกจ้างประจำ',
         'temporary_employee' => 'ลูกจ้างชั่วคราว',
-        'other' => 'อื่น ๆ',
+        'contract_9000' => 'จ้างเหมา (9,000)',
+        'contract_15000' => 'จ้างเหมา (15,000)',
     ];
+
+    /** ป้ายชื่อสำหรับแสดงผล รวมประเภทเดิมที่ไม่เป็นตัวเลือกแล้ว ('other' ข้อมูลก่อนปรับประเภท) */
+    public const EMPLOYMENT_TYPE_LABELS = self::EMPLOYMENT_TYPES + ['other' => 'อื่น ๆ (เดิม)'];
 
     public const STATUSES = ['active' => 'ใช้งาน', 'inactive' => 'ระงับ', 'locked' => 'ล็อก'];
 

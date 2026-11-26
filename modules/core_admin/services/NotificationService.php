@@ -17,6 +17,7 @@ final class NotificationService
         'calendar' => ['icon' => 'calendar-event', 'label' => 'ปฏิทิน'],
         'file' => ['icon' => 'file-earmark', 'label' => 'ไฟล์'],
         'pdpa' => ['icon' => 'shield-lock', 'label' => 'PDPA'],
+        'personnel' => ['icon' => 'person-vcard', 'label' => 'งานบุคคล'],
         'system' => ['icon' => 'info-circle', 'label' => 'ระบบ'],
     ];
 
