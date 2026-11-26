@@ -74,6 +74,18 @@ $tile = static function (string $icon, string $color, int|string $value, string 
     <a href="<?= e(url('/personnel?license=alert')) ?>" class="btn btn-sm btn-outline-danger ms-auto">ดูรายชื่อ</a>
   </div>
 <?php endif; ?>
+<?php $cards ??= null; ?>
+<?php if ($cards !== null && ($cards['expired'] + $cards['expiring']) > 0): ?>
+  <div class="alert alert-danger d-flex flex-wrap align-items-center gap-2">
+    <i class="bi bi-credit-card-2-front fs-5"></i>
+    <span>บัตรประจำตัวคนพิการของนักเรียน:
+      <?php if ($cards['expired'] > 0): ?>หมดอายุแล้ว <strong><?= (int) $cards['expired'] ?></strong> คน<?php endif; ?>
+      <?php if ($cards['expired'] > 0 && $cards['expiring'] > 0): ?> · <?php endif; ?>
+      <?php if ($cards['expiring'] > 0): ?>ใกล้หมดอายุ (ภายใน <?= Modules\Academic\Services\StudentLookup::CARD_EXPIRY_WARN_DAYS ?> วัน) <strong><?= (int) $cards['expiring'] ?></strong> คน<?php endif; ?>
+    </span>
+    <a href="<?= e(url('/academic/students/completeness')) ?>" class="btn btn-sm btn-outline-danger ms-auto">ดูรายชื่อ</a>
+  </div>
+<?php endif; ?>
 
 <?php if ($pdpa !== null && ($pdpa['open'] > 0 || $pdpa['overdue'] > 0)): ?>
   <div class="alert <?= $pdpa['overdue'] > 0 ? 'alert-danger' : 'alert-warning' ?> d-flex flex-wrap align-items-center gap-2">

@@ -29,8 +29,9 @@ final class DashboardController extends Controller
     public function index(): Response
     {
         $db = Database::instance();
+        $academic = in_array('academic', (array) config('app.modules', []), true);
         LicenseReminderService::runDaily(); // ตรวจใบประกอบวิชาชีพครูวันละครั้ง (แจ้งเตือนเข้ากระดิ่ง)
-        if (in_array('academic', (array) config('app.modules', []), true)) {
+        if ($academic) {
             \Modules\Academic\Services\CardReminderService::runDaily(); // บัตรประจำตัวคนพิการของนักเรียน
         }
         $stats = [
@@ -94,6 +95,8 @@ final class DashboardController extends Controller
             'canReport' => Rbac::canAny(['core.reports.view_all', 'core.reports.view_department']),
             'recent' => $recent,
             'license' => self::licenseAlerts(),
+            // บัตรประจำตัวคนพิการของนักเรียนในขอบเขตข้อมูลอ่อนไหวของผู้ดู (null = ไม่มีสิทธิ์)
+            'cards' => $academic ? \Modules\Academic\Services\CardReminderService::countsForViewer() : null,
         ]);
     }
 

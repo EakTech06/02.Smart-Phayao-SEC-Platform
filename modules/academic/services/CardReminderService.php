@@ -45,6 +45,35 @@ final class CardReminderService
         }
     }
 
+    /**
+     * จำนวนบัตรหมดอายุ/ใกล้หมดอายุของนักเรียนที่ผู้ใช้มีสิทธิ์ดูข้อมูลอ่อนไหว (แสดงบนแดชบอร์ด)
+     * ข้อมูลเข้ารหัสจึงต้องถอดรหัสเพื่อนับ แต่คืนเฉพาะจำนวน (ไม่มีข้อมูลรายคน)
+     * @return array{expired:int, expiring:int}|null null = ไม่มีสิทธิ์ดูข้อมูลอ่อนไหวของนักเรียน
+     */
+    public static function countsForViewer(?int $userId = null): ?array
+    {
+        $cond = StudentService::scopeCondition('read_sensitive', $userId);
+        if ($cond === null) {
+            return null;
+        }
+        $statuses = StudentLookup::OPEN_STATUSES;
+        $rows = Database::instance()->fetchAll(
+            'SELECT ss.data_encrypted FROM academic_student_sensitive ss JOIN academic_students s ON s.id = ss.student_id
+             WHERE s.deleted_at IS NULL AND s.status IN (' . implode(',', array_fill(0, count($statuses), '?')) . ") AND {$cond[0]}",
+            array_merge($statuses, $cond[1])
+        );
+        $counts = ['expired' => 0, 'expiring' => 0];
+        foreach ($rows as $row) {
+            $health = StudentService::decryptSensitive((string) $row['data_encrypted']);
+            $status = is_array($health) ? StudentCompleteness::cardStatus($health) : null;
+            if ($status !== null && $status['state'] !== 'valid') {
+                $counts[$status['state']]++;
+            }
+        }
+
+        return $counts;
+    }
+
     /** @return int จำนวนนักเรียนที่แจ้งเตือนรอบนี้ */
     public static function run(): int
     {
