@@ -76,13 +76,15 @@ final class StudentCompleteness
             if ($type === 'multiple') {
                 $checks['disability']['ลักษณะความพิการซ้อน (อย่างน้อย 2 ด้าน)'] = count((array) ($h['multiple_disabilities'] ?? [])) >= 2;
             }
-            $checks['disability']['การคัดกรอง'] = self::filled($screening);
-            $checks['disability']['ครูผู้คัดกรอง'] = self::filled($h['screener_employee_id'] ?? null);
-            if (in_array($screening, ['medical_cert', 'disability_card'], true)) {
-                $checks['disability']['โรงพยาบาล'] = self::filled($h['hospital'] ?? null);
+            // ช่องที่ต้องกรอกขึ้นกับประเภทผู้คัดกรอง (StudentLookup::SCREENING_FIELDS)
+            $checks['disability']['ประเภทผู้คัดกรอง'] = self::filled($screening);
+            if ($screening === 'none') {
+                $checks['disability']['ครูผู้คัดกรอง'] = self::filled($h['screener_employee_id'] ?? null);
+            } elseif ($screening === 'medical_cert') {
+                $checks['disability']['ชื่อโรงพยาบาล'] = self::filled($h['hospital'] ?? null);
+                $checks['disability']['ชื่อ-นามสกุลแพทย์'] = self::filled($h['doctor'] ?? null);
                 $checks['disability']['วันที่ตรวจ'] = self::filled($h['examined_at'] ?? null);
-            }
-            if ($screening === 'disability_card') {
+            } elseif ($screening === 'disability_card') {
                 $checks['disability']['ประเภทตามบัตรคนพิการ'] = !empty($h['card_types']);
                 $checks['disability']['วันที่บัตรหมดอายุ'] = self::filled($h['card_expires_at'] ?? null);
             }
@@ -194,11 +196,35 @@ final class StudentCompleteness
         return $out;
     }
 
-    /** จำนวนวันก่อนบัตรคนพิการหมดอายุ (ติดลบ = หมดแล้ว) | null = ไม่มีข้อมูล */
+    /**
+     * สถานะบัตรประจำตัวคนพิการ (ใช้ร่วมกันทั้งหน้าจอและแจ้งเตือน) | null = ไม่มีบัตร/ไม่มีวันหมดอายุ
+     * @return array{state: 'expired'|'expiring'|'valid', days: int, text: string, class: string}|null
+     */
+    public static function cardStatus(array $health): ?array
+    {
+        $days = self::cardDaysLeft($health);
+        if ($days === null) {
+            return null;
+        }
+        if ($days < 0) {
+            return ['state' => 'expired', 'days' => $days, 'class' => 'text-danger',
+                'text' => 'บัตรประจำตัวคนพิการหมดอายุแล้ว ' . abs($days) . ' วัน กรุณาต่ออายุบัตร'];
+        }
+        if ($days <= StudentLookup::CARD_EXPIRY_WARN_DAYS) {
+            return ['state' => 'expiring', 'days' => $days, 'class' => 'text-danger',
+                'text' => $days === 0 ? 'บัตรประจำตัวคนพิการหมดอายุวันนี้' : "บัตรประจำตัวคนพิการจะหมดอายุในอีก {$days} วัน"];
+        }
+
+        return ['state' => 'valid', 'days' => $days, 'class' => 'text-success', 'text' => 'บัตรประจำตัวคนพิการยังไม่หมดอายุ'];
+    }
+
+    /** จำนวนวันก่อนบัตรคนพิการหมดอายุ (ติดลบ = หมดแล้ว) | null = ไม่มีข้อมูล/ประเภทผู้คัดกรองไม่ใช่บัตรคนพิการ */
     public static function cardDaysLeft(array $health): ?int
     {
         $expires = $health['card_expires_at'] ?? null;
-        if (!is_string($expires) || $expires === '') {
+        $screening = $health['screening_type'] ?? null;
+        if (!is_string($expires) || preg_match('/^\d{4}-\d{2}-\d{2}$/', $expires) !== 1
+            || ($screening !== null && $screening !== '' && $screening !== 'disability_card')) {
             return null;
         }
         $diff = (new \DateTimeImmutable('today'))->diff(new \DateTimeImmutable($expires));

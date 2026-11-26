@@ -1,5 +1,6 @@
 <?php
 
+use Modules\Academic\Services\StudentCompleteness;
 use Modules\Academic\Services\StudentLookup;
 use Modules\Academic\Services\StudentService;
 use Modules\CoreAdmin\Services\FileService;
@@ -352,22 +353,32 @@ $code = static fn (array $list, mixed $k): string => $k === null || $k === '' ? 
                 <?php endif; ?>
                 <?= $row('ระดับเชาวน์ปัญญา (IQ)', $dash($health['iq'] ?? null)) ?>
                 <?= $row('ลักษณะความพิการ', !empty($health['disability_description']) ? nl2br(e($health['disability_description'])) : '-') ?>
-                <?= $row('การคัดกรอง', $dash(StudentLookup::SCREENING_TYPES[$health['screening_type'] ?? ''] ?? null)
-                    . ($screenerName ? '<div class="small text-muted">ครูผู้คัดกรอง ' . e($screenerName) . '</div>' : '')) ?>
-                <?= $row('แพทย์/โรงพยาบาล', $dash(trim(($health['doctor'] ?? '') . ' ' . ($health['hospital'] ?? ''))) . (!empty($health['examined_at']) ? '<div class="small text-muted">ตรวจเมื่อ ' . $date($health['examined_at']) . '</div>' : '')) ?>
+                <?php $screening = (string) ($health['screening_type'] ?? ''); ?>
+                <?= $row('ประเภทผู้คัดกรอง', $dash(StudentLookup::SCREENING_TYPES[$screening] ?? null)) ?>
+                <?php if ($screening === 'none' || ($screening === '' && $screenerName)): ?>
+                  <?= $row('ครูผู้คัดกรอง', $dash($screenerName)) ?>
+                <?php endif; ?>
+                <?php if ($screening === 'medical_cert' || ($screening === '' && (!empty($health['hospital']) || !empty($health['doctor'])))): ?>
+                  <?= $row('แพทย์/โรงพยาบาล', $dash(trim(($health['doctor'] ?? '') . ' ' . ($health['hospital'] ?? ''))) . (!empty($health['examined_at']) ? '<div class="small text-muted">ตรวจเมื่อ ' . $date($health['examined_at']) . '</div>' : '')) ?>
+                <?php endif; ?>
               </dl>
               <dl class="row col-12 col-xl-6 mb-0">
-                <?php
-                $expired = !empty($health['card_expires_at']) && $health['card_expires_at'] < date('Y-m-d');
-                $cardText = !empty($health['card_types'])
-                    ? e(implode(', ', array_map(static fn (string $k): string => StudentLookup::CARD_TYPES[$k] ?? $k, $health['card_types'])))
-                    : '-';
-                if (!empty($health['card_issued_at']) || !empty($health['card_expires_at'])) {
-                    $cardText .= '<div class="small ' . ($expired ? 'text-danger fw-semibold' : 'text-muted') . '">ออกบัตร ' . $date($health['card_issued_at'] ?? null)
-                        . ' · หมดอายุ ' . $date($health['card_expires_at'] ?? null) . ($expired ? ' (หมดอายุแล้ว)' : '') . '</div>';
-                }
-                ?>
-                <?= $row('บัตรประจำตัวคนพิการ', $cardText) ?>
+                <?php if ($screening === 'disability_card' || ($screening === '' && (!empty($health['card_types']) || !empty($health['card_expires_at'])))): ?>
+                  <?php
+                  $cardStatus = StudentCompleteness::cardStatus($health);
+                  $cardText = !empty($health['card_types'])
+                      ? e(implode(', ', array_map(static fn (string $k): string => StudentLookup::CARD_TYPES[$k] ?? $k, $health['card_types'])))
+                      : '-';
+                  if (!empty($health['card_issued_at']) || !empty($health['card_expires_at'])) {
+                      $cardText .= '<div class="small text-muted">ออกบัตร ' . $date($health['card_issued_at'] ?? null)
+                          . ' · หมดอายุ ' . $date($health['card_expires_at'] ?? null) . '</div>';
+                  }
+                  if ($cardStatus !== null && $cardStatus['state'] !== 'valid') {
+                      $cardText .= '<div class="small text-danger fw-semibold"><i class="bi bi-exclamation-triangle me-1"></i>' . e($cardStatus['text']) . '</div>';
+                  }
+                  ?>
+                  <?= $row('บัตรประจำตัวคนพิการ', $cardText) ?>
+                <?php endif; ?>
                 <?= $row('กลุ่มเลือด', $dash(StudentLookup::BLOOD_GROUPS[$health['blood_group'] ?? ''] ?? null)) ?>
                 <?= $row('โรคประจำตัว', !empty($health['chronic_conditions']) ? nl2br(e($health['chronic_conditions'])) : '-') ?>
                 <?= $row('ประวัติการแพ้', !empty($health['allergies']) ? '<span class="text-danger">' . nl2br(e($health['allergies'])) . '</span>' : '-') ?>

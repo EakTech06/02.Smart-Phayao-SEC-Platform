@@ -146,12 +146,14 @@ final class StudentController extends Controller
     public function healthEdit(string $id): Response
     {
         $student = $this->find($id);
+        $health = StudentService::sensitive((int) $student['id']) ?? [];
+        $current = $health['screener_employee_id'] ?? null;
 
         return $this->view('academic::students/health_form', [
             'title' => 'ข้อมูลความพิการและสุขภาพ',
             'student' => $student,
-            'health' => StudentService::sensitive((int) $student['id']) ?? [],
-            'teachers' => StudentService::enrollmentOptions()['teachers'],
+            'health' => $health,
+            'teachers' => StudentService::screenerOptions(is_numeric($current) ? (int) $current : null),
         ]);
     }
 

@@ -30,6 +30,9 @@ final class DashboardController extends Controller
     {
         $db = Database::instance();
         LicenseReminderService::runDaily(); // ตรวจใบประกอบวิชาชีพครูวันละครั้ง (แจ้งเตือนเข้ากระดิ่ง)
+        if (in_array('academic', (array) config('app.modules', []), true)) {
+            \Modules\Academic\Services\CardReminderService::runDaily(); // บัตรประจำตัวคนพิการของนักเรียน
+        }
         $stats = [
             'users' => Rbac::scope('core.users', 'read') !== null ? UserModel::countVisible() : null,
             'personnel' => (int) $db->fetchColumn("SELECT COUNT(*) FROM employees WHERE deleted_at IS NULL AND status = 'active'"),

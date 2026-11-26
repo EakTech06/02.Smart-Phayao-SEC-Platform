@@ -537,6 +537,7 @@ CREATE TABLE IF NOT EXISTS academic_student_enrollments (
 CREATE TABLE IF NOT EXISTS academic_student_sensitive (
   student_id INT UNSIGNED NOT NULL PRIMARY KEY,
   data_encrypted MEDIUMTEXT NOT NULL COMMENT 'JSON เข้ารหัส AES-256-GCM: ประเภท/ระดับความพิการ, การคัดกรอง, บัตรคนพิการ, สุขภาพ',
+  card_alert_key CHAR(64) NULL COMMENT 'แฮชของระดับแจ้งเตือนบัตรคนพิการที่แจ้งแล้ว',
   updated_by INT UNSIGNED NULL,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT fk_academic_sensitive_student FOREIGN KEY (student_id) REFERENCES academic_students (id) ON DELETE CASCADE

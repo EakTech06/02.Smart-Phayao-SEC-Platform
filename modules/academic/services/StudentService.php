@@ -481,6 +481,17 @@ final class StudentService
             $multiple = [];
         }
         $cardTypes = array_values(array_intersect(array_unique($cardTypes), array_keys(StudentLookup::CARD_TYPES)));
+        // เก็บเฉพาะช่องของประเภทผู้คัดกรองที่เลือก (ช่องที่ซ่อนอยู่ในฟอร์มไม่ถูกบันทึก)
+        $allowed = StudentLookup::SCREENING_FIELDS[$data['screening_type'] ?? ''] ?? [];
+        foreach (array_merge(...array_values(StudentLookup::SCREENING_FIELDS)) as $f) {
+            if (!in_array($f, $allowed, true)) {
+                $data[$f] = null;
+            }
+        }
+        if (!in_array('card_types', $allowed, true)) {
+            $cardTypes = [];
+        }
+        unset($data['card_types']);
         if ($data['iq'] !== null && ((int) $data['iq'] < 0 || (int) $data['iq'] > 250)) {
             $errors['iq'][] = 'ระดับเชาวน์ปัญญาต้องอยู่ระหว่าง 0-250';
         }
@@ -489,8 +500,8 @@ final class StudentService
         }
         if ($data['screener_employee_id'] !== null) {
             $previous = self::sensitive($studentId, false)['screener_employee_id'] ?? null;
-            if ((int) $data['screener_employee_id'] !== (int) $previous && !self::isActiveEmployee((int) $data['screener_employee_id'])) {
-                $errors['screener_employee_id'][] = 'กรุณาเลือกครูผู้คัดกรองที่ยังปฏิบัติงานอยู่';
+            if ((int) $data['screener_employee_id'] !== (int) $previous && !self::isScreener((int) $data['screener_employee_id'])) {
+                $errors['screener_employee_id'][] = 'กรุณาเลือกครูผู้คัดกรองที่ยังปฏิบัติงานอยู่และมีเลขทะเบียนผู้คัดกรองคนพิการ';
             }
         }
         if ($errors !== []) {
@@ -1181,6 +1192,31 @@ final class StudentService
         }
 
         return $out;
+    }
+
+    /** ครูผู้คัดกรอง = บุคลากรที่ปฏิบัติงานอยู่และมีเลขทะเบียนผู้คัดกรองคนพิการ */
+    private static function isScreener(int $id): bool
+    {
+        return Database::instance()->fetchColumn(
+            "SELECT 1 FROM employees WHERE id = ? AND deleted_at IS NULL AND status = 'active'
+               AND screener_reg_no IS NOT NULL AND TRIM(screener_reg_no) <> ''",
+            [$id]
+        ) !== null;
+    }
+
+    /**
+     * ตัวเลือกครูผู้คัดกรอง: เฉพาะคนที่มีเลขทะเบียนผู้คัดกรองคนพิการ (+ ผู้คัดกรองเดิมของนักเรียน แม้ไม่เข้าเงื่อนไขแล้ว)
+     * @return list<array>
+     */
+    public static function screenerOptions(?int $currentId = null): array
+    {
+        return Database::instance()->fetchAll(
+            "SELECT e.id, e.title_name, e.first_name, e.last_name, e.status, e.screener_reg_no FROM employees e
+             WHERE (e.deleted_at IS NULL AND e.status = 'active' AND e.screener_reg_no IS NOT NULL AND TRIM(e.screener_reg_no) <> '')
+                OR e.id = ?
+             ORDER BY e.first_name, e.last_name",
+            [(int) $currentId]
+        );
     }
 
     private static function isActiveEmployee(int $id): bool

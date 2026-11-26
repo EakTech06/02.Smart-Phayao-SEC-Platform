@@ -18,6 +18,7 @@ final class NotificationService
         'file' => ['icon' => 'file-earmark', 'label' => 'ไฟล์'],
         'pdpa' => ['icon' => 'shield-lock', 'label' => 'PDPA'],
         'personnel' => ['icon' => 'person-vcard', 'label' => 'งานบุคคล'],
+        'student' => ['icon' => 'mortarboard', 'label' => 'งานทะเบียนนักเรียน'],
         'system' => ['icon' => 'info-circle', 'label' => 'ระบบ'],
     ];
 

@@ -42,6 +42,13 @@ if ($screener !== '' && !isset($teacherOptions[$screener])) {
 $type = $val('disability_type');
 $multiple = $listVal('multiple_disabilities');
 $cards = $listVal('card_types');
+// ช่องการคัดกรองแสดงตามประเภทผู้คัดกรอง (academic-students.js สลับเมื่อเปลี่ยนตัวเลือก)
+$screeningType = $val('screening_type');
+$sc = static fn (string $kind, string $col = 'col-12 col-md-6 col-lg-4'): string
+    => $col . ' screening-field screening-' . $kind . ($screeningType === $kind ? '' : ' d-none');
+$cardStatus = $screeningType === 'disability_card'
+    ? \Modules\Academic\Services\StudentCompleteness::cardStatus(['card_expires_at' => $val('card_expires_at'), 'screening_type' => $screeningType])
+    : null;
 $back = url('/academic/students/' . (int) $student['id']);
 ?>
 <a href="<?= e($back) ?>#health" class="btn btn-link px-0 mb-2"><i class="bi bi-arrow-left"></i> กลับ</a>
@@ -93,12 +100,17 @@ $back = url('/academic/students/' . (int) $student['id']);
     <div class="card-header bg-white fw-semibold"><i class="bi bi-clipboard2-pulse me-1"></i>การคัดกรองและบัตรประจำตัวคนพิการ</div>
     <div class="card-body">
       <div class="row g-3">
-        <?= $field('screening_type', ['type' => 'select', 'options' => StudentLookup::SCREENING_TYPES, 'col' => 'col-12 col-lg-6']) ?>
-        <?= $field('screener_employee_id', ['type' => 'select', 'options' => $teacherOptions, 'col' => 'col-12 col-lg-6']) ?>
-        <?= $field('hospital', ['max' => 150]) ?>
-        <?= $field('doctor', ['max' => 150]) ?>
-        <?= $field('examined_at', ['type' => 'date']) ?>
-        <div class="col-12">
+        <?= $field('screening_type', ['type' => 'select', 'options' => StudentLookup::SCREENING_TYPES, 'col' => 'col-12 col-lg-6', 'attrs' => ' data-screening-type']) ?>
+        <div class="col-12 col-lg-6 d-none d-lg-block"></div>
+        <?php if ($screeningType === ''): ?>
+          <div class="col-12 small text-muted screening-hint"><i class="bi bi-info-circle me-1"></i>เลือกประเภทผู้คัดกรองเพื่อกรอกข้อมูลการคัดกรอง</div>
+        <?php endif; ?>
+        <?= $field('screener_employee_id', ['type' => 'select', 'options' => $teacherOptions, 'col' => $sc('none', 'col-12 col-lg-6'),
+            'help' => $teacherOptions === [] ? 'ยังไม่มีบุคลากรที่มีเลขทะเบียนผู้คัดกรองคนพิการ (กรอกได้ที่ข้อมูลบุคลากร)' : 'แสดงเฉพาะบุคลากรที่มีเลขทะเบียนผู้คัดกรองคนพิการ']) ?>
+        <?= $field('hospital', ['max' => 150, 'col' => $sc('medical_cert')]) ?>
+        <?= $field('doctor', ['max' => 150, 'col' => $sc('medical_cert')]) ?>
+        <?= $field('examined_at', ['type' => 'date', 'col' => $sc('medical_cert')]) ?>
+        <div class="<?= e($sc('disability_card', 'col-12')) ?>">
           <div class="form-label"><?= e($labels['card_types']) ?></div>
           <div class="row row-cols-1 row-cols-md-2 g-1">
             <?php foreach (StudentLookup::CARD_TYPES as $k => $label): ?>
@@ -109,8 +121,11 @@ $back = url('/academic/students/' . (int) $student['id']);
             <?php endforeach; ?>
           </div>
         </div>
-        <?= $field('card_issued_at', ['type' => 'date', 'col' => 'col-6 col-md-4']) ?>
-        <?= $field('card_expires_at', ['type' => 'date', 'col' => 'col-6 col-md-4']) ?>
+        <?= $field('card_issued_at', ['type' => 'date', 'col' => $sc('disability_card', 'col-6 col-md-4')]) ?>
+        <?= $field('card_expires_at', ['type' => 'date', 'col' => $sc('disability_card', 'col-6 col-md-4')]) ?>
+        <div class="<?= e($sc('disability_card', 'col-12 col-md-4 d-flex align-items-md-end')) ?>">
+          <div class="small fw-semibold pb-md-2 <?= e($cardStatus['class'] ?? '') ?>" data-card-status data-warn-days="<?= StudentLookup::CARD_EXPIRY_WARN_DAYS ?>"><?= $cardStatus !== null ? e($cardStatus['text']) : '' ?></div>
+        </div>
       </div>
     </div>
   </div>

@@ -14,6 +14,41 @@
     sync();
   });
 
+  // ประเภทผู้คัดกรอง → แสดงเฉพาะช่องของประเภทนั้น (ตรงกับ StudentLookup::SCREENING_FIELDS)
+  document.querySelectorAll('[data-screening-type]').forEach((select) => {
+    const sync = () => {
+      document.querySelectorAll('.screening-field').forEach((el) => toggle(el, el.classList.contains('screening-' + select.value)));
+      document.querySelectorAll('.screening-hint').forEach((el) => toggle(el, select.value === ''));
+    };
+    select.addEventListener('change', sync);
+    sync();
+  });
+
+  // วันที่บัตรประจำตัวคนพิการหมดอายุ: หมดอายุ/ใกล้หมดอายุแสดงข้อความสีแดง (ตรงกับ StudentCompleteness::cardStatus)
+  const cardNote = document.querySelector('[data-card-status]');
+  const cardInput = document.getElementById('f-card_expires_at');
+  if (cardNote && cardInput) {
+    const warn = Number(cardNote.dataset.warnDays || 90);
+    const update = () => {
+      const d = cardInput.value ? new Date(cardInput.value + 'T00:00:00') : null;
+      cardNote.classList.remove('text-danger', 'text-success');
+      if (!d || Number.isNaN(d.getTime())) { cardNote.textContent = ''; return; }
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const days = Math.round((d - today) / 86400000);
+      if (days < 0) {
+        cardNote.textContent = 'บัตรประจำตัวคนพิการหมดอายุแล้ว ' + Math.abs(days) + ' วัน กรุณาต่ออายุบัตร';
+      } else if (days <= warn) {
+        cardNote.textContent = days === 0 ? 'บัตรประจำตัวคนพิการหมดอายุวันนี้' : 'บัตรประจำตัวคนพิการจะหมดอายุในอีก ' + days + ' วัน';
+      } else {
+        cardNote.textContent = 'บัตรประจำตัวคนพิการยังไม่หมดอายุ';
+      }
+      cardNote.classList.add(days <= warn ? 'text-danger' : 'text-success');
+    };
+    cardInput.addEventListener('change', update);
+    cardInput.addEventListener('input', update);
+  }
+
   // สถานะที่ออกจากการรับบริการแล้ว → วันที่/สาเหตุ
   document.querySelectorAll('[data-status]').forEach((select) => {
     const sync = () => document.querySelectorAll('.left-fields').forEach((el) => toggle(el, LEFT_STATUSES.includes(select.value)));

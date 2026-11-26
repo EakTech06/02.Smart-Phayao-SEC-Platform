@@ -176,6 +176,13 @@ final class StudentLookup
         'disability_card' => 'มีบัตรประจำตัวคนพิการ',
     ];
 
+    /** ช่องที่กรอกได้ตามประเภทผู้คัดกรอง (ช่องของประเภทอื่นถูกล้างเมื่อบันทึก) */
+    public const SCREENING_FIELDS = [
+        'none' => ['screener_employee_id'],
+        'medical_cert' => ['hospital', 'doctor', 'examined_at'],
+        'disability_card' => ['card_types', 'card_issued_at', 'card_expires_at'],
+    ];
+
     /** ประเภทตามบัตรประจำตัวคนพิการ (พ.ร.บ.ส่งเสริมและพัฒนาคุณภาพชีวิตคนพิการ) */
     public const CARD_TYPES = [
         'visual' => 'ความพิการทางการเห็น',
