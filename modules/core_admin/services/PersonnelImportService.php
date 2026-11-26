@@ -28,14 +28,14 @@ final class PersonnelImportService
     public const COLUMNS = [
         'employee_code', 'title_name', 'first_name', 'last_name', 'nickname', 'gender', 'birth_date',
         'position', 'position_number', 'academic_rank', 'employment_type', 'education_level', 'education_major', 'screener_reg_no',
-        'department_code', 'phone', 'email', 'address', 'start_date', 'end_date', 'status', 'note', 'national_id',
+        'department_code', 'service_unit_code', 'phone', 'email', 'address', 'start_date', 'end_date', 'status', 'note', 'national_id',
     ];
 
     public static function templateCsv(): string
     {
         $example = [
             '', 'นาง', 'สมใจ', 'ใจดี', 'ใจ', 'หญิง', '2528-04-12', 'ครู', '12345', 'ครูชำนาญการ',
-            'ข้าราชการ', 'ปริญญาโท', 'การศึกษาพิเศษ', '', 'ACADEMIC', '0812345678', 'somjai@py-sec.ac.th', '',
+            'ข้าราชการ', 'ปริญญาโท', 'การศึกษาพิเศษ', '', 'ACADEMIC', 'SU_PONG', '0812345678', 'somjai@py-sec.ac.th', '',
             '2555-05-16', '', 'ปฏิบัติงาน', '', '',
         ];
 
@@ -272,7 +272,10 @@ final class PersonnelImportService
         foreach (PersonnelService::FIELDS as $field) {
             $data[$field] = $record[$field] ?? '';
         }
-        $data['_absent'] = array_values(array_diff(PersonnelService::FIELDS, array_keys($record), ['department_id']));
+        $data['_absent'] = array_values(array_diff(PersonnelService::FIELDS, array_keys($record), ['department_id', 'service_unit_id']));
+        if (!array_key_exists('service_unit_code', $record)) {
+            $data['_absent'][] = 'service_unit_id';
+        }
         $data['employee_code'] = trim((string) ($record['employee_code'] ?? ''));
         $data['national_id'] = $record['national_id'] ?? '';
         $data['employment_type'] = self::mapLabel($data['employment_type'], UserService::EMPLOYMENT_TYPES, 'other');
@@ -283,6 +286,12 @@ final class PersonnelImportService
         $data['department_id'] = $departments[$dept] ?? '';
         if ($dept !== '' && $data['department_id'] === '') {
             throw new ValidationException(['department_id' => ['ไม่พบฝ่าย/งาน "' . $record['department_code'] . '"']]);
+        }
+        // สังกัดรอง: รหัสหรือชื่อหน่วยบริการ (ว่าง = ไม่มี)
+        $unit = mb_strtolower(trim((string) ($record['service_unit_code'] ?? '')));
+        $data['service_unit_id'] = $unit !== '' ? ($departments[$unit] ?? null) : '';
+        if ($data['service_unit_id'] === null) {
+            throw new ValidationException(['service_unit_id' => ['ไม่พบหน่วยบริการ "' . $record['service_unit_code'] . '"']]);
         }
         foreach (['birth_date', 'start_date', 'end_date'] as $field) {
             $data[$field] = self::normalizeDate((string) $data[$field], PersonnelService::LABELS[$field]);

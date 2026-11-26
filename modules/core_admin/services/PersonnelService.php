@@ -34,7 +34,7 @@ final class PersonnelService
     public const FIELDS = [
         'title_name', 'first_name', 'last_name', 'nickname', 'gender', 'birth_date',
         'position', 'position_number', 'academic_rank', 'employment_type', 'education_level', 'education_major', 'screener_reg_no',
-        'department_id', 'phone', 'email', 'address', 'start_date', 'end_date', 'status', 'note',
+        'department_id', 'service_unit_id', 'phone', 'email', 'address', 'start_date', 'end_date', 'status', 'note',
     ];
 
     public const LABELS = [
@@ -42,7 +42,7 @@ final class PersonnelService
         'nickname' => 'ชื่อเล่น', 'gender' => 'เพศ', 'birth_date' => 'วันเกิด', 'position' => 'ตำแหน่ง',
         'position_number' => 'เลขที่ตำแหน่ง', 'academic_rank' => 'วิทยฐานะ', 'employment_type' => 'ประเภทบุคลากร',
         'education_level' => 'วุฒิการศึกษา', 'education_major' => 'สาขาวิชา', 'screener_reg_no' => 'เลขทะเบียนผู้คัดกรองคนพิการ',
-        'department_id' => 'ฝ่าย/งาน',
+        'department_id' => 'สังกัดหลัก (ฝ่าย/งาน)', 'service_unit_id' => 'สังกัดรอง (หน่วยบริการ)',
         'phone' => 'เบอร์โทรศัพท์', 'email' => 'อีเมล', 'address' => 'ที่อยู่', 'start_date' => 'วันที่เริ่มปฏิบัติงาน',
         'end_date' => 'วันที่สิ้นสุดการปฏิบัติงาน', 'status' => 'สถานะ', 'note' => 'หมายเหตุ',
         'national_id' => 'เลขประจำตัวประชาชน',
@@ -66,6 +66,7 @@ final class PersonnelService
             'education_major' => 'nullable|max:150',
             'screener_reg_no' => 'nullable|max:50',
             'department_id' => 'required|integer',
+            'service_unit_id' => 'nullable|integer',
             'phone' => 'nullable|max:30',
             'email' => 'nullable|email|max:191',
             'address' => 'nullable|max:500',
@@ -135,8 +136,13 @@ final class PersonnelService
     public static function departmentOptions(): array
     {
         $db = Database::instance();
+        // depth: 1 = หน่วยย่อยของหน่วยที่ไม่ใช่ระดับบนสุด (เช่น หน่วยบริการรายอำเภอใต้งานหน่วยบริการ) ใช้จัดเยื้องในตัวเลือก
+        $select = 'SELECT d.id, d.code, d.name_th, d.parent_id,
+                          CASE WHEN p.id IS NOT NULL AND p.parent_id IS NOT NULL THEN 1 ELSE 0 END AS depth
+                   FROM departments d LEFT JOIN departments p ON p.id = d.parent_id
+                   WHERE d.is_active = 1 AND NOT (p.type <=> \'service_unit\')'; // สังกัดหลัก: ไม่รวมหน่วยบริการรายหน่วย (ใช้เป็นสังกัดรอง)
         if (Rbac::canAny(['core.employees.create_all', 'core.employees.update_all', 'core.employees.import_all'])) {
-            return $db->fetchAll('SELECT id, code, name_th FROM departments WHERE is_active = 1 ORDER BY sort_order, id');
+            return $db->fetchAll($select . ' ORDER BY d.sort_order, d.id');
         }
         $ids = Rbac::departmentIds();
         if ($ids === []) {
@@ -144,10 +150,7 @@ final class PersonnelService
         }
         $in = implode(',', array_fill(0, count($ids), '?'));
 
-        return $db->fetchAll(
-            "SELECT id, code, name_th FROM departments WHERE is_active = 1 AND id IN ({$in}) ORDER BY sort_order, id",
-            $ids
-        );
+        return $db->fetchAll($select . " AND d.id IN ({$in}) ORDER BY d.sort_order, d.id", $ids);
     }
 
     public static function assertDepartmentAllowed(int $departmentId): void
@@ -273,10 +276,73 @@ final class PersonnelService
     // ------------------------------------------------------------------ CRUD
 
     /** @return int employee id */
+    // ------------------------------------------------------------------ สังกัดหลัก/สังกัดรอง
+
+    /** ผู้ที่กำหนดสังกัดรอง (หน่วยบริการ) ได้: งานบุคคลระดับทั้งหน่วยงาน (มีผลต่อขอบเขตสิทธิ์ของบัญชีผู้ใช้) */
+    public static function canSetServiceUnit(): bool
+    {
+        return Rbac::canAny(['core.employees.update_all', 'core.employees.create_all', 'core.employees.import_all']);
+    }
+
+    /** ตัวเลือกสังกัดรอง: หน่วยบริการที่เปิดใช้งาน (หน่วยย่อยภายใต้งานหน่วยบริการ) */
+    public static function serviceUnitOptions(): array
+    {
+        return Database::instance()->fetchAll(
+            "SELECT d.id, d.code, d.name_th FROM departments d JOIN departments p ON p.id = d.parent_id AND p.type = 'service_unit'
+             WHERE d.is_active = 1 ORDER BY d.sort_order, d.id"
+        );
+    }
+
+    /**
+     * สังกัดหลัก 1 ฝ่าย (ไม่ใช่หน่วยบริการรายหน่วย) + สังกัดรอง 1 หน่วยบริการ (ไม่บังคับ)
+     * ค่าเดิมที่ไม่ได้เปลี่ยนผ่านเสมอ (เช่น หน่วยที่ปิดการใช้งานไปแล้ว)
+     */
+    private static function assertAffiliation(array $data, ?array $current): void
+    {
+        $db = Database::instance();
+        $errors = [];
+        $primary = (int) $data['department_id'];
+        if ($current === null || $primary !== (int) $current['department_id']) {
+            $isUnit = $db->fetchColumn(
+                "SELECT 1 FROM departments d JOIN departments p ON p.id = d.parent_id AND p.type = 'service_unit' WHERE d.id = ?", [$primary]
+            ) !== null;
+            if ($isUnit) {
+                $errors['department_id'][] = 'สังกัดหลักต้องเป็นฝ่าย/งาน — หน่วยบริการให้เลือกเป็นสังกัดรอง';
+            }
+        }
+        $unit = !empty($data['service_unit_id']) ? (int) $data['service_unit_id'] : null;
+        $old = $current !== null && $current['service_unit_id'] !== null ? (int) $current['service_unit_id'] : null;
+        if ($unit !== $old) {
+            if (!self::canSetServiceUnit()) {
+                $errors['service_unit_id'][] = 'คุณไม่มีสิทธิ์เปลี่ยนสังกัดรอง (หน่วยบริการ)';
+            } elseif ($unit !== null && !in_array($unit, array_map('intval', array_column(self::serviceUnitOptions(), 'id')), true)) {
+                $errors['service_unit_id'][] = 'สังกัดรองต้องเป็นหน่วยบริการที่เปิดใช้งาน';
+            }
+        }
+        if ($errors !== []) {
+            throw new ValidationException($errors);
+        }
+    }
+
+    /** สังกัดรองของบุคลากร → ฝ่ายรองของบัญชีผู้ใช้ที่ผูกไว้ (user_departments.is_primary = 0) */
+    public static function syncSecondaryDepartment(Database $db, int $userId, ?int $old, ?int $new): void
+    {
+        if ($old === $new) {
+            return;
+        }
+        if ($old !== null) {
+            $db->query('DELETE FROM user_departments WHERE user_id = ? AND department_id = ? AND is_primary = 0', [$userId, $old]);
+        }
+        if ($new !== null) {
+            $db->query('INSERT IGNORE INTO user_departments (user_id, department_id, is_primary) VALUES (?, ?, 0)', [$userId, $new]);
+        }
+    }
+
     public static function create(array $data): int
     {
         $nid = self::nationalIdFields($data['national_id'] ?? null);
         self::assertUnique($data, null, $nid['national_id_hash']);
+        self::assertAffiliation($data, null);
 
         $id = self::insertWithCode(Database::instance(), self::row($data) + $nid + [
             'created_by' => Auth::id(),
@@ -291,6 +357,10 @@ final class PersonnelService
         $id = (int) $current['id'];
         $nid = self::nationalIdFields($data['national_id'] ?? null);
         self::assertUnique($data, $id, $nid['national_id_hash']);
+        if (!self::canSetServiceUnit()) {
+            $data['service_unit_id'] = $current['service_unit_id']; // ช่องถูกปิดในฟอร์ม: คงค่าเดิม
+        }
+        self::assertAffiliation($data, $current);
 
         $statusChanged = $data['status'] !== $current['status'];
         if ($statusChanged && !self::canManageLinkedAccount($current)) {
@@ -307,6 +377,9 @@ final class PersonnelService
             $db->update('employees', $row, ['id' => $id]);
             if ($current['user_id'] !== null) {
                 self::syncLinkedUser($db, (int) $current['user_id'], $row);
+                self::syncSecondaryDepartment($db, (int) $current['user_id'],
+                    $current['service_unit_id'] !== null ? (int) $current['service_unit_id'] : null,
+                    $row['service_unit_id'] !== null ? (int) $row['service_unit_id'] : null);
             }
         });
 
@@ -378,6 +451,7 @@ final class PersonnelService
             $row[$field] = $value === '' ? null : $value;
         }
         $row['department_id'] = (int) $data['department_id'];
+        $row['service_unit_id'] = !empty($data['service_unit_id']) ? (int) $data['service_unit_id'] : null;
         if ($row['email'] !== null) {
             $row['email'] = mb_strtolower((string) $row['email']);
         }

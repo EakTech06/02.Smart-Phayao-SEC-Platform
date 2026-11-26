@@ -35,7 +35,8 @@ CREATE TABLE IF NOT EXISTS employees (
   education_level VARCHAR(100) NULL,
   education_major VARCHAR(150) NULL,
   screener_reg_no VARCHAR(50) NULL COMMENT 'เลขทะเบียนผู้คัดกรองคนพิการ',
-  department_id INT UNSIGNED NULL,
+  department_id INT UNSIGNED NULL COMMENT 'สังกัดหลัก: ฝ่าย',
+  service_unit_id INT UNSIGNED NULL COMMENT 'สังกัดรอง: หน่วยบริการ (departments.id)',
   phone VARCHAR(30) NULL,
   email VARCHAR(191) NULL,
   address VARCHAR(500) NULL,
@@ -55,8 +56,10 @@ CREATE TABLE IF NOT EXISTS employees (
   UNIQUE KEY uq_employees_code (employee_code),
   UNIQUE KEY uq_employees_nid (national_id_hash),
   KEY idx_employees_department (department_id),
+  KEY idx_employees_service_unit (service_unit_id),
   KEY idx_employees_status (status),
-  CONSTRAINT fk_employees_department FOREIGN KEY (department_id) REFERENCES departments (id) ON DELETE SET NULL
+  CONSTRAINT fk_employees_department FOREIGN KEY (department_id) REFERENCES departments (id) ON DELETE SET NULL,
+  CONSTRAINT fk_employees_service_unit FOREIGN KEY (service_unit_id) REFERENCES departments (id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS users (

@@ -194,7 +194,7 @@ $selectableCount = count(array_filter($employees, $selectable));
                   <?php if (!empty($emp['nickname'])): ?><div class="small text-muted">(<?= e($emp['nickname']) ?>)</div><?php endif; ?>
                 </td>
                 <td class="small"><?= e($emp['position'] ?? '-') ?><?php if (!empty($emp['academic_rank'])): ?><div class="text-muted"><?= e($emp['academic_rank']) ?></div><?php endif; ?></td>
-                <td class="small"><?= e($emp['department_name'] ?? '-') ?></td>
+                <td class="small"><?= e($emp['department_name'] ?? '-') ?><?= $emp['service_unit_name'] ? '<div class="text-muted">+ ' . e($emp['service_unit_name']) . '</div>' : '' ?></td>
                 <td><span class="badge text-bg-<?= e($statusClass[$emp['status']] ?? 'secondary') ?>"><?= e(PersonnelService::STATUSES[$emp['status']] ?? $emp['status']) ?></span></td>
                 <td class="small">
                   <?php if ($emp['user_id'] !== null): ?>
@@ -228,7 +228,7 @@ $selectableCount = count(array_filter($employees, $selectable));
                 <span class="badge text-bg-<?= e($statusClass[$emp['status']] ?? 'secondary') ?> align-self-start"><?= e(PersonnelService::STATUSES[$emp['status']] ?? $emp['status']) ?></span>
               </div>
               <div class="small text-muted"><?= e($emp['employee_code']) ?> · <?= e($emp['position'] ?? '-') ?></div>
-              <div class="small text-muted"><?= e($emp['department_name'] ?? '-') ?> ·
+              <div class="small text-muted"><?= e($emp['department_name'] ?? '-') ?><?= $emp['service_unit_name'] ? ' + ' . e($emp['service_unit_name']) : '' ?> ·
                 <?= $emp['user_id'] !== null ? '<i class="bi bi-person-check text-success"></i> ' . e($emp['username']) : 'ยังไม่มีบัญชี' ?>
               </div>
             </a>

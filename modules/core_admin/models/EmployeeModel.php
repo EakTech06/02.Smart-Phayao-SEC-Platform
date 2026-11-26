@@ -16,12 +16,14 @@ final class EmployeeModel extends Model
     private const SELECT = "SELECT e.id, e.employee_code, e.title_name, e.first_name, e.last_name, e.nickname,
             e.gender, e.birth_date, e.position, e.position_number, e.academic_rank, e.employment_type,
             e.education_level, e.education_major, e.screener_reg_no, e.department_id, d.name_th AS department_name,
+            e.service_unit_id, su.name_th AS service_unit_name,
             e.phone, e.email, e.address, e.avatar, e.national_id_last4,
             (e.national_id_encrypted IS NOT NULL) AS has_national_id_encrypted,
             e.start_date, e.end_date, e.status, e.note, e.created_at, e.updated_at,
             u.id AS user_id, u.username, u.status AS user_status, u.last_login_at
         FROM employees e
         LEFT JOIN departments d ON d.id = e.department_id
+        LEFT JOIN departments su ON su.id = e.service_unit_id
         LEFT JOIN users u ON u.employee_id = e.id AND u.deleted_at IS NULL";
 
     /**
@@ -30,7 +32,7 @@ final class EmployeeModel extends Model
      */
     public static function listVisible(array $filters = []): array
     {
-        [$where, $params] = Rbac::scopeCondition('core.employees', 'read', 'e.department_id', 'u.id');
+        [$where, $params] = Rbac::scopeCondition('core.employees', 'read', 'e.department_id', 'u.id', 'e.service_unit_id');
         $sql = self::SELECT . " WHERE e.deleted_at IS NULL AND {$where}";
 
         if (($filters['q'] ?? '') !== '') {
@@ -40,7 +42,8 @@ final class EmployeeModel extends Model
             array_push($params, $like, $like, $like, $like, $like);
         }
         if (!empty($filters['department_id'])) {
-            $sql .= ' AND e.department_id = ?';
+            $sql .= ' AND (e.department_id = ? OR e.service_unit_id = ?)';
+            $params[] = (int) $filters['department_id'];
             $params[] = (int) $filters['department_id'];
         }
         if (($filters['status'] ?? '') !== '') {
@@ -80,8 +83,13 @@ final class EmployeeModel extends Model
     {
         $departmentId = $row['department_id'] !== null ? (int) $row['department_id'] : null;
         $ownerUserId = $row['user_id'] !== null ? (int) $row['user_id'] : null;
+        if (Rbac::canAccessRecord('core.employees', $action, $ownerUserId, $departmentId)) {
+            return true;
+        }
+        // สังกัดรอง (หน่วยบริการ): หัวหน้าหน่วยบริการดูข้อมูลได้ แต่การแก้ไขยังเป็นของฝ่ายสังกัดหลัก
+        $unitId = isset($row['service_unit_id']) && $row['service_unit_id'] !== null ? (int) $row['service_unit_id'] : null;
 
-        return Rbac::canAccessRecord('core.employees', $action, $ownerUserId, $departmentId);
+        return $action === 'read' && $unitId !== null && Rbac::canAccessRecord('core.employees', 'read', null, $unitId);
     }
 
     public static function findByCode(string $code): ?array
@@ -92,7 +100,7 @@ final class EmployeeModel extends Model
     /** @return array<string, int> นับตามสถานะ (ภายใต้ Data Scope) */
     public static function statusCounts(): array
     {
-        [$where, $params] = Rbac::scopeCondition('core.employees', 'read', 'e.department_id', 'u.id');
+        [$where, $params] = Rbac::scopeCondition('core.employees', 'read', 'e.department_id', 'u.id', 'e.service_unit_id');
         $rows = static::db()->fetchAll(
             "SELECT e.status, COUNT(*) AS total,
                     SUM(u.id IS NULL AND e.status = 'active') AS no_account

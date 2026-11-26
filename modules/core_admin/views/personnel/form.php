@@ -8,7 +8,11 @@ use Modules\CoreAdmin\Services\UserService;
 /** @var array $departments */
 /** @var bool $canChangeStatus */
 /** @var bool $selfOnly แก้ไขข้อมูลของตนเอง: ข้อมูลการปฏิบัติงานแสดงอย่างเดียว */
+/** @var array $serviceUnits ตัวเลือกสังกัดรอง (หน่วยบริการ) */
+/** @var bool $canSetServiceUnit */
 $selfOnly ??= false;
+$serviceUnits ??= [];
+$canSetServiceUnit ??= false;
 
 $isEdit = $employee !== null;
 $oldInput = Session::getFlash('old', []);
@@ -25,7 +29,7 @@ $val = static function (string $key) use ($employee, $hasOld): string {
 
 $field = static function (string $name, array $opt = []) use ($val, $selfOnly): string {
     // แก้ข้อมูลของตนเอง: ฟิลด์นอก SELF_EDIT_FIELDS ปิดการแก้ไข (ฝั่ง server ใช้ค่าเดิมอยู่แล้ว)
-    $locked = $selfOnly && !in_array($name, PersonnelService::SELF_EDIT_FIELDS, true);
+    $locked = ($selfOnly && !in_array($name, PersonnelService::SELF_EDIT_FIELDS, true)) || !empty($opt['locked']);
     $label = PersonnelService::LABELS[$name] ?? $name;
     $error = error_for($name);
     $required = !empty($opt['required']);
@@ -65,12 +69,21 @@ $field = static function (string $name, array $opt = []) use ($val, $selfOnly): 
         . '</div>';
 };
 
+// ตัวเลือกฝ่าย/งาน ดึงจากเมนูข้อมูลพื้นฐาน > ข้อมูลฝ่าย/งาน (เฉพาะที่เปิดใช้งาน) หน่วยย่อยแสดงเยื้องใต้หน่วยแม่
 $departmentOptions = [];
 foreach ($departments as $d) {
-    $departmentOptions[(string) $d['id']] = $d['name_th'];
+    $departmentOptions[(string) $d['id']] = ((int) ($d['depth'] ?? 0) > 0 ? str_repeat('　', (int) $d['depth']) . '└ ' : '') . $d['name_th'];
 }
 if ($isEdit && $employee['department_id'] !== null && !isset($departmentOptions[(string) $employee['department_id']])) {
-    $departmentOptions[(string) $employee['department_id']] = (string) ($employee['department_name'] ?? '-'); // แสดงฝ่ายเดิม
+    $departmentOptions[(string) $employee['department_id']] = ($employee['department_name'] ?? '-') . ' (ปิดใช้งาน)'; // แสดงฝ่ายเดิม
+}
+// สังกัดรอง: หน่วยบริการ 1 หน่วย (ไม่บังคับ)
+$unitOptions = [];
+foreach ($serviceUnits as $u) {
+    $unitOptions[(string) $u['id']] = $u['name_th'];
+}
+if ($isEdit && $employee['service_unit_id'] !== null && !isset($unitOptions[(string) $employee['service_unit_id']])) {
+    $unitOptions[(string) $employee['service_unit_id']] = ($employee['service_unit_name'] ?? '-') . ' (ปิดใช้งาน)';
 }
 $statusValue = $val('status') !== '' ? $val('status') : 'active';
 $action = url($isEdit ? '/personnel/' . (int) $employee['id'] : '/personnel');
@@ -131,7 +144,12 @@ $action = url($isEdit ? '/personnel/' . (int) $employee['id'] : '/personnel');
         <?= $field('academic_rank', ['max' => 100, 'list' => 'rank-options']) ?>
         <?= $field('employment_type', ['type' => 'select', 'required' => true, 'options' => UserService::EMPLOYMENT_TYPES,
             'value' => $val('employment_type') !== '' ? $val('employment_type') : 'civil_servant']) ?>
-        <?= $field('department_id', ['type' => 'select', 'required' => true, 'options' => ['' => '-- เลือก --'] + $departmentOptions]) ?>
+        <?= $field('department_id', ['type' => 'select', 'required' => true, 'options' => ['' => '-- เลือก --'] + $departmentOptions,
+            'help' => 'ฝ่ายที่สังกัด 1 ฝ่าย']) ?>
+        <?= $field('service_unit_id', ['type' => 'select', 'options' => $unitOptions, 'locked' => !$canSetServiceUnit,
+            'help' => !$canSetServiceUnit ? 'กำหนดโดยงานบุคคล'
+                : ($unitOptions === [] ? 'ยังไม่มีหน่วยบริการ: เพิ่มที่ ข้อมูลพื้นฐาน > ข้อมูลฝ่าย/งาน (ประเภท "หน่วยบริการ/หน่วยย่อย" สังกัด "งานหน่วยบริการ")'
+                : 'หน่วยบริการที่สังกัดเพิ่มเติม 1 หน่วย (ถ้ามี)')]) ?>
         <?= $field('education_level', ['max' => 100, 'list' => 'education-options']) ?>
         <?= $field('education_major', ['max' => 150]) ?>
         <?= $field('screener_reg_no', ['max' => 50, 'help' => 'สำหรับครูที่ขึ้นทะเบียนเป็นผู้คัดกรองคนพิการ']) ?>

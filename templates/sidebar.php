@@ -36,6 +36,7 @@ $groups = [
     'general' => ['label' => 'ฝ่ายบริหารทั่วไป', 'icon' => 'building', 'items' => []],
     'service_unit' => ['label' => 'งานหน่วยบริการ', 'icon' => 'geo-alt', 'items' => []],
     'master' => ['label' => 'ข้อมูลพื้นฐาน', 'icon' => 'database', 'items' => [
+        ['url' => '/departments', 'icon' => 'diagram-3', 'label' => 'ข้อมูลฝ่าย/งาน', 'show' => can('core.departments.read_all')],
         ['url' => '/service-rooms', 'icon' => 'door-open', 'label' => 'ข้อมูลห้องบริการ', 'show' => can('core.service_rooms.read_all')],
     ]],
     'system' => ['label' => 'ผู้ดูแลระบบ', 'icon' => 'sliders', 'items' => [

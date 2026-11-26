@@ -290,6 +290,9 @@ final class UserService
                 if ($employee['department_id'] !== null) {
                     self::syncPrimaryDepartment($db, $userId, (int) $employee['department_id']);
                 }
+                if (!empty($employee['service_unit_id'])) { // สังกัดรอง (หน่วยบริการ) = ฝ่ายรองของบัญชี
+                    PersonnelService::syncSecondaryDepartment($db, $userId, null, (int) $employee['service_unit_id']);
+                }
 
                 return $userId;
             }
@@ -327,6 +330,9 @@ final class UserService
             $db->update('users', ['employee_id' => $employeeId], ['id' => $userId]);
             if ($employee['department_id'] !== null) {
                 self::syncPrimaryDepartment($db, $userId, (int) $employee['department_id']);
+            }
+            if (!empty($employee['service_unit_id'])) {
+                PersonnelService::syncSecondaryDepartment($db, $userId, null, (int) $employee['service_unit_id']);
             }
         });
         Audit::log('account.linked_to_employee', 'core', 'users', $userId, ['employee_id' => null], ['employee_id' => $employeeId]);

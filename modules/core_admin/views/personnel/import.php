@@ -55,6 +55,13 @@ use Modules\CoreAdmin\Services\UserService;
               <li><code><?= e($d['code']) ?></code> — <?= e($d['name_th']) ?></li>
             <?php endforeach; ?>
           </ul>
+          <div class="fw-semibold mt-2">สังกัดรอง: หน่วยบริการ (service_unit_code) — ไม่บังคับ</div>
+          <ul class="mb-0 ps-3">
+            <?php foreach (PersonnelService::serviceUnitOptions() as $u): ?>
+              <li><code><?= e($u['code']) ?></code> — <?= e($u['name_th']) ?></li>
+            <?php endforeach; ?>
+            <?php if (PersonnelService::serviceUnitOptions() === []): ?><li class="text-muted">ยังไม่มีหน่วยบริการที่เปิดใช้งาน</li><?php endif; ?>
+          </ul>
         </div>
       </div>
     </div>

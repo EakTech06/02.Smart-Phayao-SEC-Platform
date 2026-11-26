@@ -8,6 +8,7 @@ use Modules\CoreAdmin\Controllers\AuditController;
 use Modules\CoreAdmin\Controllers\AuthController;
 use Modules\CoreAdmin\Controllers\CalendarController;
 use Modules\CoreAdmin\Controllers\DashboardController;
+use Modules\CoreAdmin\Controllers\DepartmentController;
 use Modules\CoreAdmin\Controllers\FileController;
 use Modules\CoreAdmin\Controllers\NotificationController;
 use Modules\CoreAdmin\Controllers\PdpaController;
@@ -115,6 +116,15 @@ $router->group(['middleware' => ['auth', 'password.fresh']], static function (Ro
     $r->get('/service-rooms/{id:\d+}/edit', [ServiceRoomController::class, 'edit'], ['perm:core.service_rooms.manage_all']);
     $r->put('/service-rooms/{id:\d+}', [ServiceRoomController::class, 'update'], ['csrf', 'perm:core.service_rooms.manage_all']);
     $r->delete('/service-rooms/{id:\d+}', [ServiceRoomController::class, 'destroy'], ['csrf', 'perm:core.service_rooms.manage_all']);
+
+    // ข้อมูลฝ่าย/งาน
+    $r->get('/departments', [DepartmentController::class, 'index'], ['perm:core.departments.read_all']);
+    $r->get('/departments/create', [DepartmentController::class, 'create'], ['perm:core.departments.update_all']);
+    $r->post('/departments', [DepartmentController::class, 'store'], ['csrf', 'perm:core.departments.update_all']);
+    $r->get('/departments/{id:\d+}/edit', [DepartmentController::class, 'edit'], ['perm:core.departments.update_all']);
+    $r->put('/departments/{id:\d+}', [DepartmentController::class, 'update'], ['csrf', 'perm:core.departments.update_all']);
+    $r->post('/departments/{id:\d+}/active', [DepartmentController::class, 'toggle'], ['csrf', 'perm:core.departments.update_all']);
+    $r->delete('/departments/{id:\d+}', [DepartmentController::class, 'destroy'], ['csrf', 'perm:core.departments.update_all']);
 
     // Phase 3: Shared Services & Google Integration
     // ไฟล์/เอกสาร (Google Shared Drive)

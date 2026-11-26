@@ -62,7 +62,7 @@ $accountErrors = array_filter([error_for('account'), error_for('username'), erro
       <h1 class="h5 mb-1"><?= e($name) ?>
         <?php if (!empty($employee['nickname'])): ?><span class="text-muted fw-normal">(<?= e($employee['nickname']) ?>)</span><?php endif; ?>
       </h1>
-      <div class="text-muted small"><?= e($employee['position'] ?? '-') ?> · <?= e($employee['department_name'] ?? '-') ?></div>
+      <div class="text-muted small"><?= e($employee['position'] ?? '-') ?> · <?= e($employee['department_name'] ?? '-') ?><?= $employee['service_unit_name'] ? ' · ' . e($employee['service_unit_name']) : '' ?></div>
       <span class="badge text-bg-<?= e($statusClass[$employee['status']] ?? 'secondary') ?> mt-1"><?= e(PersonnelService::STATUSES[$employee['status']] ?? $employee['status']) ?></span>
       <span class="badge text-bg-light border mt-1 font-monospace"><?= e($employee['employee_code']) ?></span>
     </div>
@@ -109,7 +109,8 @@ $accountErrors = array_filter([error_for('account'), error_for('username'), erro
           <?= $row('เลขที่ตำแหน่ง', $employee['position_number']) ?>
           <?= $row('วิทยฐานะ', $employee['academic_rank']) ?>
           <?= $row('ประเภทบุคลากร', UserService::EMPLOYMENT_TYPES[$employee['employment_type']] ?? null) ?>
-          <?= $row('ฝ่าย/งาน', $employee['department_name']) ?>
+          <?= $row('สังกัดหลัก (ฝ่าย/งาน)', $employee['department_name']) ?>
+          <?= $row('สังกัดรอง (หน่วยบริการ)', $employee['service_unit_name']) ?>
           <?= $row('วุฒิการศึกษา', trim(($employee['education_level'] ?? '') . ' ' . ($employee['education_major'] ?? ''))) ?>
           <?= $row('เลขทะเบียนผู้คัดกรองคนพิการ', $employee['screener_reg_no']) ?>
           <?= $row('วันที่เริ่มปฏิบัติงาน', $thaiDate($employee['start_date'])) ?>

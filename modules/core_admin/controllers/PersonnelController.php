@@ -255,6 +255,8 @@ final class PersonnelController extends Controller
             'departments' => PersonnelService::departmentOptions(),
             'canChangeStatus' => $employee === null || PersonnelService::canManageLinkedAccount($employee),
             'selfOnly' => $employee !== null && PersonnelService::isSelfEditOnly($employee),
+            'serviceUnits' => PersonnelService::serviceUnitOptions(),
+            'canSetServiceUnit' => PersonnelService::canSetServiceUnit(),
         ]);
     }
 

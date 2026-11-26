@@ -79,10 +79,13 @@ final class Rbac
         return null;
     }
 
-    /** ใช้กับ query แบบรายการ: คืน [sqlWhere, params] (OR ของทุก scope ที่ถือ) */
-    public static function scopeCondition(string $resource, string $action, string $departmentColumn, string $ownerColumn): array
+    /**
+     * ใช้กับ query แบบรายการ: คืน [sqlWhere, params] (OR ของทุก scope ที่ถือ)
+     * $extraDepartmentColumn: คอลัมน์ฝ่ายเพิ่มเติม (เช่น สังกัดรองของบุคลากร) นับเป็นฝ่ายเดียวกันในขอบเขต department/service_unit
+     */
+    public static function scopeCondition(string $resource, string $action, string $departmentColumn, string $ownerColumn, ?string $extraDepartmentColumn = null): array
     {
-        foreach ([$departmentColumn, $ownerColumn] as $column) {
+        foreach (array_filter([$departmentColumn, $ownerColumn, $extraDepartmentColumn]) as $column) {
             if (!preg_match('/^[a-z_][a-z0-9_]*(\.[a-z_][a-z0-9_]*)?$/', $column)) {
                 throw new \InvalidArgumentException('Invalid column: ' . $column);
             }
@@ -103,8 +106,13 @@ final class Rbac
             }
             $ids = $scope === 'department' ? self::departmentIds() : self::serviceUnitDepartmentIds();
             if ($ids !== []) {
-                $parts[] = $departmentColumn . ' IN (' . implode(',', array_fill(0, count($ids), '?')) . ')';
+                $in = ' IN (' . implode(',', array_fill(0, count($ids), '?')) . ')';
+                $parts[] = $departmentColumn . $in;
                 array_push($params, ...$ids);
+                if ($extraDepartmentColumn !== null) {
+                    $parts[] = $extraDepartmentColumn . $in;
+                    array_push($params, ...$ids);
+                }
             }
         }
         if ($parts === []) {
