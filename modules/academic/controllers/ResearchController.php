@@ -10,6 +10,7 @@ use Core\Exceptions\HttpException;
 use Core\Exceptions\ValidationException;
 use Core\Response;
 use Core\Session;
+use Modules\Academic\Services\InnovationService;
 use Modules\Academic\Services\ResearchLookup;
 use Modules\Academic\Services\ResearchReminderService;
 use Modules\Academic\Services\ResearchService;
@@ -36,10 +37,12 @@ final class ResearchController extends Controller
             'title' => 'งานวิจัยและพัฒนานวัตกรรม',
             'filters' => $filters,
             'mine' => $mine,
-            'stats' => ResearchService::dashboard($filters, $mine),
+            'stats' => self::stats($filters, $mine),
             'recent' => $recent,
+            'recentMedia' => $mine || self::canListAll() ? InnovationService::list($filters, $mine, 5) : [],
             'canListAll' => self::canListAll(),
             'types' => ResearchService::types('research', false),
+            'mediaTypes' => ResearchService::types('innovation', false),
             'years' => ResearchService::years(),
             'round' => $filters['year_id'] > 0 && $filters['semester'] > 0
                 ? ResearchService::round('research', $filters['year_id'], $filters['semester']) : null,
@@ -49,7 +52,36 @@ final class ResearchController extends Controller
     /** ข้อมูลแดชบอร์ดล่าสุด (หน้าแดชบอร์ดดึงซ้ำเป็นระยะ ไม่ต้องรีเฟรชหน้า) */
     public function dashboardData(): Response
     {
-        return Response::json(['data' => ResearchService::dashboard($this->filters(), $this->mineView()), 'at' => date('c')]);
+        return Response::json(['data' => self::stats($this->filters(), $this->mineView()), 'at' => date('c')]);
+    }
+
+    /** รวมตัวเลขงานวิจัยและสื่อนวัตกรรมสำหรับแดชบอร์ด */
+    private static function stats(array $filters, bool $mine): array
+    {
+        $r = ResearchService::dashboard($filters, $mine);
+        $m = InnovationService::dashboard($filters, $mine);
+        $rc = $r['cards'];
+        $mc = $m['cards'];
+
+        return [
+            'cards' => [
+                'research_total' => $rc['research_total'],
+                'media_total' => $mc['media_total'],
+                'pending_review' => $rc['pending_review'] + $mc['pending_review'],
+                'revision' => $rc['revision'] + $mc['revision'],
+                'approved' => $rc['approved'] + $mc['approved'],
+                'in_use' => $mc['in_use'],
+                'overdue_reports' => $mc['overdue_reports'],
+                'draft' => $rc['draft'] + $mc['draft'],
+            ],
+            'research' => ['status' => $r['status'], 'types' => $r['types']],
+            'media' => ['status' => $m['status'], 'types' => $m['types'], 'targets' => $m['targets']],
+            // จำนวนชิ้นงานแยกตามประเภทความพิการ: งานวิจัย + สื่อนวัตกรรม (ซ้อนกัน)
+            'disabilities' => array_map(
+                static fn (array $d): array => $d + ['media' => (int) ($m['disabilities'][$d['key']] ?? 0)],
+                $r['disabilities']
+            ),
+        ];
     }
 
     // ---------------------------------------------------------------- รายการ
@@ -350,6 +382,7 @@ final class ResearchController extends Controller
             'year_id' => $year === null || $year === '' ? (int) (ResearchService::currentYearId() ?? 0) : max(0, (int) $year),
             'semester' => in_array((int) $this->request->query('semester', 0), [1, 2], true) ? (int) $this->request->query('semester') : 0,
             'type_id' => max(0, (int) $this->request->query('type_id', 0)),
+            'media_type_id' => max(0, (int) $this->request->query('media_type_id', 0)),
             'disability' => isset(StudentLookup::DISABILITY_TYPES[$disability]) ? $disability : '',
         ];
     }

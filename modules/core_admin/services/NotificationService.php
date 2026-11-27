@@ -187,7 +187,7 @@ final class NotificationService
             return null;
         }
 
-        return preg_match('#^/(?!/)[A-Za-z0-9/_\-.?=&%]*$#', $link) === 1 ? $link : null;
+        return preg_match('~^/(?!/)[A-Za-z0-9/_\-.?=&%#]*$~', $link) === 1 ? $link : null;
     }
 
     /** URL เต็มสำหรับอีเมล: ใช้ app.url (กัน Host header injection) ถ้าไม่ได้ตั้งจึงใช้โฮสต์ของคำขอ */

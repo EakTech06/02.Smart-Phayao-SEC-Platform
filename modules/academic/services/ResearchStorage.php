@@ -27,10 +27,12 @@ final class ResearchStorage
 
     /**
      * ตรวจไฟล์ที่อัปโหลดและย้ายเข้าที่เก็บ
+     * @param string $dirKey โฟลเดอร์ของเอกสาร: งานวิจัย = "{id}", สื่อนวัตกรรม = "m{id}"
+     * @param string $stem ต้นชื่อไฟล์ เช่น v2, manual_v1
      * @param list<string> $allowed นามสกุลที่รับ
      * @return array{original_name: string, mime_type: string, size_bytes: int, storage_path: string, checksum_sha256: string}
      */
-    public static function store(array $file, int $workId, int $versionNo, array $allowed = ['pdf', 'docx'], string $field = 'file'): array
+    public static function store(array $file, string $dirKey, string $stem, array $allowed = ['pdf', 'docx'], string $field = 'file'): array
     {
         $fail = static fn (string $m): ValidationException => new ValidationException([$field => [$m]]);
         $error = (int) ($file['error'] ?? UPLOAD_ERR_NO_FILE);
@@ -65,11 +67,14 @@ final class ResearchStorage
             throw $fail('ไฟล์ .docx ไม่ใช่เอกสาร Word ที่ถูกต้อง');
         }
 
-        $dir = self::baseDir() . '/' . $workId;
+        if (preg_match('/^m?\d+$/', $dirKey) !== 1 || preg_match('/^[a-z_]*v\d+$/', $stem) !== 1) {
+            throw new \InvalidArgumentException('Invalid storage key');
+        }
+        $dir = self::baseDir() . '/' . $dirKey;
         if (!is_dir($dir) && !mkdir($dir, 0775, true) && !is_dir($dir)) {
             throw new \RuntimeException('สร้างโฟลเดอร์เก็บไฟล์ไม่สำเร็จ');
         }
-        $relative = $workId . '/v' . $versionNo . '_' . bin2hex(random_bytes(8)) . '.' . $ext;
+        $relative = $dirKey . '/' . $stem . '_' . bin2hex(random_bytes(8)) . '.' . $ext;
         if (!move_uploaded_file($tmp, self::baseDir() . '/' . $relative)) {
             throw new \RuntimeException('บันทึกไฟล์ไม่สำเร็จ');
         }
@@ -87,7 +92,7 @@ final class ResearchStorage
     public static function read(array $version): string
     {
         $relative = (string) $version['storage_path'];
-        if (preg_match('#^\d+/[A-Za-z0-9_]+\.(pdf|docx)$#', $relative) !== 1) {
+        if (preg_match('#^m?\d+/[A-Za-z0-9_]+\.(pdf|docx)$#', $relative) !== 1) {
             throw new HttpException(404);
         }
         $path = self::baseDir() . '/' . $relative;

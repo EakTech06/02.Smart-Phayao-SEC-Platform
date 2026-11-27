@@ -18,6 +18,9 @@ foreach ($settings as $s) {
     if (isset(SettingController::BRANDING[$s['setting_key']]) || $s['setting_key'] === SettingController::LOGO_KEY) {
         continue; // แสดงในการ์ด "ชื่อระบบ" ด้านบน
     }
+    if (($s['setting_group'] ?? '') === 'research') {
+        continue; // ตั้งค่าในหน้า "ตั้งค่างานวิจัย/นวัตกรรม" (ตรวจค่าที่นั่น)
+    }
     $g = $s['setting_group'] ?? ($s['group'] ?? 'general');
     $grouped[$g][] = $s;
 }

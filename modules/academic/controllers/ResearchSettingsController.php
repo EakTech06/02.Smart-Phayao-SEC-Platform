@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace Modules\Academic\Controllers;
 
+use Core\Audit;
+use Core\Auth;
 use Core\Controller;
+use Core\Database;
 use Core\Exceptions\ValidationException;
 use Core\Response;
 use Core\Session;
+use Modules\Academic\Services\InnovationLookup;
 use Modules\Academic\Services\ResearchLookup;
 use Modules\Academic\Services\ResearchService;
 use Modules\Academic\Services\ResearchSettingsService;
@@ -28,6 +32,7 @@ final class ResearchSettingsController extends Controller
             'rounds' => ResearchSettingsService::rounds(),
             'years' => ResearchService::years(),
             'currentYearId' => ResearchService::currentYearId(),
+            'reportDueDays' => InnovationLookup::reportDueDays(),
         ]);
     }
 
@@ -69,6 +74,26 @@ final class ResearchSettingsController extends Controller
         Session::flash('success', 'ลบรอบการส่งแล้ว');
 
         return $this->redirect(self::BACK . '#rounds');
+    }
+
+    /** กำหนดส่งรายงานการใช้สื่อ: ภายในกี่วันหลังวันสิ้นสุดการใช้สื่อตามแผน (มีผลกับสื่อที่คู่มืออนุมัติหลังจากนี้) */
+    public function innovationUpdate(): Response
+    {
+        $raw = trim((string) $this->request->input('report_due_days', ''));
+        if (preg_match('/^\d{1,3}$/', $raw) !== 1 || (int) $raw < 1 || (int) $raw > 365) {
+            throw new ValidationException(['report_due_days' => ['จำนวนวันต้องเป็นจำนวนเต็ม 1 - 365']]);
+        }
+        $old = InnovationLookup::reportDueDays();
+        Database::instance()->query(
+            "INSERT INTO settings (setting_group, setting_key, setting_value, value_type, description, updated_by)
+             VALUES ('research', ?, ?, 'integer', 'ส่งรายงานการใช้สื่อนวัตกรรมภายใน (วัน) หลังวันสิ้นสุดการใช้สื่อตามแผน', ?)
+             ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value), updated_by = VALUES(updated_by), updated_at = NOW()",
+            [InnovationLookup::REPORT_DUE_SETTING, (string) (int) $raw, Auth::id()]
+        );
+        Audit::log('settings.updated', 'academic', 'settings', InnovationLookup::REPORT_DUE_SETTING, ['value' => $old], ['value' => (int) $raw]);
+        Session::flash('success', 'บันทึกกำหนดส่งรายงานการใช้สื่อแล้ว');
+
+        return $this->redirect(self::BACK . '#innovation-settings');
     }
 
     private function typeData(): array

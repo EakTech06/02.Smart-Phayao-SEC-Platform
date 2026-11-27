@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Core\Router;
 use Modules\Academic\Controllers\EnrollmentPromotionController;
+use Modules\Academic\Controllers\InnovationController;
 use Modules\Academic\Controllers\ResearchController;
 use Modules\Academic\Controllers\ResearchSettingsController;
 use Modules\Academic\Controllers\StudentController;
@@ -104,4 +105,22 @@ $router->group(['middleware' => ['auth', 'password.fresh']], static function (Ro
     $r->post('/academic/research/settings/rounds', [ResearchSettingsController::class, 'roundStore'], ['csrf', $researchManage]);
     $r->put('/academic/research/settings/rounds/{id:\d+}', [ResearchSettingsController::class, 'roundUpdate'], ['csrf', $researchManage]);
     $r->delete('/academic/research/settings/rounds/{id:\d+}', [ResearchSettingsController::class, 'roundDestroy'], ['csrf', $researchManage]);
+    $r->put('/academic/research/settings/innovation', [ResearchSettingsController::class, 'innovationUpdate'], ['csrf', $researchManage]);
+
+    // สื่อนวัตกรรม: คู่มือการใช้สื่อ (ระยะที่ 1) → รายงานการใช้สื่อ (ระยะที่ 2) ตรวจสิทธิ์รายชิ้นใน InnovationService::findVisible
+    $r->get('/academic/innovation/media', [InnovationController::class, 'index'], [$researchWorks]);
+    $r->get('/academic/innovation/media/create', [InnovationController::class, 'create'], [$researchSubmit]);
+    $r->post('/academic/innovation/media', [InnovationController::class, 'store'], ['csrf', $researchSubmit]);
+    $r->get('/academic/innovation/media/{id:\d+}', [InnovationController::class, 'show'], [$researchWorks]);
+    $r->get('/academic/innovation/media/{id:\d+}/edit', [InnovationController::class, 'edit'], [$researchSubmit]);
+    $r->put('/academic/innovation/media/{id:\d+}', [InnovationController::class, 'update'], ['csrf', $researchSubmit]);
+    $r->delete('/academic/innovation/media/{id:\d+}', [InnovationController::class, 'destroy'], ['csrf', $researchSubmit]);
+    $r->get('/academic/innovation/media/{id:\d+}/report', [InnovationController::class, 'reportForm'], [$researchSubmit]);
+    $r->post('/academic/innovation/media/{id:\d+}/report', [InnovationController::class, 'reportStore'], ['csrf', $researchSubmit]);
+    $r->post('/academic/innovation/media/{id:\d+}/versions', [InnovationController::class, 'versionStore'], ['csrf', $researchSubmit]);
+    $r->get('/academic/innovation/media/{id:\d+}/versions/{vid:\d+}', [InnovationController::class, 'download'], [$researchWorks]);
+    $r->post('/academic/innovation/media/{id:\d+}/submit', [InnovationController::class, 'submit'], ['csrf', $researchSubmit]);
+    $r->post('/academic/innovation/media/{id:\d+}/cancel', [InnovationController::class, 'cancel'], ['csrf', $researchSubmit]);
+    $r->post('/academic/innovation/media/{id:\d+}/review', [InnovationController::class, 'review'], ['csrf', 'perm:' . ResearchLookup::PERM_REVIEW]);
+    $r->post('/academic/innovation/media/{id:\d+}/comments', [InnovationController::class, 'commentStore'], ['csrf', $researchWorks]);
 });

@@ -565,7 +565,7 @@ final class ResearchService
 
     private static function storeVersion(Database $db, int $workId, int $versionNo, array $file, ?string $note): void
     {
-        $stored = ResearchStorage::store($file, $workId, $versionNo);
+        $stored = ResearchStorage::store($file, (string) $workId, 'v' . $versionNo);
         $db->insert('research_versions', $stored + [
             'work_id' => $workId,
             'version_no' => $versionNo,

@@ -33,9 +33,11 @@
       const el = document.querySelector(`[data-research-card="${key}"]`);
       if (el) el.textContent = number.format(value);
     });
-    (stats.status || []).forEach((s) => {
-      const el = document.querySelector(`[data-status-count="${s.key}"]`);
-      if (el) el.textContent = number.format(s.count);
+    [['research', 'data-status-count'], ['media', 'data-media-status-count']].forEach(([group, attr]) => {
+      ((stats[group] || {}).status || []).forEach((s) => {
+        const el = document.querySelector(`[${attr}="${s.key}"]`);
+        if (el) el.textContent = number.format(s.count);
+      });
     });
   };
 
@@ -52,58 +54,71 @@
     Chart.defaults.plugins.tooltip.cornerRadius = 10;
     Chart.defaults.maintainAspectRatio = false;
     Chart.defaults.animation.duration = reduceMotion ? 0 : 400;
-    const integerAxis = () => ({ beginAtZero: true, ticks: { precision: 0 }, grid: {}, border: { display: false } });
-    const label = (ctx) => {
+    const integerAxis = (stacked) => ({ beginAtZero: true, stacked, ticks: { precision: 0 }, grid: {}, border: { display: false } });
+    const categoryAxis = (stacked) => ({ stacked, grid: { display: false }, border: { display: false } });
+    const label = (unit) => (ctx) => {
       const v = ctx.chart.config.type === 'doughnut' ? ctx.parsed : ctx.parsed[ctx.chart.options.indexAxis === 'y' ? 'x' : 'y'];
-      return ` ${ctx.label || ctx.dataset.label}: ${number.format(v)} งาน`;
+      const name = ctx.chart.data.datasets.length > 1 ? `${ctx.dataset.label}` : (ctx.label || ctx.dataset.label);
+      return ` ${name}: ${number.format(v)} ${unit}`;
     };
 
     // สัดส่วนตามสถานะ (โดนัท)
-    const status = document.getElementById('chart-research-status');
-    if (status) {
-      charts.push({
-        chart: new Chart(status, {
-          type: 'doughnut',
-          data: { labels: [], datasets: [{ data: [], borderWidth: 3, hoverOffset: 8, borderRadius: 6, spacing: 2 }] },
-          options: { cutout: '68%', plugins: { legend: { display: false }, tooltip: { callbacks: { label } } } },
-        }),
-        fill: (chart, stats, p) => {
-          const rows = (stats.status || []).filter((s) => s.count > 0);
-          chart.data.labels = rows.map((s) => s.label);
-          chart.data.datasets[0].data = rows.map((s) => s.count);
-          const keys = (stats.status || []).map((s) => s.key);
-          chart.data.datasets[0].backgroundColor = rows.map((s) => p.series[keys.indexOf(s.key) % 7]);
-          chart.data.datasets[0].borderColor = p.surface;
-        },
-      });
-    }
-
-    // แท่ง: ตามประเภทงานวิจัย / ตามประเภทความพิการ
-    const bar = (id, key, horizontal) => {
+    const doughnut = (id, group) => {
       const el = document.getElementById(id);
       if (!el) return;
       charts.push({
         chart: new Chart(el, {
-          type: 'bar',
-          data: { labels: [], datasets: [{ label: 'จำนวนงาน', data: [], borderRadius: 8, maxBarThickness: 40 }] },
-          options: {
-            indexAxis: horizontal ? 'y' : 'x',
-            scales: horizontal
-              ? { x: integerAxis(), y: { grid: { display: false }, border: { display: false } } }
-              : { y: integerAxis(), x: { grid: { display: false }, border: { display: false } } },
-            plugins: { legend: { display: false }, tooltip: { callbacks: { label } } },
-          },
+          type: 'doughnut',
+          data: { labels: [], datasets: [{ data: [], borderWidth: 3, hoverOffset: 8, borderRadius: 6, spacing: 2 }] },
+          options: { cutout: '68%', plugins: { legend: { display: false }, tooltip: { callbacks: { label: label('งาน') } } } },
         }),
         fill: (chart, stats, p) => {
-          const rows = stats[key] || [];
-          chart.data.labels = rows.map((r) => r.label);
-          chart.data.datasets[0].data = rows.map((r) => r.count);
-          chart.data.datasets[0].backgroundColor = rows.map((_, i) => p.series[i % 7]);
+          const all = (stats[group] || {}).status || [];
+          const rows = all.filter((s) => s.count > 0);
+          const keys = all.map((s) => s.key);
+          chart.data.labels = rows.map((s) => s.label);
+          chart.data.datasets[0].data = rows.map((s) => s.count);
+          chart.data.datasets[0].backgroundColor = rows.map((s) => p.series[keys.indexOf(s.key) % 7]);
+          chart.data.datasets[0].borderColor = p.surface;
         },
       });
     };
-    bar('chart-research-types', 'types', false);
-    bar('chart-research-disabilities', 'disabilities', true);
+    doughnut('chart-research-status', 'research');
+    doughnut('chart-media-status', 'media');
+
+    // แท่ง: rows(stats) คืนรายการ, series = [[ชื่อชุดข้อมูล, ฟิลด์]] (มากกว่า 1 ชุด = แสดงคำอธิบาย และสีตามชุด)
+    const bar = (id, rows, series, { horizontal = false, stacked = false, unit = 'งาน' } = {}) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const multi = series.length > 1;
+      charts.push({
+        chart: new Chart(el, {
+          type: 'bar',
+          data: { labels: [], datasets: series.map(([name]) => ({ label: name, data: [], borderRadius: 8, maxBarThickness: 40 })) },
+          options: {
+            indexAxis: horizontal ? 'y' : 'x',
+            scales: horizontal
+              ? { x: integerAxis(stacked), y: categoryAxis(stacked) }
+              : { y: integerAxis(stacked), x: categoryAxis(stacked) },
+            plugins: { legend: { display: multi, position: 'bottom' }, tooltip: { callbacks: { label: label(unit) } } },
+          },
+        }),
+        fill: (chart, stats, p) => {
+          const list = rows(stats) || [];
+          chart.data.labels = list.map((r) => r.label);
+          series.forEach(([, field], i) => {
+            const ds = chart.data.datasets[i];
+            ds.data = list.map((r) => r[field] || 0);
+            // ใช้อาร์เรย์สีรายแท่งเสมอ (สีเดี่ยวถูกแคชตอนสร้างกราฟ ทำให้ไม่เปลี่ยนตามชุดสี)
+            ds.backgroundColor = list.map((_, j) => p.series[(multi ? i : j) % 7]);
+          });
+        },
+      });
+    };
+    bar('chart-research-types', (s) => (s.research || {}).types, [['จำนวนงาน', 'count']]);
+    bar('chart-media-types', (s) => (s.media || {}).types, [['จำนวนสื่อ', 'count']]);
+    bar('chart-research-disabilities', (s) => s.disabilities, [['งานวิจัย', 'count'], ['สื่อนวัตกรรม', 'media']], { horizontal: true, stacked: true });
+    bar('chart-media-targets', (s) => (s.media || {}).targets, [['ตามแผน', 'planned'], ['ใช้จริง', 'actual']], { horizontal: true, unit: 'คน' });
   };
 
   const paint = (animate) => {

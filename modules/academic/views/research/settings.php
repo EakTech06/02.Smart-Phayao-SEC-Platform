@@ -59,6 +59,22 @@ $firstError = $errs !== [] ? (string) (array_values($errs)[0][0] ?? '') : '';
   <?php endforeach; ?>
 </div>
 
+<form method="post" action="<?= e(url('/academic/research/settings/innovation')) ?>" class="card shadow-sm mb-3" id="innovation-settings">
+  <?= csrf_field() ?><input type="hidden" name="_method" value="PUT">
+  <div class="card-header fw-semibold"><i class="bi bi-hourglass-split me-1"></i>กำหนดส่งรายงานการใช้สื่อนวัตกรรม</div>
+  <div class="card-body row g-2 align-items-end">
+    <div class="col-12 col-md-5 col-lg-4">
+      <label class="form-label small" for="report-due-days">ส่งรายงานภายใน (วัน) หลังวันสิ้นสุดการใช้สื่อตามแผน</label>
+      <div class="input-group">
+        <input type="number" id="report-due-days" name="report_due_days" min="1" max="365" required class="form-control<?= error_for('report_due_days') ? ' is-invalid' : '' ?>" value="<?= (int) $reportDueDays ?>">
+        <span class="input-group-text">วัน</span>
+        <button type="submit" class="btn btn-primary">บันทึก</button>
+      </div>
+    </div>
+    <div class="col-12 col-md form-text mb-1">กำหนดวันส่งรายงานของแต่ละสื่อเมื่อคู่มือได้รับอนุมัติ (สื่อที่อนุมัติไปแล้วใช้วันเดิม) · แจ้งเตือนครูเมื่อถึงวันสิ้นสุดการใช้สื่อ ก่อนครบกำหนด <?= e(implode('/', ResearchLookup::REMIND_DAYS)) ?> วัน และเมื่อเลยกำหนด (แจ้งผู้ตรวจด้วย)</div>
+  </div>
+</form>
+
 <div class="card shadow-sm mb-4" id="rounds">
   <div class="card-header fw-semibold"><i class="bi bi-calendar-range me-1"></i>รอบและกำหนดการส่ง</div>
   <div class="card-body small text-body-secondary pb-0">

@@ -299,3 +299,8 @@ INSERT INTO research_types (kind, name, sort_order) VALUES
 ('innovation', 'ICT', 2),
 ('innovation', 'ภูมิปัญญาท้องถิ่น', 3)
 ON DUPLICATE KEY UPDATE sort_order = sort_order;
+
+-- สื่อนวัตกรรม: กำหนดส่งรายงานการใช้สื่อ (วันหลังวันสิ้นสุดการใช้สื่อตามแผน) ผู้ดูแลแก้ไขได้ในหน้าตั้งค่างานวิจัย/นวัตกรรม
+INSERT INTO settings (setting_group, setting_key, setting_value, value_type, description) VALUES
+('research', 'research.innovation_report_due_days', '30', 'integer', 'ส่งรายงานการใช้สื่อนวัตกรรมภายใน (วัน) หลังวันสิ้นสุดการใช้สื่อตามแผน')
+ON DUPLICATE KEY UPDATE description = VALUES(description);
