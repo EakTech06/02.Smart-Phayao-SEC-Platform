@@ -34,7 +34,7 @@ $typeColor = static fn (string $type): string => 'var(--chart-' . ((array_search
     <div class="flex-grow-1 min-w-0">
       <div class="small text-body-secondary mb-1"><?= e(thai_date(date('Y-m-d'), false)) ?> · <?= e($stats['academic_year'] ?? '-') ?> · <?= e($stats['fiscal_year'] ?? '-') ?></div>
       <h1 class="h2 mb-2"><span class="text-gradient"><?= e(app_name('brand_main')) ?></span> <?= e(app_name('brand_sub')) ?></h1>
-      <p class="text-body-secondary mb-0"><?= e(implode(' · ', array_filter([$orgName, app_name('tagline')], 'strlen'))) ?></p>
+      <p class="text-body-secondary mb-0"><?= e(implode(' · ', array_filter([app_name('tagline'), $orgName], 'strlen'))) ?></p>
     </div>
     <a href="<?= e(url('/login')) ?>" class="btn btn-primary btn-lg px-4"><i class="bi bi-box-arrow-in-right me-2"></i>เข้าสู่ระบบสำหรับบุคลากร</a>
   </div>

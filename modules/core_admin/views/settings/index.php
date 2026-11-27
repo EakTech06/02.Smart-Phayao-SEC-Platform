@@ -12,10 +12,10 @@ $brandingHints = [
     'app.brand_main' => 'โลโก้เมนูด้านข้าง · แถบบนหน้าแรก · หัวข้อหน้าแรกสาธารณะ',
     'app.brand_sub' => 'บรรทัดเล็กใต้ชื่อหลัก (เว้นว่างได้)',
     'app.short_name' => 'แถบบนเมื่อเปิดบนมือถือ (พื้นที่จำกัด ควรสั้น)',
-    'app.tagline' => 'ข้อความต่อท้ายชื่อหน่วยงานในหน้าแรกสาธารณะ (เว้นว่างได้)',
+    'app.tagline' => 'ข้อความหน้าชื่อหน่วยงานในหน้าแรกสาธารณะ (เว้นว่างได้)',
 ];
 foreach ($settings as $s) {
-    if (isset(SettingController::BRANDING[$s['setting_key']])) {
+    if (isset(SettingController::BRANDING[$s['setting_key']]) || $s['setting_key'] === SettingController::LOGO_KEY) {
         continue; // แสดงในการ์ด "ชื่อระบบ" ด้านบน
     }
     $g = $s['setting_group'] ?? ($s['group'] ?? 'general');
@@ -44,15 +44,36 @@ foreach ($settings as $s) {
   </div>
 </div>
 
-<form method="post" action="<?= e(url('/settings')) ?>">
+<form method="post" action="<?= e(url('/settings')) ?>" enctype="multipart/form-data">
   <?= csrf_field() ?>
   <div class="card shadow-sm mb-3" id="branding">
-    <div class="card-header fw-semibold"><i class="bi bi-type me-1"></i>ชื่อระบบ</div>
+    <div class="card-header fw-semibold"><i class="bi bi-type me-1"></i>ชื่อระบบและโลโก้</div>
     <div class="card-body">
-      <div class="d-flex align-items-center gap-2 p-3 mb-3 rounded-3 border bg-body-tertiary" aria-label="ตัวอย่างโลโก้เมนูด้านข้าง (ค่าที่บันทึกแล้ว)">
-        <span class="brand-mark"><i class="bi bi-mortarboard-fill"></i></span>
-        <span class="brand-text"><strong><?= e(app_name('brand_main')) ?></strong><small><?= e(app_name('brand_sub')) ?></small></span>
-        <span class="ms-auto small text-body-secondary">ตัวอย่างที่แสดงอยู่ตอนนี้</span>
+      <?php $logoUrl = app_logo_url(); $logoErr = error_for('logo'); ?>
+      <div class="row g-3 align-items-center mb-3">
+        <div class="col-12 col-lg-5">
+          <div class="d-flex align-items-center gap-2 p-3 rounded-3 border bg-body-tertiary" aria-label="ตัวอย่างโลโก้เมนูด้านข้าง">
+            <span class="brand-mark brand-mark-preview<?= $logoUrl !== null ? ' has-logo' : '' ?>">
+              <img src="<?= e($logoUrl ?? '') ?>" alt="" id="logo-preview" data-default-src="<?= e($logoUrl ?? '') ?>"<?= $logoUrl === null ? ' hidden' : '' ?>>
+              <i class="bi bi-mortarboard-fill" id="logo-preview-icon"<?= $logoUrl !== null ? ' hidden' : '' ?>></i>
+            </span>
+            <span class="brand-text"><strong><?= e(app_name('brand_main')) ?></strong><small><?= e(app_name('brand_sub')) ?></small></span>
+            <span class="ms-auto small text-body-secondary">ตัวอย่าง</span>
+          </div>
+        </div>
+        <div class="col-12 col-lg-7">
+          <label class="form-label fw-semibold small" for="set-logo">โลโก้ระบบ</label>
+          <input type="file" id="set-logo" name="logo" accept="image/png,image/jpeg,image/webp"
+                 class="form-control<?= $logoErr ? ' is-invalid' : '' ?>" data-logo-input aria-describedby="set-logo-hint">
+          <?php if ($logoErr): ?><div class="invalid-feedback"><?= e($logoErr) ?></div><?php endif; ?>
+          <div class="form-text" id="set-logo-hint">PNG, JPG หรือ WebP ไม่เกิน 1MB ภาพจัตุรัสพื้นโปร่งใสจะดูดีที่สุด · แสดงที่ เมนูด้านข้าง · หน้าเข้าสู่ระบบ · หน้าแรกสาธารณะ · ไอคอนแท็บเบราว์เซอร์</div>
+          <?php if ($logoUrl !== null): ?>
+            <div class="form-check mt-1">
+              <input class="form-check-input" type="checkbox" name="remove_logo" value="1" id="remove-logo" data-logo-remove>
+              <label class="form-check-label small" for="remove-logo">ลบโลโก้ (กลับไปใช้ไอคอนเริ่มต้น)</label>
+            </div>
+          <?php endif; ?>
+        </div>
       </div>
       <div class="row g-3">
         <?php foreach (SettingController::BRANDING as $key => [$label, $max, $required]): ?>

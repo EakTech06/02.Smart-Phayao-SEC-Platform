@@ -138,6 +138,33 @@ function app_name(string $part = 'name'): string
     return $value;
 }
 
+/** URL โลโก้ระบบที่อัปโหลดไว้ (ตั้งค่าระบบ > ชื่อระบบ) null = ใช้ไอคอนเริ่มต้น */
+function app_logo_url(): ?string
+{
+    try {
+        $file = basename((string) \Core\Setting::get('app.logo', ''));
+    } catch (\Throwable) {
+        return null;
+    }
+    $path = BASE_PATH . '/public/uploads/branding/' . $file;
+    if ($file === '' || !is_file($path)) {
+        return null;
+    }
+
+    return url('/uploads/branding/' . rawurlencode($file)) . '?v=' . filemtime($path);
+}
+
+/** โลโก้กรอบเหลี่ยม (brand-mark): รูปที่อัปโหลด หรือไอคอนเริ่มต้น */
+function brand_mark(string $extraClass = ''): string
+{
+    $logo = app_logo_url();
+    $class = implode(' ', array_filter(['brand-mark', $extraClass, $logo !== null ? 'has-logo' : '']));
+
+    return '<span class="' . e($class) . '">'
+        . ($logo !== null ? '<img src="' . e($logo) . '" alt="">' : '<i class="bi bi-mortarboard-fill"></i>')
+        . '</span>';
+}
+
 /** ข้อความท้ายกระดาษรายงาน: พิมพ์ออกจากระบบ ... ผู้พิมพ์ ... เมื่อวันที่ วว/ดด/ปปปป (พ.ศ.) เวลา ชม.:นาที น. */
 function print_footer_text(?int $timestamp = null): string
 {

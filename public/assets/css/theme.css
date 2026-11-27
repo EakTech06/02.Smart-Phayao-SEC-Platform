@@ -548,3 +548,7 @@ html[data-bs-theme="light"] .app-topbar .dropdown-menu { --bs-dropdown-bg: rgba(
 /* หน้าสาธารณะ (ไม่มีเมนูด้านข้าง) */
 .public-content { max-width: 1320px; margin: 0 auto; padding-bottom: 2rem; }
 .public-hero h1 { font-size: clamp(1.6rem, 3.2vw, 2.4rem); }
+/* โลโก้ที่อัปโหลด (ตั้งค่าระบบ > ชื่อระบบ): พื้นขาวให้โลโก้ทุกสีอ่านออกทั้งโหมดมืด/สว่าง */
+.brand-mark.has-logo { background: #fff; padding: 3px; box-shadow: 0 6px 16px -8px rgba(var(--accent-1-rgb), .6), 0 0 0 1px rgba(var(--accent-1-rgb), .18); }
+.brand-mark img { width: 100%; height: 100%; object-fit: contain; border-radius: .65rem; }
+.brand-mark img[hidden], .brand-mark i[hidden] { display: none; }

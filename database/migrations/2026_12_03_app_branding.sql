@@ -6,3 +6,6 @@ INSERT INTO settings (setting_group, setting_key, setting_value, value_type, des
 ('branding', 'app.short_name', 'Smart SEC',                          'string', 'ชื่อย่อ: แถบบนบนมือถือ', 1),
 ('branding', 'app.tagline',    'ระบบสารสนเทศเพื่อการบริหารจัดการ', 'string', 'คำอธิบายระบบ: หน้าแรกสาธารณะ', 1)
 ON DUPLICATE KEY UPDATE setting_group = VALUES(setting_group), description = VALUES(description);
+INSERT INTO settings (setting_group, setting_key, setting_value, value_type, description, is_public) VALUES
+('branding', 'app.logo', '', 'string', 'โลโก้ระบบ (ชื่อไฟล์ใน public/uploads/branding ว่าง = ไอคอนเริ่มต้น)', 1)
+ON DUPLICATE KEY UPDATE setting_group = VALUES(setting_group), description = VALUES(description);

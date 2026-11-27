@@ -232,6 +232,40 @@
     });
   };
 
+  // ---------------------------------------------------------------- ตัวอย่างโลโก้ก่อนบันทึก (ตั้งค่าระบบ > ชื่อระบบ)
+  const initLogoPreview = () => {
+    const input = document.querySelector('[data-logo-input]');
+    const img = document.getElementById('logo-preview');
+    const icon = document.getElementById('logo-preview-icon');
+    if (!input || !img || !icon) return;
+    const remove = document.querySelector('[data-logo-remove]');
+    const box = img.parentElement;
+    let objectUrl = null;
+    const show = (src) => {
+      img.hidden = !src;
+      icon.hidden = Boolean(src);
+      box.classList.toggle('has-logo', Boolean(src));
+      if (src) img.src = src;
+    };
+    input.addEventListener('change', () => {
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+      objectUrl = null;
+      const file = input.files && input.files[0];
+      if (file && /^image\/(png|jpeg|webp)$/.test(file.type)) {
+        objectUrl = URL.createObjectURL(file);
+        if (remove) remove.checked = false;
+        show(objectUrl);
+      } else {
+        show(remove && remove.checked ? '' : img.dataset.defaultSrc);
+      }
+    });
+    if (remove) {
+      remove.addEventListener('change', () => {
+        if (remove.checked) { input.value = ''; show(''); } else { show(img.dataset.defaultSrc); }
+      });
+    }
+  };
+
   document.addEventListener('DOMContentLoaded', () => {
     syncThemeButtons();
     syncPalette();
@@ -239,5 +273,6 @@
     initSearch();
     initTilt();
     initCountUp();
+    initLogoPreview();
   });
 })();

@@ -13,7 +13,7 @@
 <!-- หน้าสาธารณะ (ผู้ใช้งานทั่วไป ไม่ต้องเข้าสู่ระบบ): ไม่มีเมนูด้านข้าง/การแจ้งเตือน -->
 <header class="app-topbar public-topbar">
   <a href="<?= e(url('/')) ?>" class="d-flex align-items-center gap-2 text-decoration-none me-auto min-w-0">
-    <span class="brand-mark"><i class="bi bi-mortarboard-fill"></i></span>
+    <?= brand_mark() ?>
     <span class="brand-text d-none d-sm-block"><strong class="text-body-emphasis"><?= e(app_name('brand_main')) ?></strong><small><?= e(app_name('brand_sub')) ?></small></span>
   </a>
   <div class="d-flex align-items-center gap-2">

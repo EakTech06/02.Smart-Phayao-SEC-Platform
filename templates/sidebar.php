@@ -74,7 +74,7 @@ foreach ($groups as $g) {
     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#sidebar" aria-label="ปิด"></button>
   </div>
   <a href="<?= e(url('/dashboard')) ?>" class="sidebar-brand d-none d-lg-flex" aria-label="<?= e(app_name()) ?> หน้าแดชบอร์ด">
-    <span class="brand-mark"><i class="bi bi-mortarboard-fill"></i></span>
+    <?= brand_mark() ?>
     <span class="brand-text"><strong><?= e(app_name('brand_main')) ?></strong><small><?= e(app_name('brand_sub')) ?></small></span>
   </a>
   <div class="offcanvas-body d-block sidebar-scroll">

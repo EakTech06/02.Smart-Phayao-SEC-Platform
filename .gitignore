@@ -11,6 +11,9 @@ public/uploads/*
 !public/uploads/avatars/
 public/uploads/avatars/*
 !public/uploads/avatars/.gitkeep
+!public/uploads/branding/
+public/uploads/branding/*
+!public/uploads/branding/.gitkeep
 
 # เอกสารต้นทาง/ข้อมูลบุคลากร (มีข้อมูลส่วนบุคคล — PDPA) ไม่เก็บใน Git
 /ข้อมูล/
