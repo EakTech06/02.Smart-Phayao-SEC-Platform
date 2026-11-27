@@ -39,6 +39,9 @@ $groups = [
     ]],
     'academic' => ['label' => 'ฝ่ายบริหารวิชาการ', 'icon' => 'mortarboard', 'items' => [
         ['url' => '/academic/students', 'icon' => 'person-lines-fill', 'label' => 'ทะเบียนนักเรียน', 'show' => $academicOn && Rbac::scope('academic.students', 'read') !== null],
+        ['url' => '/academic/research', 'icon' => 'journal-richtext', 'label' => 'งานวิจัยและพัฒนานวัตกรรม', 'show' => $academicOn && Rbac::canAny([
+            'academic.research.submit_own', 'academic.research.read_all', 'academic.research.review_all', 'academic.research.manage_all'])],
+        ['url' => '/academic/research/settings', 'icon' => 'ui-checks-grid', 'label' => 'ตั้งค่างานวิจัย/นวัตกรรม', 'show' => $academicOn && can('academic.research.manage_all')],
     ]],
     'personnel' => ['label' => 'ฝ่ายบริหารงานบุคคล', 'icon' => 'person-vcard', 'items' => [
         ['url' => '/personnel', 'icon' => 'people', 'label' => 'ข้อมูลบุคลากร', 'show' => $beyondOwn('core.employees')],

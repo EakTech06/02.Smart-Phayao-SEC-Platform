@@ -572,4 +572,122 @@ CREATE TABLE IF NOT EXISTS academic_student_identity_history (
   CONSTRAINT fk_academic_identity_history_student FOREIGN KEY (student_id) REFERENCES academic_students (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- งานวิจัยและพัฒนานวัตกรรม (ฝ่ายบริหารวิชาการ)
+-- ประเภทงานวิจัย (kind = research) และประเภทสื่อนวัตกรรม (kind = innovation) ผู้ดูแลเพิ่ม/แก้ไขได้
+CREATE TABLE IF NOT EXISTS research_types (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  kind ENUM('research','innovation') NOT NULL,
+  name VARCHAR(150) NOT NULL,
+  sort_order SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  is_active TINYINT(1) NOT NULL DEFAULT 1,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NULL ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_research_types_name (kind, name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- รอบการส่งงาน: 1 รอบต่อ ประเภท + ปีการศึกษา + ภาคเรียน
+CREATE TABLE IF NOT EXISTS research_rounds (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  kind ENUM('research','innovation') NOT NULL,
+  academic_year_id INT UNSIGNED NOT NULL,
+  semester TINYINT UNSIGNED NOT NULL,
+  title VARCHAR(200) NOT NULL,
+  opens_on DATE NULL,
+  due_on DATE NOT NULL,
+  is_active TINYINT(1) NOT NULL DEFAULT 1,
+  created_by INT UNSIGNED NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NULL ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_research_rounds_term (kind, academic_year_id, semester),
+  CONSTRAINT fk_research_rounds_year FOREIGN KEY (academic_year_id) REFERENCES academic_years (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- งานวิจัย (ข้อมูลผู้เรียนเก็บเป็นจำนวนเท่านั้น ตามหลัก PDPA)
+CREATE TABLE IF NOT EXISTS research_works (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  owner_user_id INT UNSIGNED NOT NULL,
+  title VARCHAR(300) NOT NULL,
+  type_id INT UNSIGNED NOT NULL,
+  academic_year_id INT UNSIGNED NOT NULL,
+  semester TINYINT UNSIGNED NOT NULL,
+  target_count SMALLINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'จำนวนกลุ่มเป้าหมาย (คน)',
+  keywords VARCHAR(500) NULL,
+  status VARCHAR(30) NOT NULL DEFAULT 'draft',
+  current_version SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  submitted_at DATETIME NULL COMMENT 'ส่งครั้งแรก',
+  status_changed_at DATETIME NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NULL ON UPDATE CURRENT_TIMESTAMP,
+  deleted_at DATETIME NULL,
+  KEY idx_research_works_owner (owner_user_id, deleted_at),
+  KEY idx_research_works_term (academic_year_id, semester),
+  KEY idx_research_works_status (status),
+  CONSTRAINT fk_research_works_owner FOREIGN KEY (owner_user_id) REFERENCES users (id),
+  CONSTRAINT fk_research_works_type FOREIGN KEY (type_id) REFERENCES research_types (id),
+  CONSTRAINT fk_research_works_year FOREIGN KEY (academic_year_id) REFERENCES academic_years (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ประเภทความพิการของกลุ่มเป้าหมาย (เลือกได้หลายประเภท) ค่าตาม StudentLookup::DISABILITY_TYPES
+CREATE TABLE IF NOT EXISTS research_work_disabilities (
+  work_id INT UNSIGNED NOT NULL,
+  disability_type VARCHAR(30) NOT NULL,
+  PRIMARY KEY (work_id, disability_type),
+  CONSTRAINT fk_research_work_disabilities_work FOREIGN KEY (work_id) REFERENCES research_works (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ไฟล์ทุกเวอร์ชัน (เก็บใน storage/research นอก public ไม่ลบจริง)
+CREATE TABLE IF NOT EXISTS research_versions (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  work_id INT UNSIGNED NOT NULL,
+  version_no SMALLINT UNSIGNED NOT NULL,
+  original_name VARCHAR(255) NOT NULL,
+  mime_type VARCHAR(150) NOT NULL,
+  size_bytes INT UNSIGNED NOT NULL,
+  storage_path VARCHAR(300) NOT NULL,
+  checksum_sha256 CHAR(64) NOT NULL,
+  note VARCHAR(500) NULL,
+  uploaded_by INT UNSIGNED NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_research_versions_no (work_id, version_no),
+  CONSTRAINT fk_research_versions_work FOREIGN KEY (work_id) REFERENCES research_works (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ข้อเสนอแนะ (ผู้ตรวจเปิดเรื่อง) และการตอบกลับในเรื่องเดียวกัน (parent_id)
+CREATE TABLE IF NOT EXISTS research_comments (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  work_id INT UNSIGNED NOT NULL,
+  parent_id INT UNSIGNED NULL,
+  version_no SMALLINT UNSIGNED NULL COMMENT 'เวอร์ชันที่แสดงความเห็น',
+  user_id INT UNSIGNED NULL,
+  body TEXT NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_research_comments_work (work_id, parent_id),
+  CONSTRAINT fk_research_comments_work FOREIGN KEY (work_id) REFERENCES research_works (id),
+  CONSTRAINT fk_research_comments_parent FOREIGN KEY (parent_id) REFERENCES research_comments (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ประวัติการเปลี่ยนสถานะ: ผู้ดำเนินการ วันเวลา หมายเหตุ
+CREATE TABLE IF NOT EXISTS research_status_logs (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  work_id INT UNSIGNED NOT NULL,
+  from_status VARCHAR(30) NULL,
+  to_status VARCHAR(30) NOT NULL,
+  version_no SMALLINT UNSIGNED NULL,
+  user_id INT UNSIGNED NULL,
+  note VARCHAR(1000) NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_research_status_logs_work (work_id, id),
+  CONSTRAINT fk_research_status_logs_work FOREIGN KEY (work_id) REFERENCES research_works (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- กันแจ้งเตือนกำหนดส่งซ้ำ (alert_key: d7, d3, d1, overdue)
+CREATE TABLE IF NOT EXISTS research_round_alerts (
+  round_id INT UNSIGNED NOT NULL,
+  alert_key VARCHAR(20) NOT NULL,
+  sent_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  recipients INT UNSIGNED NOT NULL DEFAULT 0,
+  PRIMARY KEY (round_id, alert_key),
+  CONSTRAINT fk_research_round_alerts_round FOREIGN KEY (round_id) REFERENCES research_rounds (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 SET FOREIGN_KEY_CHECKS = 1;

@@ -7,6 +7,9 @@ config/local.php
 # Log และไฟล์ที่ผู้ใช้อัปโหลด
 storage/logs/*
 !storage/logs/.gitkeep
+# ไฟล์งานวิจัย/สื่อนวัตกรรมที่ครูอัปโหลด (อาจมีข้อมูลผู้เรียน)
+storage/research/*
+!storage/research/.gitkeep
 public/uploads/*
 !public/uploads/avatars/
 public/uploads/avatars/*

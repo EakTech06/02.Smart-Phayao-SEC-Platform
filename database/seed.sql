@@ -250,3 +250,52 @@ SELECT r.id, p.id FROM roles r JOIN permissions p ON p.code IN ('academic.studen
   'academic.students.update_own','academic.students.update_sensitive_own')
 WHERE r.code = 'teacher';
 
+-- งานวิจัยและพัฒนานวัตกรรม: สิทธิ์ บทบาท และประเภทเริ่มต้น
+INSERT INTO permissions (code, module, resource, action, scope, description) VALUES
+('academic.research.submit_own', 'academic', 'research', 'submit', 'own', 'ส่งงานวิจัย/สื่อนวัตกรรมของตนเอง ดูได้เฉพาะงานของตน'),
+('academic.research.read_all',   'academic', 'research', 'read',   'all', 'ดูรายละเอียดและไฟล์งานวิจัย/สื่อนวัตกรรมทั้งหมด และรายงาน'),
+('academic.research.review_all', 'academic', 'research', 'review', 'all', 'ตรวจงานวิจัย/สื่อนวัตกรรม ให้ข้อเสนอแนะ และเปลี่ยนสถานะ'),
+('academic.research.manage_all', 'academic', 'research', 'manage', 'all', 'จัดการประเภทงานวิจัย ประเภทสื่อนวัตกรรม และรอบการส่ง')
+ON DUPLICATE KEY UPDATE description = VALUES(description);
+
+INSERT INTO roles (code, name_th, description, level, is_system) VALUES
+('research_head',   'หัวหน้างานวิจัยและพัฒนานวัตกรรม', 'ผู้ตรวจงานวิจัย/สื่อนวัตกรรม: ตรวจ ให้ข้อเสนอแนะ เปลี่ยนสถานะ (ลงนามลำดับที่ 2)', 6, 1),
+('academic_head',   'หัวหน้าฝ่ายบริหารวิชาการ', 'ดูภาพรวมและรายงานงานวิจัย/สื่อนวัตกรรม (ลงนามลำดับที่ 3)', 5, 1),
+('academic_deputy', 'รองผู้อำนวยการฝ่ายบริหารวิชาการ', 'ดูภาพรวมและรายงานงานวิจัย/สื่อนวัตกรรม (ลงนามลำดับที่ 4 อนุมัติขั้นสุดท้าย)', 4, 1)
+ON DUPLICATE KEY UPDATE name_th = VALUES(name_th), description = VALUES(description);
+
+-- สิทธิ์พื้นฐานเหมือนผู้ใช้ทั่วไป (ใช้บทบาทใหม่บทบาทเดียวก็เข้าใช้งานได้)
+INSERT IGNORE INTO role_permissions (role_id, permission_id)
+SELECT r.id, p.id FROM roles r JOIN permissions p ON p.code IN (
+  'core.dashboard.view','core.users.read_own','core.users.update_own','core.employees.read_own','core.employees.update_own',
+  'core.files.read_own','core.files.upload_own','core.notifications.read_own','core.calendar.read_all',
+  'core.service_rooms.read_all','core.pdpa.request_own')
+WHERE r.code IN ('research_head', 'academic_head', 'academic_deputy');
+
+INSERT IGNORE INTO role_permissions (role_id, permission_id)
+SELECT r.id, p.id FROM roles r JOIN permissions p ON p.code LIKE 'academic.research.%'
+WHERE r.code = 'super_admin';
+
+INSERT IGNORE INTO role_permissions (role_id, permission_id)
+SELECT r.id, p.id FROM roles r JOIN permissions p ON p.code IN ('academic.research.read_all', 'academic.research.manage_all')
+WHERE r.code = 'admin';
+
+INSERT IGNORE INTO role_permissions (role_id, permission_id)
+SELECT r.id, p.id FROM roles r JOIN permissions p ON p.code = 'academic.research.submit_own'
+WHERE r.code IN ('teacher', 'research_head', 'academic_head');
+
+INSERT IGNORE INTO role_permissions (role_id, permission_id)
+SELECT r.id, p.id FROM roles r JOIN permissions p ON p.code = 'academic.research.review_all'
+WHERE r.code = 'research_head';
+
+INSERT IGNORE INTO role_permissions (role_id, permission_id)
+SELECT r.id, p.id FROM roles r JOIN permissions p ON p.code = 'academic.research.read_all'
+WHERE r.code IN ('research_head', 'academic_head', 'academic_deputy', 'director');
+
+INSERT INTO research_types (kind, name, sort_order) VALUES
+('research', 'การวิจัยเชิงปฏิบัติการในชั้นเรียน (Classroom Action Research)', 1),
+('research', 'วิจัยและพัฒนา (R&D)', 2),
+('innovation', 'สิ่งประดิษฐ์', 1),
+('innovation', 'ICT', 2),
+('innovation', 'ภูมิปัญญาท้องถิ่น', 3)
+ON DUPLICATE KEY UPDATE sort_order = sort_order;
