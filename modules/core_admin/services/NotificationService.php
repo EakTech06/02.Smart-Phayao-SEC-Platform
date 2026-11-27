@@ -156,6 +156,29 @@ final class NotificationService
         return Database::instance()->query('UPDATE notifications SET read_at = NOW() WHERE user_id = ? AND read_at IS NULL', [$userId])->rowCount();
     }
 
+    public static function readCount(int $userId): int
+    {
+        return (int) Database::instance()->fetchColumn(
+            'SELECT COUNT(*) FROM notifications WHERE user_id = ? AND read_at IS NOT NULL',
+            [$userId]
+        );
+    }
+
+    /** ลบการแจ้งเตือนของตนเองที่อ่านแล้ว (ที่ยังไม่อ่านลบไม่ได้ ต้องเปิดอ่านก่อน) @return bool ลบได้หรือไม่ */
+    public static function deleteRead(int $id, int $userId): bool
+    {
+        return Database::instance()->query(
+            'DELETE FROM notifications WHERE id = ? AND user_id = ? AND read_at IS NOT NULL',
+            [$id, $userId]
+        )->rowCount() === 1;
+    }
+
+    /** ลบการแจ้งเตือนที่อ่านแล้วทั้งหมดของตนเอง @return int จำนวนที่ลบ */
+    public static function deleteAllRead(int $userId): int
+    {
+        return Database::instance()->query('DELETE FROM notifications WHERE user_id = ? AND read_at IS NOT NULL', [$userId])->rowCount();
+    }
+
     /** ลิงก์ต้องเป็น path ภายใน (กัน open redirect / javascript:) */
     public static function safeLink(?string $link): ?string
     {

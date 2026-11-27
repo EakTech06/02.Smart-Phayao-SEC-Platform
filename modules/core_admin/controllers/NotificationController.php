@@ -29,6 +29,7 @@ final class NotificationController extends Controller
             'pages' => max(1, (int) ceil($result['total'] / self::PER_PAGE)),
             'unreadOnly' => $unreadOnly,
             'unread' => NotificationService::unreadCount(),
+            'readCount' => NotificationService::readCount((int) Auth::id()),
         ]);
     }
 
@@ -49,6 +50,37 @@ final class NotificationController extends Controller
         Session::flash('success', $count > 0 ? "ทำเครื่องหมายอ่านแล้ว {$count} รายการ" : 'ไม่มีรายการที่ยังไม่อ่าน');
 
         return $this->redirect('/notifications');
+    }
+
+    /** ลบการแจ้งเตือนที่อ่านแล้ว (เฉพาะของตนเอง) */
+    public function destroy(string $id): Response
+    {
+        $userId = (int) Auth::id();
+        $notification = NotificationService::findOwn((int) $id, $userId) ?? throw new HttpException(404);
+        if ($notification['read_at'] === null) {
+            Session::flash('error', 'ลบได้เฉพาะการแจ้งเตือนที่อ่านแล้ว');
+        } elseif (NotificationService::deleteRead((int) $notification['id'], $userId)) {
+            Session::flash('success', 'ลบการแจ้งเตือนเรียบร้อยแล้ว');
+        }
+
+        return $this->redirect($this->backUrl());
+    }
+
+    public function destroyRead(): Response
+    {
+        $count = NotificationService::deleteAllRead((int) Auth::id());
+        Session::flash('success', $count > 0 ? "ลบการแจ้งเตือนที่อ่านแล้ว {$count} รายการ" : 'ไม่มีการแจ้งเตือนที่อ่านแล้ว');
+
+        return $this->redirect('/notifications');
+    }
+
+    /** กลับไปหน้าเดิม (หน้า/ตัวกรอง) หลังลบ */
+    private function backUrl(): string
+    {
+        $page = max(1, (int) $this->request->input('page', 1));
+        $query = array_filter(['page' => $page > 1 ? $page : null, 'filter' => $this->request->input('filter', '') === 'unread' ? 'unread' : null]);
+
+        return '/notifications' . ($query !== [] ? '?' . http_build_query($query) : '');
     }
 
     /** JSON สำหรับกระดิ่งบนแถบด้านบน (โพลทุก 60 วินาที) */

@@ -147,6 +147,9 @@ $router->group(['middleware' => ['auth', 'password.fresh']], static function (Ro
     $r->get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);
     $r->post('/notifications/read-all', [NotificationController::class, 'readAll'], ['csrf']);
     $r->post('/notifications/{id:\d+}/open', [NotificationController::class, 'open'], ['csrf']);
+    // ผู้ใช้ลบการแจ้งเตือนของตนเองที่อ่านแล้ว
+    $r->delete('/notifications/{id:\d+}', [NotificationController::class, 'destroy'], ['csrf']);
+    $r->post('/notifications/delete-read', [NotificationController::class, 'destroyRead'], ['csrf']);
 
     // คำขอใช้สิทธิ์ PDPA
     $r->get('/pdpa', [PdpaController::class, 'index'], ['perm:core.pdpa.request_own']);

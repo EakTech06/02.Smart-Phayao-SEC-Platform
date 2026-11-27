@@ -8,6 +8,7 @@ use Modules\CoreAdmin\Services\NotificationService;
 /** @var int $pages */
 /** @var bool $unreadOnly */
 /** @var int $unread */
+/** @var int $readCount */
 ?>
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
   <h1 class="h4 mb-0">การแจ้งเตือน <?php if ($unread > 0): ?><span class="badge text-bg-danger align-middle"><?= $unread ?> ยังไม่อ่าน</span><?php endif; ?></h1>
@@ -22,6 +23,12 @@ use Modules\CoreAdmin\Services\NotificationService;
         <button type="submit" class="btn btn-sm btn-outline-primary"><i class="bi bi-check2-all me-1"></i>อ่านทั้งหมดแล้ว</button>
       </form>
     <?php endif; ?>
+    <?php if ($readCount > 0): ?>
+      <form method="post" action="<?= e(url('/notifications/delete-read')) ?>" data-confirm="ลบการแจ้งเตือนที่อ่านแล้วทั้งหมด <?= (int) $readCount ?> รายการ ใช่หรือไม่?">
+        <?= csrf_field() ?>
+        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash3 me-1"></i>ลบที่อ่านแล้วทั้งหมด</button>
+      </form>
+    <?php endif; ?>
   </div>
 </div>
 
@@ -33,9 +40,10 @@ use Modules\CoreAdmin\Services\NotificationService;
   <div class="list-group shadow-sm">
     <?php foreach ($notifications as $n): ?>
       <?php $type = NotificationService::TYPES[$n['type']] ?? NotificationService::TYPES['system']; ?>
-      <form method="post" action="<?= e(url('/notifications/' . (int) $n['id'] . '/open')) ?>" class="list-group-item list-group-item-action p-0<?= $n['read_at'] === null ? ' bg-primary-subtle' : '' ?>">
+      <div class="list-group-item list-group-item-action p-0 d-flex align-items-stretch<?= $n['read_at'] === null ? ' bg-primary-subtle' : '' ?>">
+      <form method="post" action="<?= e(url('/notifications/' . (int) $n['id'] . '/open')) ?>" class="flex-grow-1 min-w-0">
         <?= csrf_field() ?>
-        <button type="submit" class="btn w-100 text-start d-flex gap-3 py-3 px-3 border-0 rounded-0">
+        <button type="submit" class="btn w-100 h-100 text-start d-flex gap-3 py-3 px-3 border-0 rounded-0">
           <i class="bi bi-<?= e($type['icon']) ?> fs-4 text-primary flex-shrink-0"></i>
           <span class="flex-grow-1 min-w-0">
             <span class="d-flex justify-content-between gap-2">
@@ -49,6 +57,16 @@ use Modules\CoreAdmin\Services\NotificationService;
           </span>
         </button>
       </form>
+      <?php if ($n['read_at'] !== null): ?>
+        <form method="post" action="<?= e(url('/notifications/' . (int) $n['id'])) ?>" class="d-flex align-items-center pe-2" data-confirm="ลบการแจ้งเตือนนี้ใช่หรือไม่?">
+          <?= csrf_field() ?>
+          <input type="hidden" name="_method" value="DELETE">
+          <input type="hidden" name="page" value="<?= (int) $page ?>">
+          <?php if ($unreadOnly): ?><input type="hidden" name="filter" value="unread"><?php endif; ?>
+          <button type="submit" class="btn btn-sm btn-link text-danger notification-delete" aria-label="ลบการแจ้งเตือน: <?= e($n['title']) ?>" title="ลบ"><i class="bi bi-trash3"></i></button>
+        </form>
+      <?php endif; ?>
+      </div>
     <?php endforeach; ?>
   </div>
 
