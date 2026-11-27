@@ -106,7 +106,7 @@ final class AuthController extends Controller
         Auth::logout();
         Session::flash('success', 'ออกจากระบบเรียบร้อยแล้ว');
 
-        return $this->redirect('/login');
+        return $this->redirect('/'); // กลับหน้าแรก (แดชบอร์ดสาธารณะ)
     }
 
     public function showChangePassword(): Response

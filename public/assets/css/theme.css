@@ -545,3 +545,6 @@ html[data-bs-theme="light"] .app-topbar .dropdown-menu { --bs-dropdown-bg: rgba(
 .topbar-search input::-webkit-search-cancel-button { display: none; }
 /* เมนูเดี่ยวที่ไม่มีหัวหมวด (เช่น รายงานภาพรวม) เว้นระยะจากหมวดก่อนหน้า */
 .app-sidebar .menu-standalone { margin-top: .7rem; padding-top: .7rem; border-top: 1px solid var(--glass-border); }
+/* หน้าสาธารณะ (ไม่มีเมนูด้านข้าง) */
+.public-content { max-width: 1320px; margin: 0 auto; padding-bottom: 2rem; }
+.public-hero h1 { font-size: clamp(1.6rem, 3.2vw, 2.4rem); }

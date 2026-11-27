@@ -287,6 +287,17 @@ final class StudentService
         );
     }
 
+    /** จำนวนนักเรียนที่กำลังรับบริการปีการศึกษานี้ทั้งหมด (ตัวเลขสรุปสำหรับแดชบอร์ดสาธารณะ ไม่ขึ้นกับสิทธิ์ผู้ดู) */
+    public static function publicActiveCount(): int
+    {
+        return (int) Database::instance()->fetchColumn(
+            "SELECT COUNT(DISTINCT s.id) FROM academic_students s
+             JOIN academic_student_enrollments en ON en.student_id = s.id AND en.academic_year_id = ?
+             WHERE s.deleted_at IS NULL AND s.status = 'active'",
+            [self::currentYearId() ?? 0]
+        );
+    }
+
     /** ป้องกัน IDOR: คืน null ทั้งกรณีไม่พบและไม่มีสิทธิ์ */
     public static function findVisible(int $id): ?array
     {

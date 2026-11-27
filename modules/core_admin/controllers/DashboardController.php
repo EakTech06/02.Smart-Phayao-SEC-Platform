@@ -21,9 +21,64 @@ use Modules\CoreAdmin\Services\UserService;
 
 final class DashboardController extends Controller
 {
+    /**
+     * หน้าแรกของเว็บ: ผู้ที่เข้าสู่ระบบแล้วไปแดชบอร์ดของตน ผู้ใช้งานทั่วไปเห็นแดชบอร์ดสาธารณะ (ไม่ต้องเข้าสู่ระบบ)
+     * แดชบอร์ดสาธารณะแสดงเฉพาะตัวเลขสรุป ไม่มีข้อมูลรายบุคคล ชื่อ หรือรายละเอียดกิจกรรม
+     */
     public function home(): Response
     {
-        return $this->redirect(Auth::check() ? '/dashboard' : '/login');
+        if (Auth::check()) {
+            return $this->redirect('/dashboard');
+        }
+        $db = Database::instance();
+        [$departments, $typeTotals, $chart] = self::personnelCharts();
+        // ตัดตัวเลขที่เป็นข้อมูลภายใน (บัญชีผู้ใช้ ไฟล์ กิจกรรม) ออกจากสถิติรายฝ่าย
+        $departments = array_map(static fn (array $d): array => [
+            'name' => $d['name'], 'total' => $d['total'], 'male' => $d['male'], 'female' => $d['female'],
+        ], $departments);
+
+        return $this->view('core_admin::dashboard/public', [
+            'title' => 'หน้าหลัก',
+            'stats' => [
+                'personnel' => (int) $db->fetchColumn("SELECT COUNT(*) FROM employees WHERE deleted_at IS NULL AND status = 'active'"),
+                'students' => in_array('academic', (array) config('app.modules', []), true)
+                    ? \Modules\Academic\Services\StudentService::publicActiveCount() : null,
+                'rooms' => (int) $db->fetchColumn(
+                    'SELECT COUNT(*) FROM service_rooms sr JOIN academic_years ay ON ay.id = sr.academic_year_id AND ay.is_current = 1'
+                ),
+                'units' => (int) $db->fetchColumn("SELECT COUNT(*) FROM departments WHERE is_active = 1 AND type = 'unit'"),
+                'academic_year' => $db->fetchColumn('SELECT name FROM academic_years WHERE is_current = 1 LIMIT 1'),
+                'fiscal_year' => $db->fetchColumn('SELECT name FROM fiscal_years WHERE is_current = 1 LIMIT 1'),
+            ],
+            'departments' => $departments,
+            'typeTotals' => $typeTotals,
+            'chart' => $chart,
+        ], 'public_layout');
+    }
+
+    /**
+     * สถิติบุคลากรรายฝ่าย (6 ฝ่ายหลัก) + ข้อมูลกราฟ ใช้ร่วมกันระหว่างแดชบอร์ดและแดชบอร์ดสาธารณะ
+     * @return array{0: array, 1: array<string,int>, 2: array}
+     */
+    private static function personnelCharts(): array
+    {
+        $departments = ReportService::mainDepartmentSummary();
+        $types = ReportService::employmentTypes();
+        $typeTotals = [];
+        foreach (array_keys($types) as $t) {
+            $typeTotals[$t] = array_sum(array_map(static fn (array $d): int => $d['by_type'][$t] ?? 0, $departments));
+        }
+        $chart = [
+            'departments' => array_column($departments, 'name'),
+            'types' => array_map(static fn (string $t): array => [
+                'label' => $types[$t],
+                'color' => ReportService::EMPLOYMENT_COLORS[$t],
+                'data' => array_map(static fn (array $d): int => $d['by_type'][$t] ?? 0, $departments),
+                'total' => $typeTotals[$t],
+            ], array_keys($types)),
+        ];
+
+        return [$departments, $typeTotals, $chart];
     }
 
     public function index(): Response
@@ -57,24 +112,10 @@ final class DashboardController extends Controller
         $canAudit = Rbac::can('core.audit.read_all');
 
         // สถิติรายฝ่ายเป็นตัวเลขสรุปเท่านั้น (ไม่มีข้อมูลรายบุคคล) จึงแสดงให้ทุกคนที่ดูแดชบอร์ดได้
-        $departments = ReportService::mainDepartmentSummary(); // เฉพาะ 6 ฝ่ายหลัก (หน่วยบริการย่อยรวมเข้างานหน่วยบริการ)
-        $types = ReportService::employmentTypes();
-        $typeTotals = [];
-        foreach (array_keys($types) as $t) {
-            $typeTotals[$t] = array_sum(array_map(static fn (array $d): int => $d['by_type'][$t] ?? 0, $departments));
-        }
-
+        // เฉพาะ 6 ฝ่ายหลัก (หน่วยบริการย่อยรวมเข้างานหน่วยบริการ)
         // ข้อมูลกราฟส่งให้ dashboard.js ผ่าน <script type="application/json"> (CSP ไม่อนุญาต inline script)
-        $chart = [
-            'departments' => array_column($departments, 'name'),
-            'types' => array_map(static fn (string $t): array => [
-                'label' => $types[$t],
-                'color' => ReportService::EMPLOYMENT_COLORS[$t],
-                'data' => array_map(static fn (array $d): int => $d['by_type'][$t] ?? 0, $departments),
-                'total' => $typeTotals[$t],
-            ], array_keys($types)),
-            'trend' => ReportService::monthlyTrend(6, $canAudit),
-        ];
+        [$departments, $typeTotals, $chart] = self::personnelCharts();
+        $chart['trend'] = ReportService::monthlyTrend(6, $canAudit);
 
         $recent = $canAudit
             ? $db->fetchAll(

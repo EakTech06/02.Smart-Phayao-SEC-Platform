@@ -16,7 +16,7 @@ $greeting = $hour < 12 ? 'อรุณสวัสดิ์' : ($hour < 17 ? '�
       <?php endif; ?>
     </span>
     <div class="min-w-0">
-      <div class="small text-body-secondary"><?= e($greeting) ?> · <?= e(thai_date(date('Y-m-d'))) ?></div>
+      <div class="small text-body-secondary"><?= e($greeting) ?> · <?= e(thai_date(date('Y-m-d'), false)) ?></div>
       <h2 class="h4 mb-1 text-truncate"><?= e($name) ?></h2>
       <div class="text-body-secondary small text-truncate"><?= e($user['position'] ?? 'ผู้ใช้งานระบบ') ?></div>
     </div>
