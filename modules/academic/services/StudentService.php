@@ -345,11 +345,7 @@ final class StudentService
         return Database::instance()->fetchAll(
             "SELECT en.*, ay.name AS year_name, ay.year_be, ay.is_current, d.name_th AS department_name,
                     r.room_code, r.name_th AS room_name,
-                    TRIM(CONCAT(COALESCE(t.title_name, ''), t.first_name, ' ', t.last_name)) AS teacher_name, t.status AS teacher_status,
-                    (SELECT GROUP_CONCAT(TRIM(CONCAT(COALESCE(h.title_name, ''), h.first_name, ' ', h.last_name))
-                            ORDER BY st.sort_order SEPARATOR ', ')
-                     FROM service_room_teachers st JOIN employees h ON h.id = st.employee_id
-                     WHERE st.service_room_id = en.service_room_id) AS homeroom_name
+                    TRIM(CONCAT(COALESCE(t.title_name, ''), t.first_name, ' ', t.last_name)) AS teacher_name, t.status AS teacher_status
              FROM academic_student_enrollments en
              JOIN academic_years ay ON ay.id = en.academic_year_id
              LEFT JOIN departments d ON d.id = en.department_id

@@ -315,7 +315,6 @@ $code = static fn (array $list, mixed $k): string => $k === null || $k === '' ? 
                   <td>
                     <?= $dash($en['teacher_name']) ?>
                     <?php if ($en['teacher_name'] && $en['teacher_status'] !== 'active'): ?><span class="badge text-bg-warning">ไม่ได้ปฏิบัติงานแล้ว</span><?php endif; ?>
-                    <?= $en['homeroom_name'] ? '<div class="small text-muted">ครูประจำชั้น ' . e($en['homeroom_name']) . '</div>' : '' ?>
                   </td>
                   <?php if ($canManageEnrollments): ?>
                     <td class="text-end text-nowrap">
