@@ -37,7 +37,7 @@ $palettes = [
   <button class="topbar-btn d-none d-lg-inline-flex" type="button" data-sidebar-toggle aria-controls="sidebar" aria-label="ย่อ/ขยายเมนูด้านข้าง" title="ย่อ/ขยายเมนู">
     <i class="bi bi-layout-sidebar-inset"></i>
   </button>
-  <a class="topbar-brand d-lg-none me-auto me-md-2" href="<?= e(url('/dashboard')) ?>">Smart SEC</a>
+  <a class="topbar-brand d-lg-none me-auto me-md-2" href="<?= e(url('/dashboard')) ?>"><?= e(app_name('short_name')) ?></a>
 
   <div class="topbar-search" role="search">
     <i class="bi bi-search search-icon"></i>

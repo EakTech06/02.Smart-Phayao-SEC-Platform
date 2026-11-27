@@ -110,12 +110,40 @@ function thai_date_numeric(?string $datetime, bool $withTime = false): string
     return date('d/m/', $ts) . ((int) date('Y', $ts) + 543) . ($withTime ? ' ' . date('H:i', $ts) : '');
 }
 
+/**
+ * ชื่อระบบที่ผู้ดูแลตั้งได้ (ตั้งค่าระบบ > ชื่อระบบ) ไม่มีค่า/อ่านฐานข้อมูลไม่ได้ ใช้ค่าเริ่มต้น
+ * @param 'name'|'brand_main'|'brand_sub'|'short_name'|'tagline' $part
+ */
+function app_name(string $part = 'name'): string
+{
+    $defaults = [
+        'name' => (string) config('app.name', 'Smart Phayao SEC Platform'),
+        'brand_main' => 'Smart Phayao SEC',
+        'brand_sub' => 'Platform',
+        'short_name' => 'Smart SEC',
+        'tagline' => 'ระบบสารสนเทศเพื่อการบริหารจัดการ',
+    ];
+    try {
+        $value = \Core\Setting::get('app.' . $part);
+    } catch (\Throwable) {
+        $value = null; // หน้า error ตอนฐานข้อมูลล่ม
+    }
+
+    $value = $value === null ? null : trim((string) $value);
+    // บรรทัดรอง/คำอธิบาย เว้นว่างได้ ช่องอื่นถ้าว่างใช้ค่าเริ่มต้น
+    if ($value === null || ($value === '' && !in_array($part, ['brand_sub', 'tagline'], true))) {
+        return $defaults[$part] ?? $defaults['name'];
+    }
+
+    return $value;
+}
+
 /** ข้อความท้ายกระดาษรายงาน: พิมพ์ออกจากระบบ ... ผู้พิมพ์ ... เมื่อวันที่ วว/ดด/ปปปป (พ.ศ.) เวลา ชม.:นาที น. */
 function print_footer_text(?int $timestamp = null): string
 {
     $ts = $timestamp ?? time();
 
-    return 'พิมพ์ออกจากระบบ ' . config('app.name', 'Smart Phayao SEC Platform')
+    return 'พิมพ์ออกจากระบบ ' . app_name()
         . ' ผู้พิมพ์: ' . (\Core\Auth::displayName() ?: '-')
         . ' เมื่อวันที่ ' . thai_date_numeric(date('Y-m-d', $ts))
         . ' เวลา ' . date('H:i', $ts) . ' น.';

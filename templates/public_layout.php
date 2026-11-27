@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title><?= e($title) ?> | <?= e(config('app.name')) ?></title>
+  <title><?= e($title) ?> | <?= e(app_name()) ?></title>
   <script src="<?= e(asset('js/theme-init.js')) ?>"></script>
   <?php require __DIR__ . '/head_assets.php'; ?>
 </head>
@@ -14,7 +14,7 @@
 <header class="app-topbar public-topbar">
   <a href="<?= e(url('/')) ?>" class="d-flex align-items-center gap-2 text-decoration-none me-auto min-w-0">
     <span class="brand-mark"><i class="bi bi-mortarboard-fill"></i></span>
-    <span class="brand-text d-none d-sm-block"><strong class="text-body-emphasis">Smart Phayao SEC</strong><small>Platform</small></span>
+    <span class="brand-text d-none d-sm-block"><strong class="text-body-emphasis"><?= e(app_name('brand_main')) ?></strong><small><?= e(app_name('brand_sub')) ?></small></span>
   </a>
   <div class="d-flex align-items-center gap-2">
     <div class="dropdown">

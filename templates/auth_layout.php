@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title><?= e($title) ?> | <?= e(config('app.name')) ?></title>
+  <title><?= e($title) ?> | <?= e(app_name()) ?></title>
   <script src="<?= e(asset('js/theme-init.js')) ?>"></script>
   <?php require __DIR__ . '/head_assets.php'; ?>
 </head>
@@ -13,7 +13,7 @@
 <div class="container auth-wrapper d-flex flex-column align-items-center justify-content-center py-4">
   <div class="d-flex align-items-center gap-2 mb-3">
     <span class="brand-mark"><i class="bi bi-mortarboard-fill"></i></span>
-    <span class="brand-text"><strong><?= e(config('app.name')) ?></strong></span>
+    <span class="brand-text"><strong><?= e(app_name()) ?></strong></span>
   </div>
   <div class="card auth-card w-100 position-relative">
     <div class="card-body p-4 p-md-5">

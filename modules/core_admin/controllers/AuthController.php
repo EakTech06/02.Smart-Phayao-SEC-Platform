@@ -82,7 +82,7 @@ final class AuthController extends Controller
         return $this->view('core_admin::auth/two_factor_setup', [
             'title' => 'ตั้งค่าการยืนยันตัวตน 2 ขั้นตอน',
             'secret' => $secret,
-            'uri' => Totp::uri($secret, $account, (string) config('app.name')),
+            'uri' => Totp::uri($secret, $account, app_name()),
         ], 'auth_layout');
     }
 

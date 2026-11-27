@@ -208,7 +208,7 @@ final class NotificationService
         if ($emails === []) {
             return;
         }
-        $appName = (string) Config::get('app.name');
+        $appName = app_name();
         $html = '<div style="font-family:Sarabun,Tahoma,sans-serif;font-size:15px">'
             . '<h3 style="margin:0 0 8px">' . htmlspecialchars($title, ENT_QUOTES, 'UTF-8') . '</h3>'
             . ($message !== null ? '<p>' . nl2br(htmlspecialchars($message, ENT_QUOTES, 'UTF-8')) . '</p>' : '')

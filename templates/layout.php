@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="csrf-token" content="<?= e(csrf_token()) ?>">
-  <title><?= e($title) ?> | <?= e(config('app.name')) ?></title>
+  <title><?= e($title) ?> | <?= e(app_name()) ?></title>
   <script src="<?= e(asset('js/theme-init.js')) ?>"></script>
   <?php require __DIR__ . '/head_assets.php'; ?>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/datatables.net-bs5@2.1.8/css/dataTables.bootstrap5.min.css">

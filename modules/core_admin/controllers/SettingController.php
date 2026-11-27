@@ -26,7 +26,8 @@ final class SettingController extends Controller
     public function update(): Response
     {
         $this->authorize('core.settings.manage');
-        $inputs = $this->request->input('settings', []);
+        $inputs = (array) $this->request->input('settings', []);
+        $inputs = self::validateBranding($inputs);
         $db = Database::instance();
 
         $db->transaction(static function (Database $db) use ($inputs): void {
@@ -42,6 +43,39 @@ final class SettingController extends Controller
         Audit::log('settings.updated', 'core', 'settings', null, null, $inputs);
         Session::flash('success', 'บันทึกการตั้งค่าเรียบร้อยแล้ว');
         return $this->redirect('/settings');
+    }
+
+    /** ชื่อระบบ: key => [ชื่อช่อง, ความยาวสูงสุด, บังคับกรอก] */
+    public const BRANDING = [
+        'app.name' => ['ชื่อระบบ (เต็ม)', 120, true],
+        'app.brand_main' => ['ชื่อบรรทัดหลัก', 40, true],
+        'app.brand_sub' => ['ชื่อบรรทัดรอง', 40, false],
+        'app.short_name' => ['ชื่อย่อ (มือถือ)', 20, true],
+        'app.tagline' => ['คำอธิบายระบบ', 150, false],
+    ];
+
+    /** ตัดช่องว่างหัวท้าย ตรวจความยาว/ค่าว่าง ของช่องชื่อระบบ (ช่องอื่นผ่านไปตามเดิม) */
+    private static function validateBranding(array $inputs): array
+    {
+        $errors = [];
+        foreach (self::BRANDING as $key => [$label, $max, $required]) {
+            if (!array_key_exists($key, $inputs)) {
+                continue;
+            }
+            $value = trim(preg_replace('/\s+/u', ' ', is_scalar($inputs[$key]) ? (string) $inputs[$key] : '') ?? '');
+            $field = 'settings.' . $key;
+            if ($required && $value === '') {
+                $errors[$field][] = "กรุณากรอก{$label}";
+            } elseif (mb_strlen($value) > $max) {
+                $errors[$field][] = "{$label} ต้องไม่เกิน {$max} ตัวอักษร";
+            }
+            $inputs[$key] = $value;
+        }
+        if ($errors !== []) {
+            throw new \Core\Exceptions\ValidationException($errors);
+        }
+
+        return $inputs;
     }
 
     /** ping Apps Script: ตรวจลายเซ็น, สิทธิ์ Shared Drive, Calendar และโควตาอีเมล */

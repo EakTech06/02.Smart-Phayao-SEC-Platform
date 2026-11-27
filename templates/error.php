@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title><?= e($status) ?> | Smart Phayao SEC</title>
+  <title><?= e($status) ?> | <?= e(app_name()) ?></title>
   <script src="<?= e(asset('js/theme-init.js')) ?>"></script>
   <?php require __DIR__ . '/head_assets.php'; ?>
 </head>

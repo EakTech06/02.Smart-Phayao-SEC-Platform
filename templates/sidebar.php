@@ -73,9 +73,9 @@ foreach ($groups as $g) {
     <h5 class="offcanvas-title">เมนู</h5>
     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#sidebar" aria-label="ปิด"></button>
   </div>
-  <a href="<?= e(url('/dashboard')) ?>" class="sidebar-brand d-none d-lg-flex" aria-label="<?= e(config('app.name')) ?> หน้าแดชบอร์ด">
+  <a href="<?= e(url('/dashboard')) ?>" class="sidebar-brand d-none d-lg-flex" aria-label="<?= e(app_name()) ?> หน้าแดชบอร์ด">
     <span class="brand-mark"><i class="bi bi-mortarboard-fill"></i></span>
-    <span class="brand-text"><strong>Smart Phayao SEC</strong><small>Platform</small></span>
+    <span class="brand-text"><strong><?= e(app_name('brand_main')) ?></strong><small><?= e(app_name('brand_sub')) ?></small></span>
   </a>
   <div class="offcanvas-body d-block sidebar-scroll">
     <?php foreach ($groups as $key => $group): ?>

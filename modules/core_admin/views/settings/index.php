@@ -1,7 +1,23 @@
 <?php
 /** @var array $settings */
+use Modules\CoreAdmin\Controllers\SettingController;
+
 $grouped = [];
+$values = array_column($settings, 'setting_value', 'setting_key');
+$oldInput = Core\Session::getFlash('old', []);
+$oldSettings = is_array($oldInput['settings'] ?? null) ? $oldInput['settings'] : [];
+// ที่แสดงผลของแต่ละช่องชื่อระบบ
+$brandingHints = [
+    'app.name' => 'แท็บเบราว์เซอร์ · หน้าเข้าสู่ระบบ · อีเมลแจ้งเตือน · แอปยืนยันตัวตน 2 ขั้นตอน · ท้ายกระดาษรายงาน',
+    'app.brand_main' => 'โลโก้เมนูด้านข้าง · แถบบนหน้าแรก · หัวข้อหน้าแรกสาธารณะ',
+    'app.brand_sub' => 'บรรทัดเล็กใต้ชื่อหลัก (เว้นว่างได้)',
+    'app.short_name' => 'แถบบนเมื่อเปิดบนมือถือ (พื้นที่จำกัด ควรสั้น)',
+    'app.tagline' => 'ข้อความต่อท้ายชื่อหน่วยงานในหน้าแรกสาธารณะ (เว้นว่างได้)',
+];
 foreach ($settings as $s) {
+    if (isset(SettingController::BRANDING[$s['setting_key']])) {
+        continue; // แสดงในการ์ด "ชื่อระบบ" ด้านบน
+    }
     $g = $s['setting_group'] ?? ($s['group'] ?? 'general');
     $grouped[$g][] = $s;
 }
@@ -30,6 +46,30 @@ foreach ($settings as $s) {
 
 <form method="post" action="<?= e(url('/settings')) ?>">
   <?= csrf_field() ?>
+  <div class="card shadow-sm mb-3" id="branding">
+    <div class="card-header fw-semibold"><i class="bi bi-type me-1"></i>ชื่อระบบ</div>
+    <div class="card-body">
+      <div class="d-flex align-items-center gap-2 p-3 mb-3 rounded-3 border bg-body-tertiary" aria-label="ตัวอย่างโลโก้เมนูด้านข้าง (ค่าที่บันทึกแล้ว)">
+        <span class="brand-mark"><i class="bi bi-mortarboard-fill"></i></span>
+        <span class="brand-text"><strong><?= e(app_name('brand_main')) ?></strong><small><?= e(app_name('brand_sub')) ?></small></span>
+        <span class="ms-auto small text-body-secondary">ตัวอย่างที่แสดงอยู่ตอนนี้</span>
+      </div>
+      <div class="row g-3">
+        <?php foreach (SettingController::BRANDING as $key => [$label, $max, $required]): ?>
+          <?php $field = 'settings.' . $key; $err = error_for($field); $id = 'set-' . str_replace('.', '-', $key); ?>
+          <div class="col-12 <?= $key === 'app.name' ? 'col-md-8' : 'col-md-4' ?>">
+            <label class="form-label fw-semibold small" for="<?= e($id) ?>"><?= e($label) ?><?= $required ? ' <span class="text-danger">*</span>' : '' ?></label>
+            <input type="text" id="<?= e($id) ?>" name="settings[<?= e($key) ?>]" maxlength="<?= (int) $max ?>" <?= $required ? 'required' : '' ?>
+                   value="<?= e(is_scalar($oldSettings[$key] ?? null) ? (string) $oldSettings[$key] : ($values[$key] ?? app_name(substr($key, 4)))) ?>"
+                   class="form-control<?= $err ? ' is-invalid' : '' ?>" aria-describedby="<?= e($id) ?>-hint">
+            <?php if ($err): ?><div class="invalid-feedback"><?= e($err) ?></div><?php endif; ?>
+            <div class="form-text" id="<?= e($id) ?>-hint"><?= e($brandingHints[$key]) ?></div>
+          </div>
+        <?php endforeach; ?>
+      </div>
+    </div>
+  </div>
+
   <?php foreach ($grouped as $group => $items): ?>
     <div class="card shadow-sm mb-3">
       <div class="card-header bg-white fw-semibold">กลุ่ม: <?= e(strtoupper((string)$group)) ?></div>
