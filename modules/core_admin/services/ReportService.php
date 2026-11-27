@@ -477,6 +477,53 @@ final class ReportService
         return $rows;
     }
 
+    /**
+     * สถิติรายฝ่ายสำหรับแดชบอร์ด: เฉพาะฝ่ายหลัก (สำนักงานผู้อำนวยการ ฝ่ายบริหาร 4 ฝ่าย และงานหน่วยบริการ)
+     * หน่วยบริการย่อย (type = unit) รวมยอดเข้างานหน่วยบริการ และไม่แสดงแถว "ไม่ระบุฝ่าย"
+     */
+    public static function mainDepartmentSummary(): array
+    {
+        $meta = [];
+        foreach (Database::instance()->fetchAll('SELECT id, parent_id, type FROM departments') as $d) {
+            $meta[(int) $d['id']] = ['parent' => $d['parent_id'] !== null ? (int) $d['parent_id'] : null, 'type' => $d['type']];
+        }
+        $main = static function (int $id) use ($meta): ?int {
+            for ($guard = 0; isset($meta[$id]) && $meta[$id]['type'] === 'unit' && $guard < 10; $guard++) {
+                if ($meta[$id]['parent'] === null) {
+                    return null;
+                }
+                $id = $meta[$id]['parent'];
+            }
+
+            return isset($meta[$id]) && $meta[$id]['type'] !== 'unit' ? $id : null;
+        };
+
+        $rows = self::departmentSummary();
+        $result = [];
+        foreach ($rows as $row) { // ฝ่ายหลักตามลำดับเดิม
+            if ($row['id'] !== self::NO_DEPARTMENT && ($meta[$row['id']]['type'] ?? 'unit') !== 'unit') {
+                $result[$row['id']] = $row;
+            }
+        }
+        foreach ($rows as $row) { // รวมหน่วยบริการย่อยเข้าฝ่ายหลัก
+            if ($row['id'] === self::NO_DEPARTMENT || isset($result[$row['id']])) {
+                continue;
+            }
+            $target = $main($row['id']);
+            if ($target === null || !isset($result[$target])) {
+                continue;
+            }
+            foreach (['total', 'users', 'male', 'female', 'files', 'events'] as $k) {
+                $result[$target][$k] += $row[$k];
+            }
+            foreach ($row['by_type'] as $type => $n) {
+                $result[$target]['by_type'][$type] = ($result[$target]['by_type'][$type] ?? 0) + $n;
+            }
+        }
+
+        return array_values($result);
+    }
+
     // ---------------------------------------------------------------- รายงานรวม
 
     /** รวบรวมข้อมูลทุกส่วนของรายงานภาพรวม */

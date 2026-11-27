@@ -57,7 +57,7 @@ final class DashboardController extends Controller
         $canAudit = Rbac::can('core.audit.read_all');
 
         // สถิติรายฝ่ายเป็นตัวเลขสรุปเท่านั้น (ไม่มีข้อมูลรายบุคคล) จึงแสดงให้ทุกคนที่ดูแดชบอร์ดได้
-        $departments = ReportService::departmentSummary();
+        $departments = ReportService::mainDepartmentSummary(); // เฉพาะ 6 ฝ่ายหลัก (หน่วยบริการย่อยรวมเข้างานหน่วยบริการ)
         $types = ReportService::employmentTypes();
         $typeTotals = [];
         foreach (array_keys($types) as $t) {
