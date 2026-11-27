@@ -1,7 +1,8 @@
 <div class="text-center mb-4">
-  <i class="bi bi-mortarboard-fill text-primary display-5"></i>
-  <h1 class="h4 mt-2 mb-1">เข้าสู่ระบบ</h1>
-  <p class="text-muted small mb-0"><?= e(config('app.org')) ?></p>
+  <?= brand_mark('brand-mark-lg') ?>
+  <h1 class="h4 mt-3 mb-1">เข้าสู่ระบบ</h1>
+  <div class="fw-semibold"><?= e(app_name()) ?></div>
+  <div class="text-body-secondary small"><?= e(Core\Setting::get('org.name', config('app.org'))) ?></div>
 </div>
 <form method="post" action="<?= e(url('/login')) ?>" novalidate>
   <?= csrf_field() ?>

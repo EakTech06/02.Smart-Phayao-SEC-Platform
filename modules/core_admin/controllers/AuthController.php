@@ -24,7 +24,7 @@ final class AuthController extends Controller
 
     public function showLogin(): Response
     {
-        return $this->view('core_admin::auth/login', ['title' => 'เข้าสู่ระบบ'], 'auth_layout');
+        return $this->view('core_admin::auth/login', ['title' => 'เข้าสู่ระบบ', 'hideBrand' => true], 'auth_layout');
     }
 
     public function login(): Response

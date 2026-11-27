@@ -11,10 +11,12 @@
 <body>
 <div class="app-bg" aria-hidden="true"></div>
 <div class="container auth-wrapper d-flex flex-column align-items-center justify-content-center py-4">
+  <?php if (empty($hideBrand)): /* หน้า login แสดงโลโก้และชื่อระบบในการ์ดแล้ว */ ?>
   <div class="d-flex align-items-center gap-2 mb-3">
     <?= brand_mark() ?>
     <span class="brand-text"><strong><?= e(app_name()) ?></strong></span>
   </div>
+  <?php endif; ?>
   <div class="card auth-card w-100 position-relative">
     <div class="card-body p-4 p-md-5">
       <?php require __DIR__ . '/alerts.php'; ?>
