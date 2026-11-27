@@ -5,8 +5,9 @@ html, body { background: #fff !important; font-size: 12pt; }
 body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
 /* ซ่อนส่วนนำทางและปุ่มต่าง ๆ */
-.navbar, .sidebar, .bottom-nav, .main-footer, .d-print-none, .alert-dismissible .btn-close, .btn { display: none !important; }
+.navbar, .sidebar, .app-sidebar, .app-topbar, .app-bg, .bottom-nav, .main-footer, .d-print-none, .alert-dismissible .btn-close, .btn { display: none !important; }
 
+.app-main { margin: 0 !important; min-height: 0 !important; }
 .main-content { width: 100% !important; margin: 0 !important; padding: 0 !important; max-width: none !important; flex: none !important; }
 .container-fluid, .container-fluid > .row { margin: 0 !important; padding: 0 !important; }
 
@@ -19,3 +20,16 @@ body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 .report-section, tr { break-inside: avoid; page-break-inside: avoid; }
 h2, h3 { break-after: avoid; page-break-after: avoid; }
 a { color: inherit !important; text-decoration: none !important; }
+
+/* พิมพ์ด้วยสีโหมดสว่างเสมอ ไม่ว่าผู้ใช้เลือกธีมใด (assets/css/theme.css) */
+html[data-bs-theme] {
+  color-scheme: light;
+  --bs-body-bg: #fff; --bs-body-bg-rgb: 255, 255, 255; --bs-body-color: #212529; --bs-body-color-rgb: 33, 37, 41;
+  --bs-emphasis-color-rgb: 0, 0, 0; --bs-secondary-color-rgb: 85, 85, 85; --bs-tertiary-bg-rgb: 248, 249, 250; --bs-secondary-bg-rgb: 233, 236, 239; --bs-emphasis-color: #000; --bs-heading-color: #000;
+  --bs-secondary-color: #555; --bs-tertiary-bg: #f8f9fa; --bs-secondary-bg: #e9ecef;
+  --bs-border-color: #dee2e6; --bs-border-color-translucent: #dee2e6;
+  --bs-primary: var(--p-light); --bs-primary-rgb: var(--p-light-rgb); --bs-link-color: #000;
+  --glass-bg: #fff; --glass-bg-strong: #fff; --glass-border: #dee2e6; --input-bg: #fff; --table-head-bg: #f1f3f5;
+}
+.card, .glass, .alert, .modal-content { background: #fff !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+.tilt, .lift, .rise-in, .icon-3d { transform: none !important; animation: none !important; }

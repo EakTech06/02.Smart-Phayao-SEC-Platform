@@ -1,5 +1,5 @@
 <?php $currentPath = current_path(); ?>
-<nav class="bottom-nav d-lg-none fixed-bottom bg-white border-top shadow-sm" aria-label="เมนูด่วน">
+<nav class="bottom-nav d-lg-none fixed-bottom" aria-label="เมนูด่วน">
   <div class="d-flex">
     <a href="<?= e(url('/dashboard')) ?>" class="<?= $currentPath === '/dashboard' ? 'active' : '' ?>"><i class="bi bi-house"></i><span>หน้าหลัก</span></a>
     <?php if (can('core.calendar.read_all')): ?>

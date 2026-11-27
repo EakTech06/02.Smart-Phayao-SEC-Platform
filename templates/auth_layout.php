@@ -1,18 +1,21 @@
 <?php /** @var string $content */ $title = $title ?? ''; ?>
 <!doctype html>
-<html lang="th">
+<html lang="th" data-bs-theme="light" data-palette="cyber">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><?= e($title) ?> | <?= e(config('app.name')) ?></title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600&display=swap">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  <link rel="stylesheet" href="<?= e(asset('css/app.css')) ?>">
+  <script src="<?= e(asset('js/theme-init.js')) ?>"></script>
+  <?php require __DIR__ . '/head_assets.php'; ?>
 </head>
-<body class="bg-primary-subtle">
-<div class="container auth-wrapper d-flex align-items-center justify-content-center py-4">
-  <div class="card shadow border-0 w-100" style="max-width: 440px;">
+<body>
+<div class="app-bg" aria-hidden="true"></div>
+<div class="container auth-wrapper d-flex flex-column align-items-center justify-content-center py-4">
+  <div class="d-flex align-items-center gap-2 mb-3">
+    <span class="brand-mark"><i class="bi bi-mortarboard-fill"></i></span>
+    <span class="brand-text"><strong><?= e(config('app.name')) ?></strong></span>
+  </div>
+  <div class="card auth-card w-100 position-relative">
     <div class="card-body p-4 p-md-5">
       <?php require __DIR__ . '/alerts.php'; ?>
       <?= $content ?>

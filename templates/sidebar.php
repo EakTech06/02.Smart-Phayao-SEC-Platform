@@ -10,7 +10,8 @@ $beyondOwn = static fn (string $resource): bool => !in_array(Rbac::scope($resour
 $myEmployeeId = (int) (Auth::user()['employee_id'] ?? 0);
 
 /*
- * เมนูจัดเป็นหมวดตามโครงสร้างการบริหาร 4 ฝ่าย + งานหน่วยบริการ
+ * ลำดับหมวด: เมนูหลัก, ข้อมูลพื้นฐาน, ผู้ดูแลระบบ, บริการกลาง, ฝ่ายบริหารวิชาการ, ฝ่ายบริหารงานบุคคล, (ฝ่ายอื่นเมื่อมีโมดูล), รายงานภาพรวม, บัญชีของฉัน
+ * เมนูที่ผู้ใช้ไม่มีสิทธิ์ (show = false) ไม่แสดง
  * หมวดที่ยังไม่มีเมนู (หรือผู้ใช้ไม่มีสิทธิ์เมนูใดเลย) จะถูกซ่อนอัตโนมัติ
  * โมดูลใหม่เพิ่มรายการลงในหมวดของฝ่ายนั้น ๆ ได้ทันที
  * label = null: หมวดไม่มีหัวข้อ (เมนูหลักด้านบน)
@@ -19,22 +20,7 @@ $groups = [
     'main' => ['label' => null, 'icon' => null, 'items' => [
         ['url' => '/dashboard', 'icon' => 'speedometer2', 'label' => 'แดชบอร์ด', 'show' => can('core.dashboard.view')],
         ['url' => '/notifications', 'icon' => 'bell', 'label' => 'การแจ้งเตือน', 'show' => true],
-        ['url' => '/reports/overview', 'icon' => 'file-earmark-bar-graph', 'label' => 'รายงานภาพรวม', 'show' => Rbac::canAny(['core.reports.view_all', 'core.reports.view_department'])],
     ]],
-    'shared' => ['label' => 'บริการกลาง', 'icon' => 'grid', 'items' => [
-        ['url' => '/calendar', 'icon' => 'calendar3', 'label' => 'ปฏิทินกลาง', 'show' => can('core.calendar.read_all')],
-        ['url' => '/files', 'icon' => 'folder2-open', 'label' => 'ไฟล์/เอกสาร', 'show' => can('core.files.read_own')],
-        ['url' => '/pdpa', 'icon' => 'shield-lock', 'label' => 'คำขอใช้สิทธิ์ PDPA', 'show' => can('core.pdpa.request_own')],
-    ]],
-    'academic' => ['label' => 'ฝ่ายบริหารวิชาการ', 'icon' => 'mortarboard', 'items' => [
-        ['url' => '/academic/students', 'icon' => 'person-lines-fill', 'label' => 'ทะเบียนนักเรียน', 'show' => $academicOn && Rbac::scope('academic.students', 'read') !== null],
-    ]],
-    'budget' => ['label' => 'ฝ่ายบริหารงบประมาณ', 'icon' => 'cash-coin', 'items' => []],
-    'personnel' => ['label' => 'ฝ่ายบริหารงานบุคคล', 'icon' => 'person-vcard', 'items' => [
-        ['url' => '/personnel', 'icon' => 'people', 'label' => 'ข้อมูลบุคลากร', 'show' => $beyondOwn('core.employees')],
-    ]],
-    'general' => ['label' => 'ฝ่ายบริหารทั่วไป', 'icon' => 'building', 'items' => []],
-    'service_unit' => ['label' => 'งานหน่วยบริการ', 'icon' => 'geo-alt', 'items' => []],
     'master' => ['label' => 'ข้อมูลพื้นฐาน', 'icon' => 'database', 'items' => [
         ['url' => '/departments', 'icon' => 'diagram-3', 'label' => 'ข้อมูลฝ่าย/งาน', 'show' => can('core.departments.read_all')],
         ['url' => '/service-rooms', 'icon' => 'door-open', 'label' => 'ข้อมูลห้องบริการ', 'show' => can('core.service_rooms.read_all')],
@@ -45,6 +31,23 @@ $groups = [
         ['url' => '/audit-logs', 'icon' => 'clock-history', 'label' => 'ประวัติการใช้งาน', 'show' => can('core.audit.read_all')],
         ['url' => '/sessions', 'icon' => 'display', 'label' => 'จัดการเซสชัน', 'show' => can('core.sessions.read_all')],
         ['url' => '/settings', 'icon' => 'gear', 'label' => 'ตั้งค่าระบบ', 'show' => can('core.settings.manage')],
+    ]],
+    'shared' => ['label' => 'บริการกลาง', 'icon' => 'grid', 'items' => [
+        ['url' => '/calendar', 'icon' => 'calendar3', 'label' => 'ปฏิทินกลาง', 'show' => can('core.calendar.read_all')],
+        ['url' => '/files', 'icon' => 'folder2-open', 'label' => 'ไฟล์/เอกสาร', 'show' => can('core.files.read_own')],
+        ['url' => '/pdpa', 'icon' => 'shield-lock', 'label' => 'คำขอใช้สิทธิ์ PDPA', 'show' => can('core.pdpa.request_own')],
+    ]],
+    'academic' => ['label' => 'ฝ่ายบริหารวิชาการ', 'icon' => 'mortarboard', 'items' => [
+        ['url' => '/academic/students', 'icon' => 'person-lines-fill', 'label' => 'ทะเบียนนักเรียน', 'show' => $academicOn && Rbac::scope('academic.students', 'read') !== null],
+    ]],
+    'personnel' => ['label' => 'ฝ่ายบริหารงานบุคคล', 'icon' => 'person-vcard', 'items' => [
+        ['url' => '/personnel', 'icon' => 'people', 'label' => 'ข้อมูลบุคลากร', 'show' => $beyondOwn('core.employees')],
+    ]],
+    'budget' => ['label' => 'ฝ่ายบริหารงบประมาณ', 'icon' => 'cash-coin', 'items' => []],
+    'general' => ['label' => 'ฝ่ายบริหารทั่วไป', 'icon' => 'building', 'items' => []],
+    'service_unit' => ['label' => 'งานหน่วยบริการ', 'icon' => 'geo-alt', 'items' => []],
+    'reports' => ['label' => null, 'icon' => null, 'items' => [
+        ['url' => '/reports/overview', 'icon' => 'file-earmark-bar-graph', 'label' => 'รายงานภาพรวม', 'show' => Rbac::canAny(['core.reports.view_all', 'core.reports.view_department'])],
     ]],
     'account' => ['label' => 'บัญชีของฉัน', 'icon' => 'person-circle', 'items' => [
         ['url' => '/profile', 'icon' => 'person-badge', 'label' => 'โปรไฟล์ของฉัน', 'show' => true],
@@ -65,12 +68,16 @@ foreach ($groups as $g) {
     }
 }
 ?>
-<nav class="col-lg-3 col-xl-2 offcanvas-lg offcanvas-start bg-white border-end sidebar p-0" tabindex="-1" id="sidebar" aria-label="เมนูหลัก">
+<nav class="offcanvas-lg offcanvas-start app-sidebar p-0" tabindex="-1" id="sidebar" aria-label="เมนูหลัก">
   <div class="offcanvas-header d-lg-none border-bottom">
     <h5 class="offcanvas-title">เมนู</h5>
     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#sidebar" aria-label="ปิด"></button>
   </div>
-  <div class="offcanvas-body d-block p-2">
+  <a href="<?= e(url('/dashboard')) ?>" class="sidebar-brand d-none d-lg-flex" aria-label="<?= e(config('app.name')) ?> หน้าแดชบอร์ด">
+    <span class="brand-mark"><i class="bi bi-mortarboard-fill"></i></span>
+    <span class="brand-text"><strong>Smart Phayao SEC</strong><small>Platform</small></span>
+  </a>
+  <div class="offcanvas-body d-block sidebar-scroll">
     <?php foreach ($groups as $key => $group): ?>
       <?php
       $items = array_values(array_filter($group['items'], static fn (array $i): bool => $i['show']));
@@ -88,12 +95,13 @@ foreach ($groups as $g) {
           <i class="bi bi-chevron-down sidebar-chevron"></i>
         </button>
       <?php endif; ?>
-      <ul class="nav nav-pills flex-column gap-1 mb-2<?= $group['label'] !== null ? ' collapse show' : '' ?>" id="<?= e($id) ?>">
+      <ul class="nav flex-column gap-1 mb-1<?= $group['label'] !== null ? ' collapse show' : ($key !== 'main' ? ' menu-standalone' : '') ?>" id="<?= e($id) ?>">
         <?php foreach ($items as $item): ?>
           <?php $active = $item['url'] === $activeUrl; ?>
-          <li class="nav-item">
-            <a class="nav-link <?= $active ? 'active' : 'link-body-emphasis' ?><?= $group['label'] !== null ? ' ps-4' : '' ?>" href="<?= e(url($item['url'])) ?>"<?= $active ? ' aria-current="page"' : '' ?>>
-              <i class="bi bi-<?= e($item['icon']) ?> me-2"></i><?= e($item['label']) ?>
+          <li class="nav-item<?= $group['label'] !== null ? ' nav-item-sub' : '' ?>">
+            <a class="nav-link<?= $active ? ' active' : '' ?>" href="<?= e(url($item['url'])) ?>"<?= $active ? ' aria-current="page"' : '' ?>
+               data-menu-label="<?= e($item['label']) ?>" data-menu-group="<?= e($group['label'] ?? 'เมนูหลัก') ?>" data-menu-icon="<?= e($item['icon']) ?>">
+              <i class="bi bi-<?= e($item['icon']) ?>"></i><span class="nav-label"><?= e($item['label']) ?></span>
             </a>
           </li>
         <?php endforeach; ?>

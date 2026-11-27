@@ -1,42 +1,9 @@
-body { font-family: 'Sarabun', system-ui, -apple-system, 'Segoe UI', sans-serif; }
-.app-header { min-height: 56px; z-index: 1030; }
-.main-content { padding-bottom: 5.5rem !important; min-height: calc(100vh - 56px); }
-.auth-wrapper { min-height: 100vh; }
 .min-w-0 { min-width: 0; }
-.stat-card .bi { font-size: 1.75rem; opacity: .8; }
 .recovery-codes code { font-size: 1.05rem; letter-spacing: .05em; }
 #qrcode img, #qrcode canvas { display: block; margin: 0 auto; }
+/* โครงหน้า เมนูด้านข้าง แถบด้านบน และธีม: assets/css/theme.css */
 
-@media (min-width: 992px) {
-  .sidebar { position: fixed; top: 56px; bottom: 0; left: 0; overflow-y: auto; }
-  .main-content { padding-bottom: 2rem !important; }
-  .main-footer { margin-left: 25%; }
-}
-@media (min-width: 1200px) { .main-footer { margin-left: 16.666%; } }
-
-/* เมนูด้านข้างแบบจัดหมวด */
-.sidebar-group {
-  margin-top: .35rem; padding: .6rem .75rem; font-size: 1rem; font-weight: 700;
-  color: var(--bs-emphasis-color); background: var(--bs-tertiary-bg);
-  border: 0; border-radius: var(--bs-border-radius);
-}
-.sidebar-group > .bi:first-child { font-size: 1.15rem; }
-.sidebar-group:hover, .sidebar-group:focus-visible { background: var(--bs-secondary-bg); }
-.sidebar-group.has-active { color: var(--bs-primary); background: var(--bs-primary-bg-subtle); }
-.sidebar-chevron { font-size: .8rem; transition: transform .2s; }
-.sidebar-group.collapsed .sidebar-chevron { transform: rotate(-90deg); }
-.sidebar .nav-link { padding-top: .45rem; padding-bottom: .45rem; font-size: .95rem; }
-
-.bottom-nav { z-index: 1020; padding-bottom: env(safe-area-inset-bottom); }
-.bottom-nav a, .bottom-nav button {
-  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px;
-  padding: .45rem 0; font-size: .72rem; color: var(--bs-secondary-color);
-  text-decoration: none; background: none; border: 0;
-}
-.bottom-nav i { font-size: 1.3rem; }
-.bottom-nav .active { color: var(--bs-primary); font-weight: 600; }
 /* Phase 3: กระดิ่งแจ้งเตือน + ปฏิทินกลาง */
-.notification-menu { width: min(22rem, calc(100vw - 1rem)); max-height: 70vh; overflow-y: auto; }
 .calendar-grid { table-layout: fixed; }
 .calendar-grid td { height: 7.5rem; vertical-align: top; padding: .25rem; }
 .calendar-grid .day-number { font-size: .85rem; font-weight: 600; }
@@ -49,7 +16,7 @@ body { font-family: 'Sarabun', system-ui, -apple-system, 'Segoe UI', sans-serif;
 /* Phase 4: แดชบอร์ดและรายงาน */
 .chart-box { position: relative; width: 100%; }
 .legend-swatch { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: .4rem; vertical-align: baseline; }
-.progress.meter { height: 8px; background: #eef0f3; }
+.progress.meter { height: 8px; background: var(--bs-secondary-bg); }
 .progress.meter .progress-bar { border-radius: 4px; }
 .report-section { break-inside: avoid; }
 .report-table th, .report-table td { white-space: nowrap; }
@@ -58,7 +25,7 @@ body { font-family: 'Sarabun', system-ui, -apple-system, 'Segoe UI', sans-serif;
 .student-photo { width: 96px; height: 120px; object-fit: cover; flex-shrink: 0; }
 /* รายงานนักเรียนรายบุคคล (พิมพ์/PDF): ข้อความยาวตัดบรรทัด ไม่ล้นหน้ากระดาษ */
 .profile-table th, .profile-table td { white-space: normal; overflow-wrap: break-word; }
-#general, #family, #enrollments, #health, #documents, #completeness, #status { scroll-margin-top: 72px; }
+#general, #family, #enrollments, #health, #documents, #completeness, #status { scroll-margin-top: 84px; }
 
 /* Phase 5B: ความครบถ้วน */
 .completeness-bar { height: 8px; }
