@@ -21,7 +21,8 @@ INSERT INTO roles (id, code, name_th, description, level, is_system) VALUES
 (5, 'department_head',   'หัวหน้าฝ่าย/งาน',      'ดูแลบุคลากรภายในฝ่าย',            5, 1),
 (6, 'service_unit_head', 'หัวหน้าหน่วยบริการ',   'ดูแลบุคลากรในหน่วยบริการ',         6, 1),
 (7, 'teacher',           'ครู',                  'ผู้ใช้งานทั่วไป (ครู)',             7, 1),
-(8, 'staff',             'บุคลากร/เจ้าหน้าที่',  'ผู้ใช้งานทั่วไป',                  8, 1)
+(8, 'staff',             'บุคลากร/เจ้าหน้าที่',  'ผู้ใช้งานทั่วไป',                  8, 1),
+(9, 'student_registrar', 'เจ้าหน้าที่งานทะเบียนนักเรียน', 'ครูที่ได้รับมอบหมายงานทะเบียนนักเรียน: เพิ่ม ลบ แก้ไขข้อมูลนักเรียนได้ทั้งหมด', 7, 1)
 ON DUPLICATE KEY UPDATE name_th = VALUES(name_th), description = VALUES(description);
 
 -- ---------- Permissions (module.resource.action_scope) ----------
@@ -87,7 +88,7 @@ SELECT r.id, p.id FROM roles r JOIN permissions p ON p.code IN (
   'core.dashboard.view','core.users.read_own','core.users.update_own','core.employees.read_own','core.employees.update_own',
   'core.files.read_own','core.files.upload_own','core.notifications.read_own','core.calendar.read_all',
   'core.service_rooms.read_all','core.pdpa.request_own')
-WHERE r.code IN ('director','deputy_director','department_head','service_unit_head','teacher','staff');
+WHERE r.code IN ('director','deputy_director','department_head','service_unit_head','teacher','staff','student_registrar');
 
 INSERT IGNORE INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id FROM roles r JOIN permissions p ON p.code IN (
@@ -203,7 +204,9 @@ INSERT INTO permissions (code, module, resource, action, scope, description) VAL
 ('academic.students.read_sensitive_service_unit', 'academic', 'students', 'read_sensitive', 'service_unit', 'ดูข้อมูลความพิการ/สุขภาพของนักเรียนในหน่วยบริการ'),
 ('academic.students.read_sensitive_own',      'academic', 'students', 'read_sensitive', 'own',          'ดูข้อมูลความพิการ/สุขภาพของนักเรียนที่ตนรับผิดชอบ'),
 ('academic.students.update_sensitive_all',    'academic', 'students', 'update_sensitive','all',         'แก้ไขข้อมูลความพิการ/สุขภาพของนักเรียน'),
-('academic.students.change_status_all',      'academic', 'students', 'change_status', 'all',         'เปลี่ยนสถานะนักเรียน (พักการเรียน จบ ย้าย จำหน่าย)')
+('academic.students.change_status_all',      'academic', 'students', 'change_status', 'all',         'เปลี่ยนสถานะนักเรียน (พักการเรียน จบ ย้าย จำหน่าย)'),
+('academic.students.update_own',           'academic', 'students', 'update',           'own', 'แก้ไขข้อมูลนักเรียนที่ตนเป็นครูผู้รับผิดชอบ/ครูประจำห้อง'),
+('academic.students.update_sensitive_own', 'academic', 'students', 'update_sensitive', 'own', 'แก้ไขข้อมูลความพิการ/สุขภาพของนักเรียนที่ตนรับผิดชอบ')
 ON DUPLICATE KEY UPDATE description = VALUES(description);
 
 INSERT IGNORE INTO role_permissions (role_id, permission_id)
@@ -215,7 +218,7 @@ SELECT r.id, p.id FROM roles r JOIN permissions p ON p.code IN (
   'academic.students.read_all','academic.students.create_all','academic.students.update_all','academic.students.delete_all',
   'academic.students.export_all','academic.students.read_sensitive_all','academic.students.update_sensitive_all',
   'academic.students.change_status_all')
-WHERE r.code = 'admin';
+WHERE r.code IN ('admin', 'student_registrar');
 
 INSERT IGNORE INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id FROM roles r JOIN permissions p ON p.code IN (
@@ -233,6 +236,7 @@ SELECT r.id, p.id FROM roles r JOIN permissions p ON p.code IN (
 WHERE r.code = 'department_head';
 
 INSERT IGNORE INTO role_permissions (role_id, permission_id)
-SELECT r.id, p.id FROM roles r JOIN permissions p ON p.code IN ('academic.students.read_own','academic.students.read_sensitive_own')
+SELECT r.id, p.id FROM roles r JOIN permissions p ON p.code IN ('academic.students.read_own','academic.students.read_sensitive_own',
+  'academic.students.update_own','academic.students.update_sensitive_own')
 WHERE r.code = 'teacher';
 

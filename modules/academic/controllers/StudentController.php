@@ -134,12 +134,12 @@ final class StudentController extends Controller
 
     public function edit(string $id): Response
     {
-        return $this->renderForm($this->find($id));
+        return $this->renderForm($this->findEditable($id));
     }
 
     public function update(string $id): Response
     {
-        $student = $this->find($id);
+        $student = $this->findEditable($id);
         $data = $this->validateStudent(false, (int) $student['id']);
         StudentService::update($student, $data, $this->request->all());
         Session::flash('success', 'บันทึกข้อมูลนักเรียนเรียบร้อยแล้ว');
@@ -180,7 +180,7 @@ final class StudentController extends Controller
 
     public function healthEdit(string $id): Response
     {
-        $student = $this->find($id);
+        $student = $this->findEditable($id, true);
         $health = StudentService::sensitive((int) $student['id']) ?? [];
         $current = $health['screener_employee_id'] ?? null;
 
@@ -194,7 +194,7 @@ final class StudentController extends Controller
 
     public function healthUpdate(string $id): Response
     {
-        $student = $this->find($id);
+        $student = $this->findEditable($id, true);
         // ข้อมูลสุขภาพ/ความพิการห้ามค้างอยู่ใน Session แบบไม่เข้ารหัส: หากกรอกผิด ฟอร์มจะแสดงค่าที่บันทึกไว้เดิม
         ErrorHandler::doNotFlash(...array_merge(array_keys(StudentService::sensitiveRules()), ['multiple_disabilities', 'card_types']));
         $data = $this->validate(StudentService::sensitiveRules(), StudentService::SENSITIVE_LABELS);
@@ -252,7 +252,7 @@ final class StudentController extends Controller
 
     public function documentStore(string $id): Response
     {
-        $student = $this->find($id);
+        $student = $this->findEditable($id);
         $type = (string) $this->request->input('document_type', '');
         if (!isset(StudentLookup::DOCUMENT_TYPES[$type])) {
             throw new ValidationException(['document_type' => ['กรุณาเลือกประเภทเอกสาร']]);
@@ -283,7 +283,7 @@ final class StudentController extends Controller
 
     public function documentDestroy(string $id, string $fid): Response
     {
-        $student = $this->find($id);
+        $student = $this->findEditable($id);
         $file = Database::instance()->fetch(
             'SELECT * FROM files WHERE id = ? AND ref_id = ? AND ref_type IN (?, ?) AND deleted_at IS NULL',
             [(int) $fid, (int) $student['id'], StudentLookup::REF_TYPE, StudentLookup::REF_TYPE_SENSITIVE]
@@ -331,8 +331,10 @@ final class StudentController extends Controller
             'nationalId' => $nationalId,
             'documents' => array_merge($documents, $sensitiveDocs),
             'photo' => $photo,
-            'canUpdate' => Rbac::can('academic.students.update_all'),
-            'canUpdateHealth' => Rbac::can('academic.students.update_sensitive_all'),
+            'canUpdate' => StudentService::canUpdate($id),
+            // การรับบริการรายปี (ห้อง/ครูผู้รับผิดชอบ) กำหนดโดยงานทะเบียนนักเรียนเท่านั้น
+            'canManageEnrollments' => Rbac::can('academic.students.update_all'),
+            'canUpdateHealth' => StudentService::canUpdateSensitive($id),
             'canDelete' => Rbac::can('academic.students.delete_all'),
             'driveReady' => GoogleWorkspace::isConfigured(),
             'screenerName' => self::employeeName($canSensitive ? (StudentService::sensitive($id, false)['screener_employee_id'] ?? null) : null),
@@ -399,6 +401,18 @@ final class StudentController extends Controller
     private function find(string $id): array
     {
         return StudentService::findVisible((int) $id) ?? throw new HttpException(404);
+    }
+
+    /** นักเรียนที่ผู้ใช้แก้ไขได้ (update_all หรือครูผู้รับผิดชอบ) ไม่เช่นนั้น 403 */
+    private function findEditable(string $id, bool $sensitive = false): array
+    {
+        $student = $this->find($id);
+        $sid = (int) $student['id'];
+        if (!($sensitive ? StudentService::canUpdateSensitive($sid) : StudentService::canUpdate($sid))) {
+            throw new HttpException(403);
+        }
+
+        return $student;
     }
 
     private function findEnrollment(array $student, string $eid): array

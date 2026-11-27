@@ -138,6 +138,21 @@ final class StudentService
         return self::canView($studentId, $userId, 'read_sensitive');
     }
 
+    /**
+     * แก้ไขข้อมูลนักเรียนคนนี้ได้หรือไม่: update_all (งานทะเบียนนักเรียน) = ทุกคน,
+     * update_own (ครู) = เฉพาะนักเรียนที่ตนเป็นครูผู้รับผิดชอบ/ครูประจำห้องในปีการศึกษาปัจจุบัน
+     */
+    public static function canUpdate(int $studentId, ?int $userId = null): bool
+    {
+        return self::canView($studentId, $userId, 'update');
+    }
+
+    /** แก้ไขข้อมูลความพิการ/สุขภาพของนักเรียนคนนี้ได้หรือไม่ (ต้องดูข้อมูลอ่อนไหวของนักเรียนคนนั้นได้ด้วย) */
+    public static function canUpdateSensitive(int $studentId, ?int $userId = null): bool
+    {
+        return self::canView($studentId, $userId, 'update_sensitive') && self::canViewSensitive($studentId, $userId);
+    }
+
     /** นโยบายไฟล์แนบ (ลงทะเบียนกับ FileService): เอกสารอ่อนไหวต้องมีสิทธิ์ read_sensitive */
     public static function canViewDocument(int $studentId, int $userId, bool $sensitive): bool
     {
@@ -410,7 +425,7 @@ final class StudentService
     /** ผู้ใช้กรอกประเภทความพิการ/กลุ่มเลือดในฟอร์มข้อมูลนักเรียนได้หรือไม่ ($studentId null = ตอนเพิ่มนักเรียน) */
     public static function canEditBasicSensitive(?int $studentId): bool
     {
-        return Rbac::can('academic.students.update_sensitive_all') && ($studentId === null || self::canViewSensitive($studentId));
+        return $studentId === null ? Rbac::can('academic.students.update_sensitive_all') : self::canUpdateSensitive($studentId);
     }
 
     /**
@@ -464,7 +479,7 @@ final class StudentService
     /** @param array $data ผลจาก Validator + multiple_disabilities/card_types (list) */
     public static function saveSensitive(int $studentId, array $data, array $multiple, array $cardTypes): void
     {
-        if (!Rbac::can('academic.students.update_sensitive_all') || !self::canView($studentId)) {
+        if (!self::canUpdateSensitive($studentId)) {
             throw new HttpException(403);
         }
         $errors = [];
@@ -675,7 +690,7 @@ final class StudentService
 
     public static function update(array $current, array $data, ?array $sensitiveInput = null): void
     {
-        if (!Rbac::can('academic.students.update_all')) {
+        if (!self::canUpdate((int) $current['id'])) {
             throw new HttpException(403);
         }
         $id = (int) $current['id'];

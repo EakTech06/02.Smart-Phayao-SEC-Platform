@@ -15,6 +15,7 @@ use Modules\CoreAdmin\Services\FileService;
 /** @var array|null $photo */
 /** @var bool $canUpdate */
 /** @var bool $canUpdateHealth */
+/** @var bool $canManageEnrollments */
 /** @var bool $canDelete */
 /** @var bool $driveReady */
 /** @var string|null $screenerName */
@@ -296,14 +297,14 @@ $code = static fn (array $list, mixed $k): string => $k === null || $k === '' ? 
     <section class="card shadow-sm" id="enrollments">
       <div class="card-header bg-white fw-semibold d-flex justify-content-between align-items-center">
         <span><i class="bi bi-door-open me-1"></i>การรับบริการรายปีการศึกษา</span>
-        <?php if ($canUpdate): ?><a href="<?= e($base . '/enrollments/create') ?>" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i>เพิ่ม</a><?php endif; ?>
+        <?php if ($canManageEnrollments): ?><a href="<?= e($base . '/enrollments/create') ?>" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i>เพิ่ม</a><?php endif; ?>
       </div>
       <?php if ($enrollments === []): ?>
         <div class="card-body text-muted">ยังไม่มีข้อมูลการรับบริการ</div>
       <?php else: ?>
         <div class="table-responsive">
           <table class="table table-sm align-middle mb-0">
-            <thead class="table-light"><tr><th>ปีการศึกษา</th><th>ประเภท</th><th>หน่วยบริการ</th><th>ห้อง / ระดับชั้น</th><th>ครูผู้รับผิดชอบ</th><?php if ($canUpdate): ?><th></th><?php endif; ?></tr></thead>
+            <thead class="table-light"><tr><th>ปีการศึกษา</th><th>ประเภท</th><th>หน่วยบริการ</th><th>ห้อง / ระดับชั้น</th><th>ครูผู้รับผิดชอบ</th><?php if ($canManageEnrollments): ?><th></th><?php endif; ?></tr></thead>
             <tbody>
               <?php foreach ($enrollments as $en): ?>
                 <tr>
@@ -316,7 +317,7 @@ $code = static fn (array $list, mixed $k): string => $k === null || $k === '' ? 
                     <?php if ($en['teacher_name'] && $en['teacher_status'] !== 'active'): ?><span class="badge text-bg-warning">ไม่ได้ปฏิบัติงานแล้ว</span><?php endif; ?>
                     <?= $en['homeroom_name'] ? '<div class="small text-muted">ครูประจำชั้น ' . e($en['homeroom_name']) . '</div>' : '' ?>
                   </td>
-                  <?php if ($canUpdate): ?>
+                  <?php if ($canManageEnrollments): ?>
                     <td class="text-end text-nowrap">
                       <a href="<?= e($base . '/enrollments/' . (int) $en['id'] . '/edit') ?>" class="btn btn-sm btn-outline-primary" aria-label="แก้ไข"><i class="bi bi-pencil"></i></a>
                       <form method="post" action="<?= e($base . '/enrollments/' . (int) $en['id']) ?>" class="d-inline" data-confirm="ลบข้อมูลการรับบริการ <?= e($en['year_name']) ?>?">
@@ -326,7 +327,7 @@ $code = static fn (array $list, mixed $k): string => $k === null || $k === '' ? 
                     </td>
                   <?php endif; ?>
                 </tr>
-                <?php if ($en['note']): ?><tr><td colspan="<?= $canUpdate ? 6 : 5 ?>" class="small text-muted border-top-0 pt-0">หมายเหตุ: <?= e($en['note']) ?></td></tr><?php endif; ?>
+                <?php if ($en['note']): ?><tr><td colspan="<?= $canManageEnrollments ? 6 : 5 ?>" class="small text-muted border-top-0 pt-0">หมายเหตุ: <?= e($en['note']) ?></td></tr><?php endif; ?>
               <?php endforeach; ?>
             </tbody>
           </table>

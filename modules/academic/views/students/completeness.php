@@ -159,7 +159,7 @@ $color = static fn (int $score): string => $score >= 100 ? 'success' : ($score >
                 <div class="progress-bar bg-<?= e($color((int) $res['score'])) ?>" style="width: <?= (int) $res['score'] ?>%"></div>
               </div>
               <span class="small fw-semibold"><?= (int) $res['score'] ?>%</span>
-              <?php if (can('academic.students.update_all')): ?>
+              <?php if (can('academic.students.update_all') || (can('academic.students.update_own') && \Modules\Academic\Services\StudentService::canUpdate((int) $s['id']))): ?>
                 <a href="<?= e(url('/academic/students/' . (int) $s['id'] . '/edit')) ?>" class="btn btn-sm btn-outline-primary" aria-label="แก้ไข"><i class="bi bi-pencil"></i></a>
               <?php endif; ?>
             </div>
