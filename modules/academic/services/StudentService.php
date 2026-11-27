@@ -1180,15 +1180,18 @@ final class StudentService
             $errors['enroll_responsible_employee_id'][] = 'กรุณาเลือกครูที่ยังปฏิบัติงานอยู่';
         }
         // ห้องที่มีครูประจำชั้น: ครูผู้รับผิดชอบต้องเป็นครูประจำชั้นของห้องนั้น (เว้นว่าง = ครูประจำชั้นหลัก)
+        // ห้องที่ยังไม่มีครูประจำชั้น: ครูผู้รับผิดชอบเป็นค่าว่าง
         if ($roomId !== null && !isset($errors['enroll_service_room_id'])) {
             $roomTeachers = array_map('intval', array_column($db->fetchAll(
                 'SELECT employee_id FROM service_room_teachers WHERE service_room_id = ? ORDER BY sort_order', [$roomId]
             ), 'employee_id'));
             $unchanged = $current !== null && $teacherId === (int) ($current['responsible_employee_id'] ?? 0)
                 && $roomId === (int) ($current['service_room_id'] ?? 0);
-            if ($roomTeachers !== [] && $teacherId === null) {
+            if ($roomTeachers === []) {
+                $teacherId = null;
+            } elseif ($teacherId === null) {
                 $teacherId = $roomTeachers[0];
-            } elseif ($roomTeachers !== [] && !$unchanged && !in_array($teacherId, $roomTeachers, true)) {
+            } elseif (!$unchanged && !in_array($teacherId, $roomTeachers, true)) {
                 $errors['enroll_responsible_employee_id'][] = 'ครูผู้รับผิดชอบต้องเป็นครูประจำชั้นของห้องบริการที่เลือก';
             }
         }

@@ -102,16 +102,26 @@
     const teacher = document.querySelector('[data-room-teacher]');
     const grade = document.querySelector('[data-room-grade]');
 
-    // ห้องที่มีครูประจำชั้น → ครูผู้รับผิดชอบเหลือเฉพาะครูของห้อง (ห้องยังไม่มีครู/ไม่เลือกห้อง = เลือกได้ทุกคน)
-    const syncTeachers = (pickDefault) => {
+    // ครูผู้รับผิดชอบตามห้องบริการ:
+    // - ไม่เลือกห้อง → เลือกได้ทุกคน
+    // - ห้องที่มีครูประจำชั้น → เหลือเฉพาะครูของห้อง (ค่าเริ่มต้น = ครูประจำชั้นหลัก)
+    // - ห้องที่ยังไม่มีครูประจำชั้น → ว่าง ไม่แสดงครู
+    // keep = ครูที่บันทึกไว้เดิม (ตอนเปิดฟอร์มแก้ไข ยังคงแสดงในรายการ)
+    const syncTeachers = (keep) => {
       if (!teacher) return;
       const opt = room.selectedOptions[0];
-      const ids = opt && opt.dataset.teachers ? opt.dataset.teachers.split(',') : [];
+      const hasRoom = Boolean(opt && opt.value);
+      const ids = hasRoom && opt.dataset.teachers ? opt.dataset.teachers.split(',') : [];
       Array.from(teacher.options).forEach((o) => {
-        if (o.value) showOption(o, ids.length === 0 || ids.includes(o.value));
+        if (o.value) showOption(o, !hasRoom || ids.includes(o.value) || (ids.length > 0 && o.value === keep));
       });
-      if (ids.length > 0 && (pickDefault || !ids.includes(teacher.value))) {
-        if (!ids.includes(teacher.value)) teacher.value = ids[0]; // ครูประจำชั้นหลัก
+      if (hasRoom && ids.length === 0) {
+        teacher.value = '';
+      } else if (ids.length > 0 && !ids.includes(teacher.value) && teacher.value !== keep) {
+        teacher.value = ids[0]; // ครูประจำชั้นหลัก
+      }
+      if (teacher.options[0] && !teacher.options[0].value) {
+        teacher.options[0].textContent = hasRoom && ids.length === 0 ? '-- ห้องนี้ยังไม่มีครูประจำชั้น --' : '-- ไม่ระบุ --';
       }
     };
     const syncRooms = () => {
@@ -121,11 +131,11 @@
         showOption(opt, match);
         if (!match && opt.selected) room.value = '';
       });
-      syncTeachers(false);
+      syncTeachers(null);
     };
     year.addEventListener('change', syncRooms);
     room.addEventListener('change', () => {
-      syncTeachers(true);
+      syncTeachers(null);
       // ดึงระดับชั้นของห้อง
       const g = room.selectedOptions[0] ? room.selectedOptions[0].dataset.grade || '' : '';
       if (grade && g) grade.value = g;
@@ -134,13 +144,7 @@
     Array.from(room.options).forEach((opt) => {
       if (opt.dataset.year) showOption(opt, opt.dataset.year === year.value);
     });
-    if (teacher && room.value) {
-      const opt = room.selectedOptions[0];
-      const ids = opt && opt.dataset.teachers ? opt.dataset.teachers.split(',') : [];
-      Array.from(teacher.options).forEach((o) => {
-        if (o.value) showOption(o, ids.length === 0 || ids.includes(o.value) || o.value === teacher.value);
-      });
-    }
+    if (teacher && room.value) syncTeachers(teacher.value);
   }
 
   // ผู้ปกครองคือบิดา/มารดา → คัดลอกข้อมูลมาใส่และล็อกช่อง (แก้ที่ข้อมูลบิดา/มารดาแล้วตามมาด้วย)
