@@ -1,9 +1,10 @@
-<?php /** @var array $user */ ?>
+<?php /** @var array $user */ /** @var array|null $signature */ ?>
 <h1 class="h4 mb-3">โปรไฟล์ของฉัน</h1>
 
 <ul class="nav nav-tabs mb-3">
   <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-info" type="button">ข้อมูลส่วนตัว</button></li>
   <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-password" type="button">เปลี่ยนรหัสผ่าน</button></li>
+  <li class="nav-item"><button class="nav-link" id="signature-tab" data-bs-toggle="tab" data-bs-target="#tab-signature" type="button">ลายเซ็น</button></li>
 </ul>
 
 <div class="tab-content">
@@ -140,8 +141,59 @@
       </div>
     </div>
   </div>
+
+  <!-- ===== แท็บ 3: ลายเซ็นสำหรับลงนามเอกสาร ===== -->
+  <div class="tab-pane fade" id="tab-signature">
+    <div class="card shadow-sm" style="max-width:720px;">
+      <div class="card-body">
+        <h5 class="card-title mb-1"><i class="bi bi-pen me-1"></i> ลายเซ็นสำหรับลงนามเอกสาร</h5>
+        <p class="small text-body-secondary">ใช้ประทับในเอกสารงานวิจัยและสื่อนวัตกรรมเมื่อคุณลงนาม เก็บไว้นอกพื้นที่สาธารณะ ผู้ใช้อื่นดาวน์โหลดภาพนี้ไม่ได้</p>
+        <?php foreach (['signature', 'signature_file'] as $k): ?>
+          <?php if ($err = error_for($k)): ?><div class="alert alert-danger py-2"><?= e($err) ?></div><?php endif; ?>
+        <?php endforeach; ?>
+        <div class="mb-3">
+          <div class="small fw-semibold mb-1">ลายเซ็นปัจจุบัน</div>
+          <?php if ($signature !== null): ?>
+            <img src="<?= e(url('/profile/signature/image?v=' . substr((string) $signature['checksum_sha256'], 0, 12))) ?>" alt="ภาพลายเซ็นปัจจุบัน" class="signature-preview">
+            <div class="small text-body-secondary mt-1"><?= $signature['source'] === 'draw' ? 'วาดบนจอ' : 'อัปโหลดภาพ' ?> · บันทึกเมื่อ <?= e(thai_date((string) $signature['updated_at'])) ?></div>
+          <?php else: ?>
+            <div class="alert alert-warning py-2 mb-0 small"><i class="bi bi-exclamation-triangle me-1"></i>ยังไม่มีลายเซ็น ต้องบันทึกก่อนจึงจะลงนามเอกสารได้</div>
+          <?php endif; ?>
+        </div>
+
+        <form method="post" action="<?= e(url('/profile/signature')) ?>" class="border rounded-3 p-3 mb-3" data-signature-form>
+          <?= csrf_field() ?>
+          <input type="hidden" name="mode" value="draw">
+          <input type="hidden" name="signature" value="" data-signature-value>
+          <div class="fw-semibold mb-2">วาดลายเซ็น</div>
+          <canvas class="signature-pad" data-signature-pad aria-label="พื้นที่วาดลายเซ็น ใช้เมาส์ นิ้ว หรือปากกา"></canvas>
+          <div class="d-flex flex-wrap gap-2 mt-2">
+            <button type="button" class="btn btn-outline-secondary btn-sm" data-signature-clear><i class="bi bi-eraser me-1"></i>ล้าง</button>
+            <button type="submit" class="btn btn-primary btn-sm ms-auto"><i class="bi bi-save me-1"></i>บันทึกลายเซ็นที่วาด</button>
+          </div>
+        </form>
+
+        <form method="post" action="<?= e(url('/profile/signature')) ?>" enctype="multipart/form-data" class="border rounded-3 p-3 mb-3">
+          <?= csrf_field() ?>
+          <input type="hidden" name="mode" value="upload">
+          <label class="form-label fw-semibold" for="signature-file">หรืออัปโหลดภาพลายเซ็น</label>
+          <input type="file" id="signature-file" name="signature_file" required accept="image/png,image/jpeg,image/webp" class="form-control">
+          <div class="form-text">PNG, JPG หรือ WEBP ไม่เกิน 2 MB · เซ็นด้วยปากกาสีเข้มบนกระดาษขาว ระบบทำพื้นหลังสีขาวให้โปร่งใส</div>
+          <button type="submit" class="btn btn-outline-primary btn-sm mt-2"><i class="bi bi-upload me-1"></i>อัปโหลดลายเซ็น</button>
+        </form>
+
+        <?php if ($signature !== null): ?>
+          <form method="post" action="<?= e(url('/profile/signature')) ?>" data-confirm="ลบภาพลายเซ็น? (ลายเซ็นที่ประทับในเอกสารแล้วไม่เปลี่ยนแปลง)">
+            <?= csrf_field() ?><input type="hidden" name="_method" value="DELETE">
+            <button type="submit" class="btn btn-link text-danger px-0 btn-sm"><i class="bi bi-trash me-1"></i>ลบภาพลายเซ็น</button>
+          </form>
+        <?php endif; ?>
+      </div>
+    </div>
+  </div>
 </div>
 
+<script src="<?= e(asset('js/signature-pad.js')) ?>" defer></script>
 <script>
 document.getElementById('avatarInput')?.addEventListener('change', function () {
   const file = this.files[0];

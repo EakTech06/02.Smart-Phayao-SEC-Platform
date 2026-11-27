@@ -88,6 +88,28 @@ final class ResearchStorage
         ];
     }
 
+    /**
+     * บันทึกไฟล์ PDF ที่ระบบสร้าง (ไฟล์ที่ลงนามแล้ว) เป็นไฟล์ใหม่ ไม่เขียนทับไฟล์เดิม
+     * @param string $stem เช่น v2_s1, manual_v1_s4
+     * @return array{storage_path: string, checksum_sha256: string, size_bytes: int}
+     */
+    public static function storeBytes(string $bytes, string $dirKey, string $stem): array
+    {
+        if (preg_match('/^m?\d+$/', $dirKey) !== 1 || preg_match('/^[a-z_]*v\d+_s[1-4]$/', $stem) !== 1 || !str_starts_with(ltrim(substr($bytes, 0, 1024)), '%PDF-')) {
+            throw new \InvalidArgumentException('Invalid signed file');
+        }
+        $dir = self::baseDir() . '/' . $dirKey;
+        if (!is_dir($dir) && !mkdir($dir, 0775, true) && !is_dir($dir)) {
+            throw new \RuntimeException('สร้างโฟลเดอร์เก็บไฟล์ไม่สำเร็จ');
+        }
+        $relative = $dirKey . '/' . $stem . '_' . bin2hex(random_bytes(8)) . '.pdf';
+        if (file_put_contents(self::baseDir() . '/' . $relative, $bytes, LOCK_EX) !== strlen($bytes)) {
+            throw new \RuntimeException('บันทึกไฟล์ที่ลงนามไม่สำเร็จ');
+        }
+
+        return ['storage_path' => $relative, 'checksum_sha256' => hash('sha256', $bytes), 'size_bytes' => strlen($bytes)];
+    }
+
     /** อ่านไฟล์ของเวอร์ชัน (ตรวจ path และ checksum) */
     public static function read(array $version): string
     {

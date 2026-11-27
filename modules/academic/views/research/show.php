@@ -10,6 +10,8 @@ use Modules\Academic\Services\StudentLookup;
 /** @var array $logs */
 /** @var array $threads */
 /** @var array|null $round */
+/** @var list<array> $signing */
+/** @var int|null $awaiting */
 
 $id = (int) $work['id'];
 $base = '/academic/research/works/' . $id;
@@ -35,7 +37,7 @@ $size = static fn (int $b): string => $b >= 1048576 ? number_format($b / 1048576
   </ol>
 </nav>
 
-<?php foreach (['status', 'file', 'to_status', 'note', 'body'] as $k): ?>
+<?php foreach (['status', 'file', 'to_status', 'note', 'body', 'boxes', 'reason', 'password'] as $k): ?>
   <?php if ($e = error_for($k)): ?><div class="alert alert-danger"><?= e($e) ?></div><?php break; endif; ?>
 <?php endforeach; ?>
 
@@ -54,10 +56,7 @@ $size = static fn (int $b): string => $b >= 1048576 ? number_format($b / 1048576
         <a href="<?= e(url($base . '/edit')) ?>" class="btn btn-outline-primary"><i class="bi bi-pencil me-1"></i>แก้ไขข้อมูล</a>
       <?php endif; ?>
       <?php if ($status === 'draft'): ?>
-        <form method="post" action="<?= e(url($base . '/submit')) ?>" data-confirm="ยืนยันส่งงานวิจัยให้ผู้ตรวจ?">
-          <?= csrf_field() ?>
-          <button type="submit" class="btn btn-primary"><i class="bi bi-send me-1"></i>ส่งงาน</button>
-        </form>
+        <a href="<?= e(url($base . '/sign')) ?>" class="btn btn-primary"><i class="bi bi-pen me-1"></i>ลงนามและส่งงาน</a>
       <?php endif; ?>
       <?php if (in_array($status, ResearchLookup::OWNER_CANCELLABLE, true)): ?>
         <?php if ($status === 'draft' && $work['submitted_at'] === null): ?>
@@ -83,7 +82,13 @@ $size = static fn (int $b): string => $b >= 1048576 ? number_format($b / 1048576
 <?php endif; ?>
 
 <?php if ($isOwner && $status === 'revision'): ?>
-  <div class="alert alert-warning"><i class="bi bi-arrow-return-left me-1"></i>ผู้ตรวจส่งกลับให้แก้ไข ดูข้อเสนอแนะด้านล่าง แล้วอัปโหลดไฟล์ฉบับแก้ไขเพื่อส่งอีกครั้ง</div>
+  <div class="alert alert-warning"><i class="bi bi-arrow-return-left me-1"></i>ถูกส่งกลับให้แก้ไข ดูข้อเสนอแนะ/ประวัติสถานะ แล้วอัปโหลดไฟล์ฉบับแก้ไขเพื่อลงนามและส่งอีกครั้ง (ลายเซ็นเดิมถูกยกเลิกแล้ว)</div>
+<?php endif; ?>
+<?php if ($awaiting !== null && \Modules\Academic\Services\SigningLookup::canSignOrder($awaiting, (int) $work['owner_user_id'], (int) \Core\Auth::id())): ?>
+  <div class="alert alert-success d-flex flex-wrap align-items-center gap-2">
+    <span class="me-auto"><i class="bi bi-pen me-1"></i>เอกสารนี้รอคุณลงนามลำดับที่ <?= (int) $awaiting ?> (<?= e(\Modules\Academic\Services\SigningLookup::ORDERS[$awaiting]) ?>)</span>
+    <a href="<?= e(url($base . '/sign')) ?>" class="btn btn-success"><i class="bi bi-pen me-1"></i>ไปหน้าลงนาม</a>
+  </div>
 <?php endif; ?>
 
 <div class="row g-3">
@@ -137,7 +142,7 @@ $size = static fn (int $b): string => $b >= 1048576 ? number_format($b / 1048576
             <div class="col-12 col-md-6">
               <label class="visually-hidden" for="v-file">ไฟล์</label>
               <input type="file" id="v-file" name="file" required accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" class="form-control">
-              <div class="form-text">PDF หรือ DOCX ไม่เกิน <?= $maxMb ?> MB · ไฟล์เดิมทุกเวอร์ชันยังเก็บไว้</div>
+              <div class="form-text">PDF หรือ DOCX ไม่เกิน <?= $maxMb ?> MB · DOCX ใช้เป็นฉบับร่างเท่านั้น ฉบับที่ส่งลงนามต้องเป็น PDF · ไฟล์เดิมทุกเวอร์ชันยังเก็บไว้</div>
             </div>
             <div class="col-12 col-md-6">
               <label class="visually-hidden" for="v-note">สิ่งที่แก้ไข</label>
@@ -146,7 +151,7 @@ $size = static fn (int $b): string => $b >= 1048576 ? number_format($b / 1048576
           </div>
           <div class="d-flex flex-wrap gap-2 mt-2">
             <?php if ($status === 'revision'): ?>
-              <button type="submit" name="submit" value="1" class="btn btn-primary"><i class="bi bi-send me-1"></i>อัปโหลดและส่งฉบับแก้ไข</button>
+              <button type="submit" name="submit" value="1" class="btn btn-primary"><i class="bi bi-pen me-1"></i>อัปโหลดแล้วลงนามส่งฉบับแก้ไข</button>
               <button type="submit" class="btn btn-outline-primary">อัปโหลดอย่างเดียว</button>
             <?php else: ?>
               <button type="submit" class="btn btn-outline-primary"><i class="bi bi-upload me-1"></i>อัปโหลด</button>
@@ -164,10 +169,9 @@ $size = static fn (int $b): string => $b >= 1048576 ? number_format($b / 1048576
         }
         ?>
         <?php if ($status === 'revision' && (int) $work['current_version'] > $revisionAt): ?>
-          <form method="post" action="<?= e(url($base . '/submit')) ?>" class="card-body border-top pt-2" data-confirm="ส่งฉบับแก้ไขจากไฟล์เวอร์ชันล่าสุด?">
-            <?= csrf_field() ?>
-            <button type="submit" class="btn btn-link px-0">อัปโหลดไว้แล้ว? ส่งฉบับแก้ไขจากเวอร์ชันล่าสุด</button>
-          </form>
+          <div class="card-body border-top pt-2">
+            <a href="<?= e(url($base . '/sign')) ?>" class="btn btn-link px-0">อัปโหลดไว้แล้ว? ลงนามและส่งฉบับแก้ไขจากเวอร์ชันล่าสุด</a>
+          </div>
         <?php endif; ?>
       <?php endif; ?>
     </div>
@@ -236,6 +240,8 @@ $size = static fn (int $b): string => $b >= 1048576 ? number_format($b / 1048576
         </div>
       </form>
     <?php endif; ?>
+
+    <?php $signBase = $base; $revokable = in_array($status, ['approved', 'passed', 'sign_3', 'sign_4'], true); require __DIR__ . '/../signing/_card.php'; ?>
 
     <div class="card shadow-sm mb-3">
       <div class="card-header"><i class="bi bi-clock-history me-1"></i>ประวัติสถานะ</div>

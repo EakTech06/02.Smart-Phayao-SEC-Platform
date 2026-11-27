@@ -10,6 +10,11 @@ storage/logs/*
 # ไฟล์งานวิจัย/สื่อนวัตกรรมที่ครูอัปโหลด (อาจมีข้อมูลผู้เรียน)
 storage/research/*
 !storage/research/.gitkeep
+# ภาพลายเซ็นของผู้ใช้ (ใช้ประทับเอกสารเท่านั้น)
+storage/signatures/*
+!storage/signatures/.gitkeep
+# ฟอนต์ภาษาไทยสำหรับประทับลายเซ็น (วางเองต่อเครื่อง ดู resources/fonts/README.md)
+resources/fonts/*.ttf
 public/uploads/*
 !public/uploads/avatars/
 public/uploads/avatars/*

@@ -7,9 +7,11 @@ use Modules\Academic\Controllers\EnrollmentPromotionController;
 use Modules\Academic\Controllers\InnovationController;
 use Modules\Academic\Controllers\ResearchController;
 use Modules\Academic\Controllers\ResearchSettingsController;
+use Modules\Academic\Controllers\SigningController;
 use Modules\Academic\Controllers\StudentController;
 use Modules\Academic\Controllers\StudentImportController;
 use Modules\Academic\Controllers\StudentReportController;
+use Modules\Academic\Controllers\VerifyController;
 use Modules\Academic\Services\ResearchLookup;
 use Modules\Academic\Services\StudentLookup;
 use Modules\Academic\Services\StudentService;
@@ -93,7 +95,6 @@ $router->group(['middleware' => ['auth', 'password.fresh']], static function (Ro
     $r->delete('/academic/research/works/{id:\d+}', [ResearchController::class, 'destroy'], ['csrf', $researchSubmit]);
     $r->post('/academic/research/works/{id:\d+}/versions', [ResearchController::class, 'versionStore'], ['csrf', $researchSubmit]);
     $r->get('/academic/research/works/{id:\d+}/versions/{vid:\d+}', [ResearchController::class, 'download'], [$researchWorks]);
-    $r->post('/academic/research/works/{id:\d+}/submit', [ResearchController::class, 'submit'], ['csrf', $researchSubmit]);
     $r->post('/academic/research/works/{id:\d+}/cancel', [ResearchController::class, 'cancel'], ['csrf', $researchSubmit]);
     $r->post('/academic/research/works/{id:\d+}/review', [ResearchController::class, 'review'], ['csrf', 'perm:' . ResearchLookup::PERM_REVIEW]);
     $r->post('/academic/research/works/{id:\d+}/comments', [ResearchController::class, 'commentStore'], ['csrf', $researchWorks]);
@@ -119,8 +120,22 @@ $router->group(['middleware' => ['auth', 'password.fresh']], static function (Ro
     $r->post('/academic/innovation/media/{id:\d+}/report', [InnovationController::class, 'reportStore'], ['csrf', $researchSubmit]);
     $r->post('/academic/innovation/media/{id:\d+}/versions', [InnovationController::class, 'versionStore'], ['csrf', $researchSubmit]);
     $r->get('/academic/innovation/media/{id:\d+}/versions/{vid:\d+}', [InnovationController::class, 'download'], [$researchWorks]);
-    $r->post('/academic/innovation/media/{id:\d+}/submit', [InnovationController::class, 'submit'], ['csrf', $researchSubmit]);
     $r->post('/academic/innovation/media/{id:\d+}/cancel', [InnovationController::class, 'cancel'], ['csrf', $researchSubmit]);
     $r->post('/academic/innovation/media/{id:\d+}/review', [InnovationController::class, 'review'], ['csrf', 'perm:' . ResearchLookup::PERM_REVIEW]);
     $r->post('/academic/innovation/media/{id:\d+}/comments', [InnovationController::class, 'commentStore'], ['csrf', $researchWorks]);
+
+    // ลงนาม 4 ลำดับ (งานวิจัย / คู่มือ / รายงาน): ตรวจสิทธิ์รายงานและลำดับใน SigningController/SigningService
+    $doc = '/academic/{area:research|innovation}/{sub:works|media}/{id:\d+}';
+    $r->get($doc . '/sign', [SigningController::class, 'page'], [$researchWorks]);
+    $r->get($doc . '/sign/file', [SigningController::class, 'file'], [$researchWorks]);
+    $r->post($doc . '/sign/boxes', [SigningController::class, 'boxes'], ['csrf', $researchWorks]);
+    $r->post($doc . '/sign/preview', [SigningController::class, 'preview'], ['csrf', $researchWorks]);
+    $r->post($doc . '/sign', [SigningController::class, 'sign'], ['csrf', $researchWorks]);
+    $r->post($doc . '/sign/return', [SigningController::class, 'returnDoc'], ['csrf', $researchWorks]);
+    $r->post($doc . '/revoke', [SigningController::class, 'revoke'], ['csrf', $researchManage]);
+    $r->get($doc . '/signed/{sid:\d+}', [SigningController::class, 'signed'], [$researchWorks]);
 });
+
+// ตรวจสอบเอกสารที่ลงนามครบจาก QR Code (สาธารณะ ไม่ต้องเข้าสู่ระบบ แสดงเฉพาะข้อมูลยืนยันเอกสาร)
+// (รูปแบบเส้นทางใส่ {n} ไม่ได้: ตรวจความยาว 32 ตัวใน SigningService::findByToken)
+$router->get('/verify/{token:[a-f0-9]+}', [VerifyController::class, 'show']);

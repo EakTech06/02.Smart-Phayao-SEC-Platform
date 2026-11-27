@@ -255,7 +255,10 @@ INSERT INTO permissions (code, module, resource, action, scope, description) VAL
 ('academic.research.submit_own', 'academic', 'research', 'submit', 'own', 'ส่งงานวิจัย/สื่อนวัตกรรมของตนเอง ดูได้เฉพาะงานของตน'),
 ('academic.research.read_all',   'academic', 'research', 'read',   'all', 'ดูรายละเอียดและไฟล์งานวิจัย/สื่อนวัตกรรมทั้งหมด และรายงาน'),
 ('academic.research.review_all', 'academic', 'research', 'review', 'all', 'ตรวจงานวิจัย/สื่อนวัตกรรม ให้ข้อเสนอแนะ และเปลี่ยนสถานะ'),
-('academic.research.manage_all', 'academic', 'research', 'manage', 'all', 'จัดการประเภทงานวิจัย ประเภทสื่อนวัตกรรม และรอบการส่ง')
+('academic.research.manage_all', 'academic', 'research', 'manage', 'all', 'จัดการประเภทงานวิจัย ประเภทสื่อนวัตกรรม และรอบการส่ง'),
+('academic.research.sign_2', 'academic', 'research', 'sign_2', 'all', 'ลงนามลำดับที่ 2 (หัวหน้างานวิจัยและพัฒนานวัตกรรม) ในงานวิจัย/สื่อนวัตกรรม'),
+('academic.research.sign_3', 'academic', 'research', 'sign_3', 'all', 'ลงนามลำดับที่ 3 (หัวหน้าฝ่ายบริหารวิชาการ) ในงานวิจัย/สื่อนวัตกรรม'),
+('academic.research.sign_4', 'academic', 'research', 'sign_4', 'all', 'ลงนามลำดับที่ 4 (รองผู้อำนวยการฝ่ายบริหารวิชาการ อนุมัติขั้นสุดท้าย)')
 ON DUPLICATE KEY UPDATE description = VALUES(description);
 
 INSERT INTO roles (code, name_th, description, level, is_system) VALUES
@@ -291,6 +294,14 @@ WHERE r.code = 'research_head';
 INSERT IGNORE INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id FROM roles r JOIN permissions p ON p.code = 'academic.research.read_all'
 WHERE r.code IN ('research_head', 'academic_head', 'academic_deputy', 'director');
+
+-- ลงนาม 4 ลำดับ: ลำดับ 1 = ครูเจ้าของงาน, 2-4 ตามบทบาท
+INSERT IGNORE INTO role_permissions (role_id, permission_id)
+SELECT r.id, p.id FROM roles r JOIN permissions p ON p.code = 'academic.research.sign_2' WHERE r.code = 'research_head';
+INSERT IGNORE INTO role_permissions (role_id, permission_id)
+SELECT r.id, p.id FROM roles r JOIN permissions p ON p.code = 'academic.research.sign_3' WHERE r.code = 'academic_head';
+INSERT IGNORE INTO role_permissions (role_id, permission_id)
+SELECT r.id, p.id FROM roles r JOIN permissions p ON p.code = 'academic.research.sign_4' WHERE r.code = 'academic_deputy';
 
 INSERT INTO research_types (kind, name, sort_order) VALUES
 ('research', 'การวิจัยเชิงปฏิบัติการในชั้นเรียน (Classroom Action Research)', 1),

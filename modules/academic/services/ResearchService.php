@@ -279,7 +279,7 @@ final class ResearchService
      * สร้างงานใหม่พร้อมไฟล์เวอร์ชันแรก
      * @param array{title: string, type_id: int, academic_year_id: int, semester: int, target_count: int, keywords: ?string, disabilities: list<string>} $data
      */
-    public static function create(array $data, array $file, bool $submit): int
+    public static function create(array $data, array $file): int
     {
         $db = Database::instance();
         $id = $db->transaction(static function (Database $db) use ($data, $file): int {
@@ -301,9 +301,6 @@ final class ResearchService
             return $id;
         });
         Audit::log('research.created', 'academic', 'research_works', $id, null, ['title' => $data['title']]);
-        if ($submit) {
-            self::submit(self::find($id) ?? throw new HttpException(404));
-        }
 
         return $id;
     }
@@ -345,8 +342,11 @@ final class ResearchService
         return $no;
     }
 
-    /** ครูส่งงาน: ร่าง → ส่งแล้ว / ส่งกลับแก้ไข → ส่งฉบับแก้ไขแล้ว (ต้องอัปโหลดไฟล์ใหม่หลังถูกส่งกลับ) */
-    public static function submit(array $work): string
+    /**
+     * ครูลงนามลำดับที่ 1 และส่งงาน: ร่าง → ส่งแล้ว / ส่งกลับแก้ไข → ส่งฉบับแก้ไขแล้ว (ต้องอัปโหลดไฟล์ใหม่หลังถูกส่งกลับ)
+     * ไฟล์ฉบับล่าสุดต้องเป็น PDF กำหนดตำแหน่งลายเซ็นครบ 4 ลำดับ และยืนยันรหัสผ่าน
+     */
+    public static function submit(array $work, string $password): string
     {
         if (!self::isOwner($work)) {
             throw new HttpException(403);
@@ -369,7 +369,15 @@ final class ResearchService
         if ((int) $work['current_version'] < 1) {
             throw new ValidationException(['file' => ['กรุณาแนบไฟล์งานวิจัยก่อนส่ง']]);
         }
-        self::transition($work, $to, null, ['submitted_at' => $work['submitted_at'] ?? Database::now()]);
+        $ctx = self::signContext($work);
+        SigningService::assertSubmittable($ctx);
+        SigningService::confirmPassword((int) Auth::id(), $password);
+        Database::instance()->transaction(static function () use ($work, $ctx, $to): void {
+            // ส่งใหม่: ลายเซ็นเดิมทั้งหมดถูกยกเลิก เริ่มลำดับที่ 1 ใหม่
+            SigningService::revokeAll('research', (int) $work['id'], (int) Auth::id(), 'ส่งเวอร์ชันที่ ' . (int) $work['current_version']);
+            SigningService::sign($ctx, 1, (int) Auth::id());
+            self::transition($work, $to, null, ['submitted_at' => $work['submitted_at'] ?? Database::now()]);
+        });
 
         $title = ($to === 'submitted' ? 'มีงานวิจัยส่งใหม่: ' : 'ส่งงานวิจัยฉบับแก้ไขแล้ว: ') . $work['title'];
         $reviewers = array_diff(NotificationService::usersWithPermission(ResearchLookup::PERM_REVIEW), [(int) Auth::id()]);
@@ -378,6 +386,122 @@ final class ResearchService
             self::link((int) $work['id']), true);
 
         return $to;
+    }
+
+    // ---------------------------------------------------------------- ลงนาม 4 ลำดับ
+
+    /** บริบทเอกสารสำหรับ SigningService (ไฟล์ต้นฉบับ = เวอร์ชันล่าสุด) */
+    public static function signContext(array $work): array
+    {
+        $version = (int) $work['current_version'] > 0
+            ? Database::instance()->fetch('SELECT * FROM research_versions WHERE work_id = ? AND version_no = ?', [(int) $work['id'], (int) $work['current_version']])
+            : null;
+        if ($version === null) {
+            throw new ValidationException(['file' => ['ยังไม่มีไฟล์งานวิจัย']]);
+        }
+
+        return [
+            'type' => 'research',
+            'id' => (int) $work['id'],
+            'owner_user_id' => (int) $work['owner_user_id'],
+            'owner_name' => (string) $work['owner_name'],
+            'title' => (string) $work['title'],
+            'year_be' => (string) $work['year_be'],
+            'status' => (string) $work['status'],
+            'status_label' => ResearchLookup::statusLabel((string) $work['status']),
+            'version' => $version,
+            'dir' => (string) $work['id'],
+            'stem' => 'v' . (int) $version['version_no'],
+            'base' => self::link((int) $work['id']),
+            'awaiting' => self::awaitingOrder($work),
+            'owner_editable' => in_array($work['status'], ResearchLookup::OWNER_EDITABLE, true),
+            'in_review' => in_array($work['status'], ResearchLookup::PENDING_REVIEW, true),
+        ];
+    }
+
+    /** ลำดับที่รอลงนาม (null = ไม่อยู่ระหว่างลงนามลำดับ 2-4) */
+    public static function awaitingOrder(array $work): ?int
+    {
+        return ResearchLookup::AWAITING_SIGN[$work['status']] ?? null;
+    }
+
+    /** ลงนามลำดับ 2-4 ตามลำดับ (ยืนยันรหัสผ่าน) ลำดับที่ 4 = อนุมัติ ออกเลขที่เอกสาร + QR Code */
+    public static function signStep(array $work, int $order, string $password): string
+    {
+        if (self::awaitingOrder($work) !== $order) {
+            throw new ValidationException(['status' => ['เอกสารไม่ได้อยู่ระหว่างรอลงนามลำดับที่ ' . $order]]);
+        }
+        $ctx = self::signContext($work);
+        SigningService::assertCanSign($ctx, $order, (int) Auth::id());
+        SigningService::confirmPassword((int) Auth::id(), $password);
+        $to = ResearchLookup::AFTER_SIGN[$order];
+        $result = Database::instance()->transaction(static function () use ($work, $ctx, $order, $to): array {
+            $result = SigningService::sign($ctx, $order, (int) Auth::id());
+            self::transition($work, $to, 'ลงนามลำดับที่ ' . $order . ' (' . SigningLookup::ORDERS[$order] . ')');
+
+            return $result;
+        });
+        if ($to === 'approved') {
+            NotificationService::notify([(int) $work['owner_user_id']], ResearchLookup::NOTIFY_TYPE,
+                'งานวิจัยอนุมัติแล้ว (ลงนามครบ 4 ลำดับ): ' . mb_substr((string) $work['title'], 0, 120),
+                'เลขที่เอกสาร ' . ($result['document']['doc_no'] ?? ''), self::link((int) $work['id']), true);
+        } else {
+            self::notifyNextSigner($work, $order + 1);
+        }
+
+        return $to;
+    }
+
+    /** ผู้ลงนามลำดับที่รอ ส่งกลับแก้ไขพร้อมเหตุผล (ลายเซ็นเดิมถูกยกเลิก) */
+    public static function returnFromSigning(array $work, string $note): void
+    {
+        $order = self::awaitingOrder($work);
+        if ($order === null || !SigningLookup::canSignOrder($order, (int) $work['owner_user_id'], (int) Auth::id())) {
+            throw new HttpException(403);
+        }
+        if (trim($note) === '') {
+            throw new ValidationException(['note' => ['กรุณาระบุเหตุผลที่ส่งกลับแก้ไข']]);
+        }
+        $text = 'ผู้ลงนามลำดับที่ ' . $order . ' ส่งกลับแก้ไข: ' . $note;
+        Database::instance()->transaction(static function () use ($work, $text): void {
+            SigningService::revokeAll('research', (int) $work['id'], (int) Auth::id(), $text);
+            self::transition($work, 'revision', $text);
+        });
+        NotificationService::notify([(int) $work['owner_user_id']], ResearchLookup::NOTIFY_TYPE,
+            'งานวิจัยถูกส่งกลับแก้ไขระหว่างการลงนาม: ' . mb_substr((string) $work['title'], 0, 120), $text, self::link((int) $work['id']), true);
+    }
+
+    /** ผู้ดูแล (manage_all) ยกเลิกการอนุมัติ: ลายเซ็นและเลขที่เอกสารถูกยกเลิก งานกลับเป็นส่งกลับแก้ไข */
+    public static function revokeApproval(array $work, string $reason): void
+    {
+        if (!Rbac::can(ResearchLookup::PERM_MANAGE)) {
+            throw new HttpException(403);
+        }
+        if (!in_array($work['status'], ['approved', ...array_keys(ResearchLookup::AWAITING_SIGN)], true)) {
+            throw new ValidationException(['reason' => ['ยกเลิกการอนุมัติได้เฉพาะงานที่ผ่านการตรวจหรืออนุมัติแล้ว']]);
+        }
+        if (trim($reason) === '') {
+            throw new ValidationException(['reason' => ['กรุณาระบุเหตุผลการยกเลิกการอนุมัติ']]);
+        }
+        $text = 'ผู้ดูแลยกเลิกการอนุมัติ: ' . $reason;
+        Database::instance()->transaction(static function () use ($work, $text): void {
+            SigningService::revokeAll('research', (int) $work['id'], (int) Auth::id(), $text);
+            self::transition($work, 'revision', $text);
+        });
+        Audit::log('research.approval_revoked', 'academic', 'research_works', (int) $work['id'], ['status' => $work['status']], ['reason' => $reason]);
+        NotificationService::notify([(int) $work['owner_user_id']], ResearchLookup::NOTIFY_TYPE,
+            'ยกเลิกการอนุมัติงานวิจัย: ' . mb_substr((string) $work['title'], 0, 120), $text, self::link((int) $work['id']), true);
+    }
+
+    private static function notifyNextSigner(array $work, int $order): void
+    {
+        NotificationService::notify(
+            array_diff(NotificationService::usersWithPermission(SigningLookup::PERMS[$order]), [(int) Auth::id()]),
+            ResearchLookup::NOTIFY_TYPE,
+            'งานวิจัยรอลงนามลำดับที่ ' . $order . ': ' . mb_substr((string) $work['title'], 0, 120),
+            'ผู้จัดทำ: ' . $work['owner_name'] . ' · ลงนามในฐานะ' . SigningLookup::ORDERS[$order],
+            self::link((int) $work['id']) . '/sign', true
+        );
     }
 
     /** ผู้ตรวจเปลี่ยนสถานะ */
@@ -393,7 +517,13 @@ final class ResearchService
         if (in_array($to, ResearchLookup::NOTE_REQUIRED, true) && ($note === null || $note === '')) {
             throw new ValidationException(['note' => ['กรุณาระบุเหตุผล/ข้อเสนอแนะ']]);
         }
+        if ($to === 'passed') {
+            SigningService::assertFirstSigned(self::signContext($work));
+        }
         self::transition($work, $to, $note);
+        if ($to === 'passed') {
+            self::notifyNextSigner($work, 2);
+        }
         NotificationService::notify([(int) $work['owner_user_id']], ResearchLookup::NOTIFY_TYPE,
             'งานวิจัย "' . mb_substr((string) $work['title'], 0, 120) . '": ' . ResearchLookup::statusLabel($to),
             $note, self::link((int) $work['id']), true);

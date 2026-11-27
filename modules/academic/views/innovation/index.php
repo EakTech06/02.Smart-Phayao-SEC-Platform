@@ -117,13 +117,13 @@ $today = date('Y-m-d');
         </tr></thead>
         <tbody>
           <?php foreach ($items as $m): ?>
-            <?php $overdue = $m['status'] === 'in_use' && $m['report_due_on'] !== null && $m['report_due_on'] < $today; ?>
+            <?php $overdue = in_array($m['status'], ['in_use', 'report_draft'], true) && $m['report_due_on'] !== null && $m['report_due_on'] < $today; ?>
             <tr>
               <td class="min-w-0">
                 <a href="<?= e(url('/academic/innovation/media/' . (int) $m['id'])) ?>" class="fw-semibold"><?= e($m['title']) ?></a>
                 <div class="small text-body-secondary">
                   ใช้สื่อ <?= e(thai_date((string) $m['plan_start'], false)) ?> - <?= e(thai_date((string) $m['plan_end'], false)) ?>
-                  <?php if ($m['status'] === 'in_use' && $m['report_due_on'] !== null): ?>
+                  <?php if (in_array($m['status'], ['in_use', 'report_draft'], true) && $m['report_due_on'] !== null): ?>
                     · <span class="<?= $overdue ? 'text-danger fw-semibold' : '' ?>">ส่งรายงานภายใน <?= e(thai_date((string) $m['report_due_on'], false)) ?><?= $overdue ? ' (เลยกำหนด)' : '' ?></span>
                   <?php endif; ?>
                 </div>

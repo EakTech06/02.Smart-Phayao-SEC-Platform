@@ -52,8 +52,13 @@ final class InnovationController extends Controller
         $data = $this->manualData(null);
         $file = $this->uploadedFile() ?? throw new ValidationException(['file' => ['กรุณาแนบคู่มือการใช้สื่อนวัตกรรม (PDF)']]);
         $submit = $this->request->input('action') === 'submit';
-        $id = InnovationService::create($data, $file, $submit);
-        Session::flash('success', $submit ? 'ส่งคู่มือการใช้สื่อนวัตกรรมเรียบร้อยแล้ว ผู้ตรวจจะได้รับการแจ้งเตือน' : 'บันทึกร่างสื่อนวัตกรรมเรียบร้อยแล้ว');
+        $id = InnovationService::create($data, $file);
+        if ($submit) {
+            Session::flash('success', 'บันทึกร่างแล้ว กำหนดตำแหน่งลายเซ็นทั้ง 4 ลำดับ แล้วลงนามลำดับที่ 1 เพื่อส่ง');
+
+            return $this->redirect(InnovationService::link($id) . '/sign');
+        }
+        Session::flash('success', 'บันทึกร่างสื่อนวัตกรรมเรียบร้อยแล้ว');
 
         return $this->redirect(InnovationService::link($id));
     }
@@ -71,6 +76,11 @@ final class InnovationController extends Controller
             'logs' => InnovationService::statusLogs((int) $media['id']),
             'threads' => InnovationService::comments((int) $media['id']),
             'reportDue' => InnovationService::reportDueFor($media),
+            'signing' => array_values(array_filter([
+                (int) $media['report_version'] > 0 ? \Modules\Academic\Services\SigningService::summary('report', (int) $media['id']) : null,
+                \Modules\Academic\Services\SigningService::summary('manual', (int) $media['id']),
+            ])),
+            'awaiting' => InnovationLookup::awaitingOrder((string) $media['status']),
         ]);
     }
 
@@ -78,7 +88,7 @@ final class InnovationController extends Controller
     public function edit(string $id): Response
     {
         $media = InnovationService::findOwned((int) $id);
-        if ($media['status'] === 'report_revision') {
+        if (in_array($media['status'], ['report_draft', 'report_revision'], true)) {
             return $this->renderReport($media);
         }
         if (!in_array($media['status'], ['draft', 'manual_revision'], true)) {
@@ -93,7 +103,7 @@ final class InnovationController extends Controller
     public function update(string $id): Response
     {
         $media = InnovationService::findOwned((int) $id);
-        if ($media['status'] === 'report_revision') {
+        if (in_array($media['status'], ['report_draft', 'report_revision'], true)) {
             InnovationService::updateReport($media, $this->reportData($media));
             Session::flash('success', 'บันทึกข้อมูลการใช้สื่อเรียบร้อยแล้ว');
         } else {
@@ -122,10 +132,10 @@ final class InnovationController extends Controller
         $media = InnovationService::findOwned((int) $id);
         $data = $this->reportData($media);
         $file = $this->uploadedFile() ?? throw new ValidationException(['file' => ['กรุณาแนบรายงานการใช้สื่อนวัตกรรม (PDF)']]);
-        InnovationService::submitReport($media, $data, $file);
-        Session::flash('success', 'ส่งรายงานการใช้สื่อนวัตกรรมเรียบร้อยแล้ว ผู้ตรวจจะได้รับการแจ้งเตือน');
+        InnovationService::saveReport($media, $data, $file);
+        Session::flash('success', 'บันทึกรายงานการใช้สื่อแล้ว กำหนดตำแหน่งลายเซ็นทั้ง 4 ลำดับ แล้วลงนามลำดับที่ 1 เพื่อส่ง');
 
-        return $this->redirect(InnovationService::link((int) $media['id']));
+        return $this->redirect(InnovationService::link((int) $media['id']) . '/sign');
     }
 
     public function versionStore(string $id): Response
@@ -134,21 +144,12 @@ final class InnovationController extends Controller
         $file = $this->uploadedFile() ?? throw new ValidationException(['file' => ['กรุณาเลือกไฟล์ฉบับใหม่']]);
         $note = mb_substr(trim((string) $this->request->input('note', '')), 0, 500);
         $no = InnovationService::addVersion($media, $file, $note !== '' ? $note : null);
-        $message = "อัปโหลดไฟล์เวอร์ชันที่ {$no} เรียบร้อยแล้ว";
         if ($this->request->input('submit') === '1') {
-            InnovationService::submit(InnovationService::findOwned((int) $id));
-            $message .= ' และส่งแล้ว';
+            Session::flash('success', "อัปโหลดไฟล์เวอร์ชันที่ {$no} แล้ว ตรวจตำแหน่งลายเซ็น แล้วลงนามลำดับที่ 1 เพื่อส่ง");
+
+            return $this->redirect(InnovationService::link((int) $media['id']) . '/sign');
         }
-        Session::flash('success', $message);
-
-        return $this->redirect(InnovationService::link((int) $media['id']));
-    }
-
-    public function submit(string $id): Response
-    {
-        $media = InnovationService::findOwned((int) $id);
-        $to = InnovationService::submit($media);
-        Session::flash('success', 'ส่งเรียบร้อยแล้ว: ' . InnovationLookup::statusLabel($to));
+        Session::flash('success', "อัปโหลดไฟล์เวอร์ชันที่ {$no} เรียบร้อยแล้ว");
 
         return $this->redirect(InnovationService::link((int) $media['id']));
     }

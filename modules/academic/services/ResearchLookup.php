@@ -24,15 +24,22 @@ final class ResearchLookup
         'reviewing' => ['กำลังตรวจสอบ', 'primary', 'search'],
         'revision' => ['ส่งกลับแก้ไข', 'warning', 'arrow-return-left'],
         'resubmitted' => ['ส่งฉบับแก้ไขแล้ว', 'info', 'arrow-repeat'],
-        'passed' => ['ผ่านการตรวจ', 'success', 'check-circle'],
+        'passed' => ['ผ่านการตรวจ (รอลงนามลำดับที่ 2)', 'success', 'check-circle'],
+        'sign_3' => ['รอลงนามลำดับที่ 3', 'success', 'pen'],
+        'sign_4' => ['รอลงนามลำดับที่ 4', 'success', 'pen'],
+        'approved' => ['อนุมัติแล้ว (ลงนามครบ 4 ลำดับ)', 'success', 'patch-check'],
         'failed' => ['ไม่ผ่าน', 'danger', 'x-circle'],
         'cancelled' => ['ยกเลิก', 'dark', 'slash-circle'],
     ];
 
     /** รอผู้ตรวจดำเนินการ */
     public const PENDING_REVIEW = ['submitted', 'resubmitted', 'reviewing'];
-    /** ผ่านการตรวจแล้ว (ระยะการลงนามจะเพิ่มสถานะต่อจากนี้) */
-    public const APPROVED = ['passed'];
+    /** อนุมัติแล้ว (ลงนามครบ 4 ลำดับ) */
+    public const APPROVED = ['approved'];
+    /** สถานะที่รอลงนาม => ลำดับที่รอ (ลำดับที่ 1 ลงนามพร้อมการส่ง) */
+    public const AWAITING_SIGN = ['passed' => 2, 'sign_3' => 3, 'sign_4' => 4];
+    /** ลงนามลำดับนี้แล้วเปลี่ยนเป็นสถานะ */
+    public const AFTER_SIGN = [2 => 'sign_3', 3 => 'sign_4', 4 => 'approved'];
 
     /** ผู้ตรวจเปลี่ยนสถานะได้: สถานะปลายทาง => สถานะต้นทางที่อนุญาต */
     public const REVIEW_TRANSITIONS = [

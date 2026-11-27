@@ -11,12 +11,15 @@ use Modules\Academic\Services\StudentLookup;
 /** @var array $logs */
 /** @var array $threads */
 /** @var string $reportDue */
+/** @var list<array> $signing */
+/** @var int|null $awaiting */
 
 $id = (int) $media['id'];
 $base = '/academic/innovation/media/' . $id;
 $status = (string) $media['status'];
 $editable = $isOwner && in_array($status, InnovationLookup::OWNER_EDITABLE, true);
-$revisionDoc = $status === 'report_revision' ? 'report' : 'manual';
+$revisionDoc = InnovationLookup::stage($status);
+$isNewDoc = in_array($status, ['draft', 'report_draft'], true);
 $reviewOptions = [];
 if ($canReview) {
     foreach (InnovationLookup::REVIEW_ACTIONS as $action => [$label, $needNote]) {
@@ -41,10 +44,10 @@ $size = static fn (int $b): string => $b >= 1048576 ? number_format($b / 1048576
 $planned = $media['targets']['planned'];
 $actual = $media['targets']['actual'];
 $hasActual = $actual !== [] || $media['actual_start'] !== null;
-$reportOverdue = $status === 'in_use' && $reportDue < date('Y-m-d');
+$reportOverdue = in_array($status, ['in_use', 'report_draft'], true) && $reportDue < date('Y-m-d');
 // ขั้นตอนภาพรวม
 $steps = [
-    ['คู่มือการใช้สื่อ', in_array($status, ['draft', 'manual_submitted', 'manual_reviewing', 'manual_revision', 'manual_resubmitted'], true)],
+    ['คู่มือการใช้สื่อ', $status === 'draft' || str_starts_with($status, 'manual_')],
     ['อยู่ระหว่างใช้สื่อ', $status === 'in_use'],
     ['รายงานการใช้สื่อ', str_starts_with($status, 'report_')],
     ['เสร็จสมบูรณ์', $status === 'completed'],
@@ -64,7 +67,7 @@ $reached = match (true) {
   </ol>
 </nav>
 
-<?php foreach (['status', 'file', 'action', 'note', 'body'] as $k): ?>
+<?php foreach (['status', 'file', 'action', 'note', 'body', 'boxes', 'reason', 'password'] as $k): ?>
   <?php if ($e = error_for($k)): ?><div class="alert alert-danger"><?= e($e) ?></div><?php break; endif; ?>
 <?php endforeach; ?>
 
@@ -83,12 +86,10 @@ $reached = match (true) {
         <a href="<?= e(url($base . '/report')) ?>" class="btn btn-primary"><i class="bi bi-file-earmark-arrow-up me-1"></i>ส่งรายงานการใช้สื่อ</a>
       <?php endif; ?>
       <?php if ($editable): ?>
-        <a href="<?= e(url($base . '/edit')) ?>" class="btn btn-outline-primary"><i class="bi bi-pencil me-1"></i><?= $status === 'report_revision' ? 'แก้ไขข้อมูลการใช้สื่อ' : 'แก้ไขข้อมูล' ?></a>
+        <a href="<?= e(url($base . '/edit')) ?>" class="btn btn-outline-primary"><i class="bi bi-pencil me-1"></i><?= $revisionDoc === 'report' ? 'แก้ไขข้อมูลการใช้สื่อ' : 'แก้ไขข้อมูล' ?></a>
       <?php endif; ?>
-      <?php if ($status === 'draft'): ?>
-        <form method="post" action="<?= e(url($base . '/submit')) ?>" data-confirm="ยืนยันส่งคู่มือการใช้สื่อให้ผู้ตรวจ?">
-          <?= csrf_field() ?><button type="submit" class="btn btn-primary"><i class="bi bi-send me-1"></i>ส่งคู่มือ</button>
-        </form>
+      <?php if ($isNewDoc): ?>
+        <a href="<?= e(url($base . '/sign')) ?>" class="btn btn-primary"><i class="bi bi-pen me-1"></i>ลงนามและส่ง<?= $status === 'draft' ? 'คู่มือ' : 'รายงาน' ?></a>
       <?php endif; ?>
       <?php if ($status === 'draft' && $media['submitted_at'] === null): ?>
         <form method="post" action="<?= e(url($base)) ?>" data-confirm="ลบร่างสื่อนวัตกรรมนี้?">
@@ -123,7 +124,15 @@ $reached = match (true) {
 <?php if ($isOwner && $status === 'in_use'): ?>
   <div class="alert alert-<?= $reportOverdue ? 'danger' : 'info' ?>"><i class="bi bi-info-circle me-1"></i>คู่มือได้รับอนุมัติแล้ว ใช้สื่อกับกลุ่มเป้าหมายตามแผน แล้วส่งรายงานการใช้สื่อภายใน <strong><?= e(thai_date($reportDue, false, true)) ?></strong><?= $reportOverdue ? ' (เลยกำหนดแล้ว)' : '' ?></div>
 <?php elseif ($isOwner && in_array($status, ['manual_revision', 'report_revision'], true)): ?>
-  <div class="alert alert-warning"><i class="bi bi-arrow-return-left me-1"></i>ผู้ตรวจส่งกลับให้แก้ไข<?= e(InnovationLookup::DOCS[$revisionDoc]) ?> ดูข้อเสนอแนะด้านล่าง แล้วอัปโหลดไฟล์ฉบับแก้ไขเพื่อส่งอีกครั้ง</div>
+  <div class="alert alert-warning"><i class="bi bi-arrow-return-left me-1"></i>ถูกส่งกลับให้แก้ไข<?= e(InnovationLookup::DOCS[$revisionDoc]) ?> ดูข้อเสนอแนะ/ประวัติสถานะ แล้วอัปโหลดไฟล์ฉบับแก้ไขเพื่อลงนามและส่งอีกครั้ง (ลายเซ็นเดิมถูกยกเลิกแล้ว)</div>
+<?php elseif ($isOwner && $status === 'report_draft'): ?>
+  <div class="alert alert-info"><i class="bi bi-info-circle me-1"></i>บันทึกรายงานการใช้สื่อแล้ว กำหนดตำแหน่งลายเซ็นและลงนามลำดับที่ 1 เพื่อส่งให้ผู้ตรวจ</div>
+<?php endif; ?>
+<?php if ($awaiting !== null && \Modules\Academic\Services\SigningLookup::canSignOrder($awaiting, (int) $media['owner_user_id'], (int) \Core\Auth::id())): ?>
+  <div class="alert alert-success d-flex flex-wrap align-items-center gap-2">
+    <span class="me-auto"><i class="bi bi-pen me-1"></i><?= e(InnovationLookup::DOCS[$revisionDoc]) ?>รอคุณลงนามลำดับที่ <?= (int) $awaiting ?> (<?= e(\Modules\Academic\Services\SigningLookup::ORDERS[$awaiting]) ?>)</span>
+    <a href="<?= e(url($base . '/sign')) ?>" class="btn btn-success"><i class="bi bi-pen me-1"></i>ไปหน้าลงนาม</a>
+  </div>
 <?php endif; ?>
 
 <div class="row g-3">
@@ -186,7 +195,7 @@ $reached = match (true) {
       <?php if ($editable): ?>
         <form method="post" action="<?= e(url($base . '/versions')) ?>" enctype="multipart/form-data" class="card-body border-top">
           <?= csrf_field() ?>
-          <div class="fw-semibold mb-2"><i class="bi bi-cloud-upload me-1"></i>อัปโหลด<?= e(InnovationLookup::DOCS[$revisionDoc]) ?><?= $status === 'draft' ? 'ฉบับใหม่' : 'ฉบับแก้ไข' ?></div>
+          <div class="fw-semibold mb-2"><i class="bi bi-cloud-upload me-1"></i>อัปโหลด<?= e(InnovationLookup::DOCS[$revisionDoc]) ?><?= $isNewDoc ? 'ฉบับใหม่' : 'ฉบับแก้ไข' ?></div>
           <div class="small text-warning-emphasis mb-2"><i class="bi bi-shield-exclamation me-1"></i>ปิดชื่อหรือภาพที่ระบุตัวผู้เรียนในไฟล์ก่อนส่ง</div>
           <div class="row g-2">
             <div class="col-12 col-md-6">
@@ -200,8 +209,8 @@ $reached = match (true) {
             </div>
           </div>
           <div class="d-flex flex-wrap gap-2 mt-2">
-            <?php if ($status !== 'draft'): ?>
-              <button type="submit" name="submit" value="1" class="btn btn-primary"><i class="bi bi-send me-1"></i>อัปโหลดและส่งฉบับแก้ไข</button>
+            <?php if (!$isNewDoc): ?>
+              <button type="submit" name="submit" value="1" class="btn btn-primary"><i class="bi bi-pen me-1"></i>อัปโหลดแล้วลงนามส่งฉบับแก้ไข</button>
               <button type="submit" class="btn btn-outline-primary">อัปโหลดอย่างเดียว</button>
             <?php else: ?>
               <button type="submit" class="btn btn-outline-primary"><i class="bi bi-upload me-1"></i>อัปโหลด</button>
@@ -209,10 +218,9 @@ $reached = match (true) {
           </div>
         </form>
         <?php if ($canResubmit): ?>
-          <form method="post" action="<?= e(url($base . '/submit')) ?>" class="card-body border-top pt-2" data-confirm="ส่งฉบับแก้ไขจากไฟล์เวอร์ชันล่าสุด?">
-            <?= csrf_field() ?>
-            <button type="submit" class="btn btn-link px-0">อัปโหลดไว้แล้ว? ส่งฉบับแก้ไขจากเวอร์ชันล่าสุด</button>
-          </form>
+          <div class="card-body border-top pt-2">
+            <a href="<?= e(url($base . '/sign')) ?>" class="btn btn-link px-0">อัปโหลดไว้แล้ว? ลงนามและส่งฉบับแก้ไขจากเวอร์ชันล่าสุด</a>
+          </div>
         <?php endif; ?>
       <?php endif; ?>
     </div>
@@ -277,6 +285,8 @@ $reached = match (true) {
         </div>
       </form>
     <?php endif; ?>
+
+    <?php $signBase = $base; $revokable = in_array($status, ['in_use', 'completed', ...InnovationLookup::SIGNING], true); require __DIR__ . '/../signing/_card.php'; ?>
 
     <div class="card shadow-sm mb-3">
       <div class="card-header"><i class="bi bi-clock-history me-1"></i>ประวัติสถานะ</div>

@@ -171,4 +171,8 @@ $router->group(['middleware' => ['auth', 'password.fresh']], static function (Ro
     $r->get('/profile', [ProfileController::class, 'index']);
     $r->post('/profile', [ProfileController::class, 'update'], ['csrf']);
     $r->post('/profile/password', [ProfileController::class, 'updatePassword'], ['csrf']);
+    // ลายเซ็นสำหรับลงนามเอกสาร (ดูภาพได้เฉพาะเจ้าของ)
+    $r->post('/profile/signature', [ProfileController::class, 'signatureStore'], ['csrf']);
+    $r->delete('/profile/signature', [ProfileController::class, 'signatureDestroy'], ['csrf']);
+    $r->get('/profile/signature/image', [ProfileController::class, 'signatureImage']);
 });

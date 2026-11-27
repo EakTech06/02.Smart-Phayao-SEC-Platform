@@ -42,3 +42,22 @@
 .thai-date-dow { font-size: .75rem; font-weight: 600; color: var(--bs-secondary-color); padding: .15rem 0; }
 .thai-date-day { padding: .2rem 0; font-size: .85rem; }
 .thai-date input.thai-date-bad { border-color: var(--bs-danger); }
+
+/* ---------- ลงนามเอกสาร: กรอบลายเซ็นบน PDF ---------- */
+.sign-stage { position: relative; max-width: 100%; box-shadow: 0 2px 12px rgba(0, 0, 0, .18); background: #fff; }
+.sign-stage canvas { display: block; }
+.sign-layer { position: absolute; inset: 0; }
+.sign-loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; min-height: 12rem; }
+.sign-box { position: absolute; border: 2px dashed var(--sign-color); background: color-mix(in srgb, var(--sign-color) 12%, transparent); border-radius: 4px; touch-action: none; user-select: none; }
+.sign-box.is-editable { cursor: move; border-style: solid; }
+.sign-box.is-editable:focus-visible { outline: 3px solid var(--sign-color); outline-offset: 2px; }
+.sign-box.is-dragging { background: color-mix(in srgb, var(--sign-color) 22%, transparent); }
+.sign-box.is-locked { opacity: .75; }
+.sign-box.is-signed { background: transparent; border-style: dotted; opacity: .6; }
+.sign-box.is-flash { animation: sign-flash 1.2s ease-out; }
+.sign-box-label { position: absolute; left: -2px; top: -1.45rem; max-width: 18rem; padding: 0 .4rem; font-size: .72rem; line-height: 1.4rem; color: #fff; background: var(--sign-color); border-radius: 4px 4px 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
+.sign-box-handle { position: absolute; right: -7px; bottom: -7px; width: 14px; height: 14px; border-radius: 50%; background: var(--sign-color); border: 2px solid #fff; cursor: nwse-resize; }
+.sign-chip { display: inline-flex; align-items: center; justify-content: center; width: 1.7rem; height: 1.7rem; flex: none; border-radius: 50%; color: #fff; font-weight: 600; background: var(--sign-color); }
+.signature-pad { width: 100%; height: 200px; touch-action: none; background: #fff; border: 1px dashed var(--bs-border-color); border-radius: .5rem; cursor: crosshair; }
+.signature-preview { max-height: 120px; max-width: 100%; background: #fff; border: 1px solid var(--bs-border-color); border-radius: .5rem; padding: .5rem; }
+@keyframes sign-flash { 0% { box-shadow: 0 0 0 0 var(--sign-color); } 100% { box-shadow: 0 0 0 14px transparent; } }

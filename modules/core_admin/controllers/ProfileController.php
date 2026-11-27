@@ -11,6 +11,7 @@ use Core\Database;
 use Core\Password;
 use Core\Response;
 use Core\Session;
+use Modules\CoreAdmin\Services\SignatureService;
 
 final class ProfileController extends Controller
 {
@@ -36,6 +37,45 @@ final class ProfileController extends Controller
         return $this->view('core_admin::profile/index', [
             'title' => 'โปรไฟล์ของฉัน',
             'user'  => $user,
+            'signature' => SignatureService::find((int) $user['id']),
+        ]);
+    }
+
+    /** บันทึกลายเซ็น: mode=draw (data URL จาก canvas) หรือ mode=upload (ไฟล์ภาพ) */
+    public function signatureStore(): Response
+    {
+        $userId = (int) Auth::id();
+        if ($this->request->input('mode') === 'upload') {
+            SignatureService::saveUpload($userId, is_array($_FILES['signature_file'] ?? null) ? $_FILES['signature_file'] : []);
+        } else {
+            SignatureService::saveDrawing($userId, (string) $this->request->input('signature', ''));
+        }
+        Session::flash('success', 'บันทึกลายเซ็นเรียบร้อยแล้ว');
+
+        return $this->redirect('/profile#signature');
+    }
+
+    public function signatureDestroy(): Response
+    {
+        SignatureService::delete((int) Auth::id());
+        Session::flash('success', 'ลบภาพลายเซ็นแล้ว');
+
+        return $this->redirect('/profile#signature');
+    }
+
+    /** ภาพลายเซ็นของตนเองเท่านั้น (แสดงตัวอย่างในหน้าโปรไฟล์) */
+    public function signatureImage(): Response
+    {
+        $png = SignatureService::png((int) Auth::id());
+        if ($png === null) {
+            return new Response('', 404);
+        }
+
+        return new Response($png, 200, [
+            'Content-Type' => 'image/png',
+            'Content-Length' => (string) strlen($png),
+            'Cache-Control' => 'private, no-store',
+            'X-Content-Type-Options' => 'nosniff',
         ]);
     }
 

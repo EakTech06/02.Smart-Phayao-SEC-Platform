@@ -121,8 +121,13 @@ final class ResearchController extends Controller
         $data = $this->validated(null);
         $file = $this->uploadedFile('file') ?? throw new ValidationException(['file' => ['กรุณาแนบไฟล์งานวิจัย (PDF หรือ DOCX)']]);
         $submit = $this->request->input('action') === 'submit';
-        $id = ResearchService::create($data, $file, $submit);
-        Session::flash('success', $submit ? 'ส่งงานวิจัยเรียบร้อยแล้ว ผู้ตรวจจะได้รับการแจ้งเตือน' : 'บันทึกร่างงานวิจัยเรียบร้อยแล้ว');
+        $id = ResearchService::create($data, $file);
+        if ($submit) {
+            Session::flash('success', 'บันทึกร่างแล้ว กำหนดตำแหน่งลายเซ็นทั้ง 4 ลำดับ แล้วลงนามลำดับที่ 1 เพื่อส่ง (ไฟล์ต้องเป็น PDF)');
+
+            return $this->redirect(ResearchService::link($id) . '/sign');
+        }
+        Session::flash('success', 'บันทึกร่างงานวิจัยเรียบร้อยแล้ว');
 
         return $this->redirect(ResearchService::link($id));
     }
@@ -141,6 +146,8 @@ final class ResearchController extends Controller
             'logs' => ResearchService::statusLogs((int) $work['id']),
             'threads' => ResearchService::comments((int) $work['id']),
             'round' => ResearchService::round('research', (int) $work['academic_year_id'], (int) $work['semester']),
+            'signing' => [\Modules\Academic\Services\SigningService::summary('research', (int) $work['id'])],
+            'awaiting' => ResearchService::awaitingOrder($work),
         ]);
     }
 
@@ -172,21 +179,12 @@ final class ResearchController extends Controller
         $file = $this->uploadedFile('file') ?? throw new ValidationException(['file' => ['กรุณาเลือกไฟล์ฉบับใหม่']]);
         $note = mb_substr(trim((string) $this->request->input('note', '')), 0, 500);
         $no = ResearchService::addVersion($work, $file, $note !== '' ? $note : null);
-        $message = "อัปโหลดไฟล์เวอร์ชันที่ {$no} เรียบร้อยแล้ว";
         if ($this->request->input('submit') === '1') {
-            $to = ResearchService::submit(ResearchService::findOwned((int) $id));
-            $message .= ' และ' . ($to === 'resubmitted' ? 'ส่งฉบับแก้ไข' : 'ส่งงาน') . 'แล้ว';
+            Session::flash('success', "อัปโหลดไฟล์เวอร์ชันที่ {$no} แล้ว ตรวจตำแหน่งลายเซ็น แล้วลงนามลำดับที่ 1 เพื่อส่ง");
+
+            return $this->redirect(ResearchService::link((int) $work['id']) . '/sign');
         }
-        Session::flash('success', $message);
-
-        return $this->redirect(ResearchService::link((int) $work['id']));
-    }
-
-    public function submit(string $id): Response
-    {
-        $work = ResearchService::findOwned((int) $id);
-        $to = ResearchService::submit($work);
-        Session::flash('success', $to === 'resubmitted' ? 'ส่งฉบับแก้ไขเรียบร้อยแล้ว' : 'ส่งงานวิจัยเรียบร้อยแล้ว ผู้ตรวจจะได้รับการแจ้งเตือน');
+        Session::flash('success', "อัปโหลดไฟล์เวอร์ชันที่ {$no} เรียบร้อยแล้ว");
 
         return $this->redirect(ResearchService::link((int) $work['id']));
     }

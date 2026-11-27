@@ -215,7 +215,7 @@ final class InnovationService
     // ---------------------------------------------------------------- ระยะที่ 1: คู่มือ
 
     /** @param array{title: string, type_id: int, academic_year_id: int, semester: int, plan_start: string, plan_end: string, planned: array<string, int>} $data */
-    public static function create(array $data, array $file, bool $submit): int
+    public static function create(array $data, array $file): int
     {
         $id = Database::instance()->transaction(static function (Database $db) use ($data, $file): int {
             $id = $db->insert('innovation_media', [
@@ -236,9 +236,6 @@ final class InnovationService
             return $id;
         });
         Audit::log('innovation.created', 'academic', 'innovation_media', $id, null, ['title' => $data['title']]);
-        if ($submit) {
-            self::submit(self::find($id) ?? throw new HttpException(404));
-        }
 
         return $id;
     }
@@ -260,10 +257,11 @@ final class InnovationService
     // ---------------------------------------------------------------- ระยะที่ 2: รายงาน
 
     /**
-     * ส่งรายงานการใช้สื่อ (เมื่อคู่มืออนุมัติแล้วเท่านั้น) เลือกจากสื่อเดิม ไม่ต้องกรอกข้อมูลสื่อซ้ำ
+     * บันทึกรายงานการใช้สื่อ (เมื่อคู่มืออนุมัติแล้วเท่านั้น) เลือกจากสื่อเดิม ไม่ต้องกรอกข้อมูลสื่อซ้ำ
+     * อยู่ระหว่างใช้สื่อ → รายงาน: บันทึกแล้ว (จากนั้นกำหนดตำแหน่งลายเซ็น ลงนามลำดับที่ 1 และส่ง)
      * @param array{actual_start: string, actual_end: string, actual: array<string, int>} $data
      */
-    public static function submitReport(array $media, array $data, array $file): void
+    public static function saveReport(array $media, array $data, array $file): void
     {
         self::assertOwnerIn($media, ['in_use'], 'ส่งรายงานได้เมื่อคู่มือได้รับอนุมัติแล้ว (สถานะอยู่ระหว่างใช้สื่อ) เท่านั้น');
         Database::instance()->transaction(static function (Database $db) use ($media, $data, $file): void {
@@ -271,15 +269,13 @@ final class InnovationService
             self::saveTargets($db, (int) $media['id'], 'actual', $data['actual']);
             $no = (int) $db->fetchColumn('SELECT report_version FROM innovation_media WHERE id = ? FOR UPDATE', [(int) $media['id']]) + 1;
             self::storeVersion($db, (int) $media['id'], 'report', $no, $file, $no === 1 ? 'ฉบับแรก' : null);
+            self::transition($media, 'report', 'report_draft', null);
         });
-        $media = self::find((int) $media['id']) ?? throw new HttpException(404);
-        self::transition($media, 'report', 'report_submitted', null, ['report_submitted_at' => Database::now()]);
-        self::notifyReviewers($media, 'มีรายงานการใช้สื่อนวัตกรรมส่งใหม่: ');
     }
 
     public static function updateReport(array $media, array $data): void
     {
-        self::assertOwnerIn($media, ['report_revision']);
+        self::assertOwnerIn($media, ['report_draft', 'report_revision']);
         Database::instance()->transaction(static function (Database $db) use ($media, $data): void {
             $db->update('innovation_media', ['actual_start' => $data['actual_start'], 'actual_end' => $data['actual_end']], ['id' => (int) $media['id']]);
             self::saveTargets($db, (int) $media['id'], 'actual', $data['actual']);
@@ -295,7 +291,7 @@ final class InnovationService
     public static function addVersion(array $media, array $file, ?string $note): int
     {
         self::assertOwnerIn($media, InnovationLookup::OWNER_EDITABLE);
-        $doc = $media['status'] === 'report_revision' ? 'report' : 'manual';
+        $doc = InnovationLookup::stage((string) $media['status']);
         $no = Database::instance()->transaction(static function (Database $db) use ($media, $doc, $file, $note): int {
             $no = (int) $db->fetchColumn("SELECT {$doc}_version FROM innovation_media WHERE id = ? FOR UPDATE", [(int) $media['id']]) + 1;
             self::storeVersion($db, (int) $media['id'], $doc, $no, $file, $note);
@@ -307,16 +303,25 @@ final class InnovationService
         return $no;
     }
 
-    /** ครูส่ง: ร่าง → คู่มือส่งแล้ว / ส่งกลับแก้ไข → ส่งฉบับแก้ไขแล้ว (ต้องอัปโหลดไฟล์ใหม่หลังถูกส่งกลับ) */
-    public static function submit(array $media): string
+    /**
+     * ครูลงนามลำดับที่ 1 และส่ง (ไฟล์ PDF + ตำแหน่งลายเซ็นครบ 4 ลำดับ + ยืนยันรหัสผ่าน)
+     * ร่าง → คู่มือส่งแล้ว / รายงานบันทึกแล้ว → รายงานส่งแล้ว / ส่งกลับแก้ไข → ส่งฉบับแก้ไขแล้ว (ต้องอัปโหลดไฟล์ใหม่หลังถูกส่งกลับ)
+     */
+    public static function submit(array $media, string $password): string
     {
         if (!self::isOwner($media)) {
             throw new HttpException(403);
         }
         $status = (string) $media['status'];
+        $extra = [];
         if ($status === 'draft') {
             $doc = 'manual';
             $to = 'manual_submitted';
+            $extra = ['submitted_at' => $media['submitted_at'] ?? Database::now()];
+        } elseif ($status === 'report_draft') {
+            $doc = 'report';
+            $to = 'report_submitted';
+            $extra = ['report_submitted_at' => Database::now()];
         } elseif ($status === 'manual_revision' || $status === 'report_revision') {
             $doc = $status === 'manual_revision' ? 'manual' : 'report';
             $requestedAt = (int) Database::instance()->fetchColumn(
@@ -330,18 +335,26 @@ final class InnovationService
         } else {
             throw new ValidationException(['status' => ['ส่งในสถานะนี้ไม่ได้']]);
         }
-        $extra = $status === 'draft' ? ['submitted_at' => $media['submitted_at'] ?? Database::now()] : [];
-        self::transition($media, $doc, $to, null, $extra);
+        $ctx = self::signContext($media, $doc);
+        SigningService::assertSubmittable($ctx);
+        SigningService::confirmPassword((int) Auth::id(), $password);
+        Database::instance()->transaction(static function () use ($media, $ctx, $doc, $to, $extra): void {
+            // ส่งใหม่: ลายเซ็นเดิมของฉบับนี้ทั้งหมดถูกยกเลิก เริ่มลำดับที่ 1 ใหม่
+            SigningService::revokeAll($doc, (int) $media['id'], (int) Auth::id(), 'ส่งเวอร์ชันที่ ' . (int) $ctx['version']['version_no']);
+            SigningService::sign($ctx, 1, (int) Auth::id());
+            self::transition($media, $doc, $to, null, $extra);
+        });
         self::notifyReviewers($media, match ($to) {
             'manual_submitted' => 'มีคู่มือการใช้สื่อนวัตกรรมส่งใหม่: ',
             'manual_resubmitted' => 'ส่งคู่มือการใช้สื่อฉบับแก้ไขแล้ว: ',
+            'report_submitted' => 'มีรายงานการใช้สื่อนวัตกรรมส่งใหม่: ',
             default => 'ส่งรายงานการใช้สื่อฉบับแก้ไขแล้ว: ',
         });
 
         return $to;
     }
 
-    /** ผู้ตรวจเปลี่ยนสถานะ (action ตาม InnovationLookup::REVIEW_ACTIONS) */
+    /** ผู้ตรวจเปลี่ยนสถานะ (action ตาม InnovationLookup::REVIEW_ACTIONS) "ผ่านการตรวจ" = ส่งต่อลงนามลำดับที่ 2 */
     public static function review(array $media, string $action, ?string $note): string
     {
         if (!Rbac::can(ResearchLookup::PERM_REVIEW)) {
@@ -356,28 +369,158 @@ final class InnovationService
             throw new ValidationException(['note' => ['กรุณาระบุเหตุผล/ข้อเสนอแนะ']]);
         }
         $doc = InnovationLookup::stage($from);
-        $extra = [];
-        if ($to === 'in_use') {
-            $extra = [
-                'manual_approved_at' => Database::now(),
-                'report_due_on' => date('Y-m-d', strtotime($media['plan_end'] . ' +' . InnovationLookup::reportDueDays() . ' days')),
-            ];
-        } elseif ($to === 'completed') {
-            $extra = ['completed_at' => Database::now()];
+        if ($action === 'pass') {
+            SigningService::assertFirstSigned(self::signContext($media, $doc), 'action');
         }
-        self::transition($media, $doc, $to, $note, $extra);
-
-        $short = mb_substr((string) $media['title'], 0, 120);
-        [$title, $message] = match ($to) {
-            'in_use' => ["คู่มือการใช้สื่ออนุมัติแล้ว เริ่มใช้สื่อได้: {$short}",
-                'ใช้สื่อตามแผน ' . thai_date((string) $media['plan_start'], false) . ' - ' . thai_date((string) $media['plan_end'], false)
-                . ' และส่งรายงานภายใน ' . thai_date((string) $extra['report_due_on'], false, true) . ($note ? "\n{$note}" : '')],
-            'completed' => ["รายงานการใช้สื่ออนุมัติแล้ว (เสร็จสมบูรณ์): {$short}", $note],
-            default => ['สื่อนวัตกรรม "' . $short . '": ' . InnovationLookup::statusLabel($to), $note],
-        };
-        NotificationService::notify([(int) $media['owner_user_id']], ResearchLookup::NOTIFY_TYPE, $title, $message, self::link((int) $media['id']), true);
+        self::transition($media, $doc, $to, $note);
+        if ($action === 'pass') {
+            self::notifyNextSigner($media, $doc, 2);
+        }
+        NotificationService::notify([(int) $media['owner_user_id']], ResearchLookup::NOTIFY_TYPE,
+            'สื่อนวัตกรรม "' . mb_substr((string) $media['title'], 0, 120) . '": ' . InnovationLookup::statusLabel($to),
+            $note, self::link((int) $media['id']), true);
 
         return $to;
+    }
+
+    // ---------------------------------------------------------------- ลงนาม 4 ลำดับ
+
+    /** บริบทเอกสารสำหรับ SigningService ($doc = manual|report ค่าเริ่มต้น = ฉบับที่อยู่ในขั้นตอนของสถานะ) */
+    public static function signContext(array $media, ?string $doc = null): array
+    {
+        $doc ??= InnovationLookup::stage((string) $media['status']);
+        $no = (int) ($media[$doc . '_version'] ?? 0);
+        $version = $no > 0
+            ? Database::instance()->fetch('SELECT * FROM innovation_versions WHERE media_id = ? AND doc = ? AND version_no = ?', [(int) $media['id'], $doc, $no])
+            : null;
+        if ($version === null) {
+            throw new ValidationException(['file' => ['ยังไม่มีไฟล์' . InnovationLookup::DOCS[$doc]]]);
+        }
+        $current = InnovationLookup::stage((string) $media['status']) === $doc;
+
+        return [
+            'type' => $doc,
+            'id' => (int) $media['id'],
+            'owner_user_id' => (int) $media['owner_user_id'],
+            'owner_name' => (string) $media['owner_name'],
+            'title' => (string) $media['title'],
+            'year_be' => (string) $media['year_be'],
+            'status' => (string) $media['status'],
+            'status_label' => InnovationLookup::statusLabel((string) $media['status']),
+            'version' => $version,
+            'dir' => 'm' . (int) $media['id'],
+            'stem' => $doc . '_v' . $no,
+            'base' => self::link((int) $media['id']),
+            'awaiting' => $current ? InnovationLookup::awaitingOrder((string) $media['status']) : null,
+            'owner_editable' => $current && in_array($media['status'], InnovationLookup::OWNER_EDITABLE, true),
+            'in_review' => $current && in_array($media['status'], InnovationLookup::PENDING_REVIEW, true),
+        ];
+    }
+
+    /** ลงนามลำดับ 2-4 ตามลำดับ ลำดับที่ 4 ของคู่มือ = เริ่มใช้สื่อ / ของรายงาน = เสร็จสมบูรณ์ */
+    public static function signStep(array $media, int $order, string $password): string
+    {
+        $status = (string) $media['status'];
+        if (InnovationLookup::awaitingOrder($status) !== $order) {
+            throw new ValidationException(['status' => ['เอกสารไม่ได้อยู่ระหว่างรอลงนามลำดับที่ ' . $order]]);
+        }
+        $doc = InnovationLookup::stage($status);
+        $ctx = self::signContext($media, $doc);
+        SigningService::assertCanSign($ctx, $order, (int) Auth::id());
+        SigningService::confirmPassword((int) Auth::id(), $password);
+        $to = InnovationLookup::afterSign($doc, $order);
+        $extra = match ($to) {
+            'in_use' => [
+                'manual_approved_at' => Database::now(),
+                'report_due_on' => date('Y-m-d', strtotime($media['plan_end'] . ' +' . InnovationLookup::reportDueDays() . ' days')),
+            ],
+            'completed' => ['completed_at' => Database::now()],
+            default => [],
+        };
+        $result = Database::instance()->transaction(static function () use ($media, $ctx, $doc, $order, $to, $extra): array {
+            $result = SigningService::sign($ctx, $order, (int) Auth::id());
+            self::transition($media, $doc, $to, 'ลงนามลำดับที่ ' . $order . ' (' . SigningLookup::ORDERS[$order] . ')', $extra);
+
+            return $result;
+        });
+
+        $short = mb_substr((string) $media['title'], 0, 120);
+        $docNo = 'เลขที่เอกสาร ' . ($result['document']['doc_no'] ?? '');
+        if ($to === 'in_use') {
+            NotificationService::notify([(int) $media['owner_user_id']], ResearchLookup::NOTIFY_TYPE,
+                "คู่มือการใช้สื่ออนุมัติแล้ว เริ่มใช้สื่อได้: {$short}",
+                $docNo . "\nใช้สื่อตามแผน " . thai_date((string) $media['plan_start'], false) . ' - ' . thai_date((string) $media['plan_end'], false)
+                . ' และส่งรายงานภายใน ' . thai_date((string) $extra['report_due_on'], false, true),
+                self::link((int) $media['id']), true);
+        } elseif ($to === 'completed') {
+            NotificationService::notify([(int) $media['owner_user_id']], ResearchLookup::NOTIFY_TYPE,
+                "รายงานการใช้สื่ออนุมัติแล้ว (เสร็จสมบูรณ์): {$short}", $docNo, self::link((int) $media['id']), true);
+        } else {
+            self::notifyNextSigner($media, $doc, $order + 1);
+        }
+
+        return $to;
+    }
+
+    /** ผู้ลงนามลำดับที่รอ ส่งกลับแก้ไขพร้อมเหตุผล (ลายเซ็นของฉบับนั้นถูกยกเลิก) */
+    public static function returnFromSigning(array $media, string $note): void
+    {
+        $status = (string) $media['status'];
+        $order = InnovationLookup::awaitingOrder($status);
+        if ($order === null || !SigningLookup::canSignOrder($order, (int) $media['owner_user_id'], (int) Auth::id())) {
+            throw new HttpException(403);
+        }
+        if (trim($note) === '') {
+            throw new ValidationException(['note' => ['กรุณาระบุเหตุผลที่ส่งกลับแก้ไข']]);
+        }
+        $doc = InnovationLookup::stage($status);
+        $text = 'ผู้ลงนามลำดับที่ ' . $order . ' ส่งกลับแก้ไข: ' . $note;
+        Database::instance()->transaction(static function () use ($media, $doc, $text): void {
+            SigningService::revokeAll($doc, (int) $media['id'], (int) Auth::id(), $text);
+            self::transition($media, $doc, $doc . '_revision', $text);
+        });
+        NotificationService::notify([(int) $media['owner_user_id']], ResearchLookup::NOTIFY_TYPE,
+            InnovationLookup::DOCS[$doc] . 'ถูกส่งกลับแก้ไขระหว่างการลงนาม: ' . mb_substr((string) $media['title'], 0, 120), $text, self::link((int) $media['id']), true);
+    }
+
+    /**
+     * ผู้ดูแล (manage_all) ยกเลิกการอนุมัติฉบับที่อยู่ระหว่างลงนามหรืออนุมัติแล้ว
+     * คู่มือ (อยู่ระหว่างใช้สื่อ/ลงนาม) → คู่มือส่งกลับแก้ไข / รายงาน (เสร็จสมบูรณ์/ลงนาม) → รายงานส่งกลับแก้ไข
+     */
+    public static function revokeApproval(array $media, string $reason): void
+    {
+        if (!Rbac::can(ResearchLookup::PERM_MANAGE)) {
+            throw new HttpException(403);
+        }
+        $status = (string) $media['status'];
+        $doc = match (true) {
+            $status === 'in_use' || str_starts_with($status, 'manual_sign') || $status === 'manual_passed' => 'manual',
+            $status === 'completed' || str_starts_with($status, 'report_sign') || $status === 'report_passed' => 'report',
+            default => throw new ValidationException(['reason' => ['ยกเลิกการอนุมัติได้เฉพาะฉบับที่ผ่านการตรวจหรืออนุมัติแล้ว (ก่อนเริ่มส่งรายงาน)']]),
+        };
+        if (trim($reason) === '') {
+            throw new ValidationException(['reason' => ['กรุณาระบุเหตุผลการยกเลิกการอนุมัติ']]);
+        }
+        $text = 'ผู้ดูแลยกเลิกการอนุมัติ' . InnovationLookup::DOCS[$doc] . ': ' . $reason;
+        $extra = $doc === 'manual' ? ['manual_approved_at' => null, 'report_due_on' => null] : ['completed_at' => null];
+        Database::instance()->transaction(static function () use ($media, $doc, $text, $extra): void {
+            SigningService::revokeAll($doc, (int) $media['id'], (int) Auth::id(), $text);
+            self::transition($media, $doc, $doc . '_revision', $text, $extra);
+        });
+        Audit::log('innovation.approval_revoked', 'academic', 'innovation_media', (int) $media['id'], ['status' => $status], ['doc' => $doc, 'reason' => $reason]);
+        NotificationService::notify([(int) $media['owner_user_id']], ResearchLookup::NOTIFY_TYPE,
+            'ยกเลิกการอนุมัติ' . InnovationLookup::DOCS[$doc] . ': ' . mb_substr((string) $media['title'], 0, 120), $text, self::link((int) $media['id']), true);
+    }
+
+    private static function notifyNextSigner(array $media, string $doc, int $order): void
+    {
+        NotificationService::notify(
+            array_diff(NotificationService::usersWithPermission(SigningLookup::PERMS[$order]), [(int) Auth::id()]),
+            ResearchLookup::NOTIFY_TYPE,
+            InnovationLookup::DOCS[$doc] . 'รอลงนามลำดับที่ ' . $order . ': ' . mb_substr((string) $media['title'], 0, 120),
+            'ผู้จัดทำ: ' . $media['owner_name'] . ' · ลงนามในฐานะ' . SigningLookup::ORDERS[$order],
+            self::link((int) $media['id']) . '/sign', true
+        );
     }
 
     public static function cancelByOwner(array $media, ?string $note): void
@@ -464,7 +607,7 @@ final class InnovationService
         }
         $sum = static fn (array $keys): int => array_sum(array_intersect_key($byStatus, array_flip($keys)));
         $overdue = (int) $db->fetchColumn(
-            "SELECT COUNT(*) FROM innovation_media m WHERE {$sqlWhere} AND m.status = 'in_use' AND m.report_due_on < ?",
+            "SELECT COUNT(*) FROM innovation_media m WHERE {$sqlWhere} AND m.status IN ('in_use', 'report_draft') AND m.report_due_on < ?",
             [...$params, date('Y-m-d')]
         );
 
